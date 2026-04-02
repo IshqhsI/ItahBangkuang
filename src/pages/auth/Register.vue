@@ -190,28 +190,6 @@
           </template>
         </form>
 
-        <!-- SUCCESS STATE -->
-        <div v-if="success" class="success-box">
-          <span class="success-icon">🎉</span>
-          <h3>Pendaftaran Berhasil!</h3>
-          <p v-if="form.role === 'penjual'">
-            Toko kamu sedang dalam review admin. Kami akan mengaktifkan akunmu
-            segera.
-          </p>
-          <p v-else>Silakan masuk ke akunmu sekarang.</p>
-          <RouterLink
-            to="/login"
-            class="btn-primary"
-            style="
-              display: inline-block;
-              margin-top: 1rem;
-              text-decoration: none;
-              text-align: center;
-            "
-          >
-            Masuk Sekarang
-          </RouterLink>
-        </div>
       </div>
     </div>
   </div>
@@ -220,12 +198,14 @@
 <script setup>
 import { ref } from 'vue';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const step = ref(1);
 const loading = ref(false);
 const showPass = ref(false);
 const errorMsg = ref('');
-const success = ref(false);
 
 const form = ref({
   nama: '',
