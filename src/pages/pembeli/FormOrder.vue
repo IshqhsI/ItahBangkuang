@@ -356,19 +356,24 @@ onMounted(async () => {
   // Pre-fill dari query param
   if (route.query.jumlah) form.value.jumlah = parseInt(route.query.jumlah) || 1;
 
-  const { data: p } = await supabase
+  const { data: produkData } = await supabase
     .from('produk')
     .select('*, toko(nama_toko, nomor_wa, status)')
     .eq('id', route.params.id)
     .single();
 
-  if (!p || p.status !== 'AKTIF' || p.toko?.status !== 'AKTIF') {
+  if (!produkData || produkData.status !== 'AKTIF' || produkData.toko?.status !== 'AKTIF') {
     loadingData.value = false;
     return;
   }
 
-  produk.value = p;
-  if (form.value.jumlah > p.stok) form.value.jumlah = p.stok || 1;
+  if (produkData.toko?.user_id === session.user.id) {
+    router.push(`/toko/produk`)
+    return
+  }
+
+  produk.value = produkData;
+  if (form.value.jumlah > produkData.stok) form.value.jumlah = produkData.stok || 1;
   loadingData.value = false;
 });
 </script>
