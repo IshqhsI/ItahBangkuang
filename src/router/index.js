@@ -107,6 +107,12 @@ const routes = [
     component: () => import('@/pages/admin/Dashboard.vue'),
     meta: { requiresAuth: true, role: 'admin' },
   },
+  {
+    path: '/admin/toko',
+    name: 'AdminKelolaToko',
+    component: () => import('@/pages/admin/KelolaToko.vue'),
+    meta: { requiresAuth: true, role: 'admin' },
+  }
 ];
 
 const router = createRouter({
