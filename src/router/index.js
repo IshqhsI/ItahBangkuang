@@ -112,6 +112,18 @@ const routes = [
     name: 'AdminKelolaToko',
     component: () => import('@/pages/admin/KelolaToko.vue'),
     meta: { requiresAuth: true, role: 'admin' },
+  },
+  {
+    path: '/admin/produk',
+    name: 'AdminKelolaProduk',
+    component: () => import('@/pages/admin/KelolaProduk.vue'),
+    meta: { requiresAuth: true, role: 'admin' },
+  }, 
+  {
+    path: '/admin/users',
+    name: 'AdminKelolaUsers',
+    component: () => import('@/pages/admin/KelolaUser.vue'),
+    meta: { requiresAuth: true, role: 'admin' },
   }
 ];
 
