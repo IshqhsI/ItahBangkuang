@@ -41,11 +41,13 @@ const routes = [
     path: '/pesan/:id',
     name: 'Pesan',
     component: () => import('@/pages/pembeli/FormOrder.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/riwayat',
     name: 'RiwayatOrder',
     component: () => import('@/pages/pembeli/RiwayatOrder.vue'),
+    meta: { requiresAuth: true },
   },
 
   // Penjual
@@ -97,7 +99,7 @@ const routes = [
     path: '/admin/dashboard',
     name: 'AdminDashboard',
     component: () => import('@/pages/admin/Dashboard.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, role: 'admin' },
   },
 ];
 
