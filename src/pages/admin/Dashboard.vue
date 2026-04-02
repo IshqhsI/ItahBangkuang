@@ -5,9 +5,9 @@
       <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
       <div class="nav-links">
         <RouterLink to="/admin/dashboard">Dashboard</RouterLink>
-        <RouterLink to="/admin/toko">Kelola Toko</RouterLink>
+        <!-- <RouterLink to="/admin/toko">Kelola Toko</RouterLink>
         <RouterLink to="/admin/produk">Produk</RouterLink>
-        <RouterLink to="/admin/users">Users</RouterLink>
+        <RouterLink to="/admin/users">Users</RouterLink> -->
         <button class="btn-nav-outline" @click="logout">Keluar</button>
       </div>
       <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
@@ -17,13 +17,13 @@
       <RouterLink to="/admin/dashboard" @click="menuOpen = false"
         >Dashboard</RouterLink
       >
-      <RouterLink to="/admin/toko" @click="menuOpen = false"
+      <!-- <RouterLink to="/admin/toko" @click="menuOpen = false"
         >Kelola Toko</RouterLink
       >
       <RouterLink to="/admin/produk" @click="menuOpen = false"
         >Produk</RouterLink
       >
-      <RouterLink to="/admin/users" @click="menuOpen = false">Users</RouterLink>
+      <RouterLink to="/admin/users" @click="menuOpen = false">Users</RouterLink> -->
       <button @click="logout">Keluar</button>
     </div>
 
