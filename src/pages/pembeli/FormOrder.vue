@@ -287,13 +287,20 @@ const chatPenjual = () => {
 };
 
 const handleOrder = async () => {
-  loading.value = true;
-  errorMsg.value = '';
+  loading.value = true
+  errorMsg.value = ''
 
-  if (form.value.jumlah > produk.value.stok) {
-    errorMsg.value = `Stok tidak cukup. Stok tersedia: ${produk.value.stok}`;
-    loading.value = false;
-    return;
+  // Re-cek stok langsung dari server, bukan dari cache lokal
+  const { data: stokTerkini } = await supabase
+    .from('produk')
+    .select('stok')
+    .eq('id', produk.value.id)
+    .single()
+
+  if (!stokTerkini || form.value.jumlah > stokTerkini.stok) {
+    errorMsg.value = `Stok tidak cukup. Stok tersisa: ${stokTerkini?.stok ?? 0}`
+    loading.value = false
+    return
   }
 
   const { error } = await supabase.from('orders').insert({
@@ -308,23 +315,28 @@ const handleOrder = async () => {
     metode: form.value.metode,
     catatan: form.value.catatan,
     status: 'MENUNGGU',
-  });
+  })
 
   if (error) {
-    errorMsg.value = 'Gagal mengirim pesanan. Coba lagi.';
-    loading.value = false;
-    return;
+    errorMsg.value = 'Gagal mengirim pesanan. Coba lagi.'
+    loading.value = false
+    return
   }
 
-  // Kurangi stok
-  await supabase
+  // Kurangi stok — sekarang dengan error handling
+  const { error: stokError } = await supabase
     .from('produk')
-    .update({ stok: produk.value.stok - form.value.jumlah })
-    .eq('id', produk.value.id);
+    .update({ stok: stokTerkini.stok - form.value.jumlah })
+    .eq('id', produk.value.id)
 
-  orderSuccess.value = true;
-  loading.value = false;
-};
+  if (stokError) {
+    // Order berhasil tapi stok gagal dikurangi — tandai untuk admin
+    console.error('Stok gagal dikurangi untuk order:', produk.value.id)
+  }
+
+  orderSuccess.value = true
+  loading.value = false
+}
 
 const logout = async () => {
   await supabase.auth.signOut();
