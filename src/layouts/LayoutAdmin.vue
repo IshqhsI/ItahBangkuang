@@ -5,8 +5,8 @@
       <div class="nav-links">
         <RouterLink to="/admin/dashboard">Dashboard</RouterLink>
         <RouterLink to="/admin/toko">Kelola Toko</RouterLink>
-        <!-- <RouterLink to="/admin/produk">Produk</RouterLink>
-        <RouterLink to="/admin/users">Users</RouterLink> -->
+        <RouterLink to="/admin/produk">Produk</RouterLink>
+        <RouterLink to="/admin/users">Users</RouterLink>
         <button class="btn-nav-outline" @click="authStore.logout(router)">Keluar</button>
       </div>
       <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
