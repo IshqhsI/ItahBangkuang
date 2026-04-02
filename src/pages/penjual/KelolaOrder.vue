@@ -246,7 +246,7 @@ const updateStatus = async (order, statusBaru) => {
 };
 
 const chatPembeli = (o) => {
-  const wa = o.nomor_wa_pembeli?.replace(/^0/, '') ?? '';
+  const wa = o.nomor_wa_pembeli?.replace(/^(0|62)/, '') ?? '';
   const pesan = `Halo ${o.nama_pemesan}, saya dari toko ItahBangkuang terkait pesanan *${o.produk?.nama_produk}* (${o.jumlah} pcs). `;
   window.open(
     `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,

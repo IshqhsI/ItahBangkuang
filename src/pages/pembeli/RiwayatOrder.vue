@@ -171,7 +171,7 @@ const hitungFilter = (val) => {
 };
 
 const chatPenjual = (o) => {
-  const wa = o.toko?.nomor_wa?.replace(/^0/, '') ?? '';
+  const wa = o.toko?.nomor_wa?.replace(/^(0|62)/, '') ?? '';
   const pesan = `Halo, saya ingin tanya mengenai pesanan *${o.produk?.nama_produk}* (${o.jumlah} pcs) yang saya buat via ItahBangkuang.`;
   window.open(
     `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,

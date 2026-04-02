@@ -278,7 +278,7 @@ const clampJumlah = () => {
 };
 
 const chatPenjual = () => {
-  const wa = produk.value?.toko?.nomor_wa?.replace(/^0/, '') ?? '';
+  const wa = produk.value?.toko?.nomor_wa?.replace(/^(0|62)/, '') ?? '';
   const pesan = `Halo, saya sudah memesan *${produk.value.nama_produk}* (${form.value.jumlah} pcs) via ItahBangkuang. Mohon dikonfirmasi ya!`;
   window.open(
     `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
