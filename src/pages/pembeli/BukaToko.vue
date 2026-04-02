@@ -157,6 +157,18 @@ onMounted(async () => {
     return;
   }
 
+  const { data: tokoAda } = await supabase
+    .from('toko')
+    .select('id, status')
+    .eq('user_id', session.user.id)
+    .single()
+
+  if (tokoAda) {
+    // Sudah pernah daftar toko, arahkan ke dashboard penjual
+    router.push('/toko/dashboard')
+    return
+  }
+
   loadingPage.value = false;
 });
 
