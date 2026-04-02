@@ -49,6 +49,12 @@ const routes = [
     component: () => import('@/pages/pembeli/RiwayatOrder.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/buka-toko',
+    name: 'BukaToko',
+    component: () => import('@/pages/pembeli/BukaToko.vue'),
+    meta: { requiresAuth: true },
+  },
 
   // Penjual
   {
