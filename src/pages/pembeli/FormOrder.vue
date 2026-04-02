@@ -268,12 +268,15 @@ const formatRupiah = (a) =>
 const kurangi = () => {
   if (form.value.jumlah > 1) form.value.jumlah--;
 };
+
 const tambah = () => {
   if (form.value.jumlah < produk.value.stok) form.value.jumlah++;
 };
+
+// FIX #2: clampJumlah tidak boleh set ke 0 kalau stok habis
 const clampJumlah = () => {
   if (form.value.jumlah < 1) form.value.jumlah = 1;
-  if (form.value.jumlah > produk.value.stok)
+  if (produk.value.stok > 0 && form.value.jumlah > produk.value.stok)
     form.value.jumlah = produk.value.stok;
 };
 
@@ -286,57 +289,61 @@ const chatPenjual = () => {
   );
 };
 
+// FIX #3: return Promise supaya bisa di-await dengan Promise.allSettled
+const addPhoneNumber = (number) => {
+  if (!number) return Promise.resolve();
+  return supabase
+    .from('profiles')
+    .update({ no_wa: number })
+    .eq('id', userId.value);
+};
+
+const addAddressToProfile = (address) => {
+  if (!address) return Promise.resolve();
+  return supabase
+    .from('profiles')
+    .update({ alamat: address })
+    .eq('id', userId.value);
+};
+
 const handleOrder = async () => {
-  loading.value = true
-  errorMsg.value = ''
+  loading.value = true;
+  errorMsg.value = '';
 
-  // Re-cek stok langsung dari server, bukan dari cache lokal
-  const { data: stokTerkini } = await supabase
-    .from('produk')
-    .select('stok')
-    .eq('id', produk.value.id)
-    .single()
-
-  if (!stokTerkini || form.value.jumlah > stokTerkini.stok) {
-    errorMsg.value = `Stok tidak cukup. Stok tersisa: ${stokTerkini?.stok ?? 0}`
-    loading.value = false
-    return
-  }
-
-  const { error } = await supabase.from('orders').insert({
-    produk_id: produk.value.id,
-    toko_id: produk.value.toko_id,
-    pembeli_id: userId.value,
-    nama_pemesan: form.value.nama_pemesan,
-    nomor_wa_pembeli: form.value.nomor_wa,
-    alamat: form.value.alamat,
-    jumlah: form.value.jumlah,
-    total_harga: produk.value.harga * form.value.jumlah,
-    metode: form.value.metode,
-    catatan: form.value.catatan,
-    status: 'MENUNGGU',
-  })
+  const { error } = await supabase.rpc('handle_create_order', {
+    p_produk_id: produk.value.id,
+    p_pembeli_id: userId.value,
+    p_nama_pemesan: form.value.nama_pemesan,
+    p_nomor_wa_pembeli: form.value.nomor_wa,
+    p_alamat: form.value.alamat,
+    p_jumlah: form.value.jumlah,
+    p_metode: form.value.metode,
+    p_catatan: form.value.catatan ?? '',
+  });
 
   if (error) {
-    errorMsg.value = 'Gagal mengirim pesanan. Coba lagi.'
-    loading.value = false
-    return
+    if (error.message.includes('stok')) {
+      errorMsg.value = 'Produk tidak tersedia atau stok tidak cukup.';
+    } else if (error.message.includes('sendiri')) {
+      errorMsg.value = 'Kamu tidak bisa memesan produk dari tokomu sendiri.';
+    } else if (error.message.includes('Jumlah tidak valid')) {
+      errorMsg.value = 'Jumlah pesanan tidak valid.';
+    } else {
+      errorMsg.value = 'Gagal mengirim pesanan. Coba lagi.';
+    }
+    loading.value = false;
+    return;
   }
 
-  // Kurangi stok — sekarang dengan error handling
-  const { error: stokError } = await supabase
-    .from('produk')
-    .update({ stok: stokTerkini.stok - form.value.jumlah })
-    .eq('id', produk.value.id)
+  // FIX #3: jalankan paralel, tunggu keduanya selesai sebelum pindah state
+  await Promise.allSettled([
+    addPhoneNumber(form.value.nomor_wa),
+    addAddressToProfile(form.value.alamat),
+  ]);
 
-  if (stokError) {
-    // Order berhasil tapi stok gagal dikurangi — tandai untuk admin
-    console.error('Stok gagal dikurangi untuk order:', produk.value.id)
-  }
-
-  orderSuccess.value = true
-  loading.value = false
-}
+  orderSuccess.value = true;
+  loading.value = false;
+};
 
 const logout = async () => {
   await supabase.auth.signOut();
@@ -347,33 +354,67 @@ onMounted(async () => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
   if (!session) {
     router.push('/login');
     return;
   }
+
   userId.value = session.user.id;
 
-  // Pre-fill dari query param
-  if (route.query.jumlah) form.value.jumlah = parseInt(route.query.jumlah) || 1;
+  // Pre-fill nama & nomor WA dari profil
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('nama_lengkap, no_wa')
+    .eq('id', session.user.id)
+    .single();
 
+  if (profile) {
+    form.value.nama_pemesan = profile.nama_lengkap || '';
+    form.value.nomor_wa = profile.no_wa || '';
+  }
+
+  // FIX #1: tambah user_id ke select toko supaya self-order check bisa jalan
   const { data: produkData } = await supabase
     .from('produk')
-    .select('*, toko(nama_toko, nomor_wa, status)')
+    .select('*, toko(nama_toko, nomor_wa, status, user_id)')
     .eq('id', route.params.id)
     .single();
 
-  if (!produkData || produkData.status !== 'AKTIF' || produkData.toko?.status !== 'AKTIF') {
+  // Produk tidak ada, tidak aktif, atau tokonya tidak aktif
+  if (
+    !produkData ||
+    produkData.status !== 'AKTIF' ||
+    produkData.toko?.status !== 'AKTIF'
+  ) {
     loadingData.value = false;
     return;
   }
 
+  // FIX #2: produk stok 0 langsung tampilkan tidak tersedia
+  if (produkData.stok === 0) {
+    loadingData.value = false;
+    return;
+  }
+
+  // Self-order check — sekarang bisa jalan karena user_id sudah diambil
   if (produkData.toko?.user_id === session.user.id) {
-    router.push(`/toko/produk`)
-    return
+    router.push('/toko/produk');
+    return;
   }
 
   produk.value = produkData;
-  if (form.value.jumlah > produkData.stok) form.value.jumlah = produkData.stok || 1;
+
+  // FIX #4: pre-fill jumlah dari query param — setelah dapat produk,
+  // dengan clamp ke stok sebenarnya dan batas maksimal 100
+  if (route.query.jumlah) {
+    const parsed = parseInt(route.query.jumlah) || 1;
+    form.value.jumlah = Math.min(Math.max(parsed, 1), produkData.stok, 100);
+  } else {
+    // Kalau tidak ada query param, pastikan default 1 tidak melebihi stok
+    form.value.jumlah = Math.min(1, produkData.stok);
+  }
+
   loadingData.value = false;
 });
 </script>
@@ -724,7 +765,9 @@ onMounted(async () => {
   border: 1.5px solid #d1d5db;
   border-radius: 10px;
   overflow: hidden;
+  justify-content: center;
   width: fit-content;
+  margin: auto;
 }
 .jumlah-control button {
   width: 38px;
