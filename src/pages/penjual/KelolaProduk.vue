@@ -1,5 +1,5 @@
 <template>
-  <LayoutPenjual>
+  <LayoutPenjual :statusToko="statusToko">
     <div class="page-header">
       <div class="container">
         <div class="header-inner">
@@ -146,6 +146,7 @@ const filterAktif = ref('semua');
 const prosesId = ref(null);
 const showHapusModal = ref(false);
 const hapusTarget = ref(null);
+const statusToko = ref(null);
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
@@ -220,6 +221,8 @@ onMounted(async () => {
     router.push('/toko/dashboard');
     return;
   }
+  
+  statusToko.value = toko.status;
 
   const { data } = await supabase
     .from('produk')

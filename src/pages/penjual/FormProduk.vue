@@ -1,5 +1,5 @@
 <template>
-  <LayoutPenjual>
+  <LayoutPenjual :statusToko="statusToko">
     <div class="page-header">
       <div class="container">
         <RouterLink to="/toko/produk" class="back-link"
@@ -221,6 +221,7 @@ const previewUrl = ref('');
 const fotoFile = ref(null);
 const isDragging = ref(false);
 const tokoId = ref(null);
+const statusToko = ref(null);
 
 const isEdit = computed(() => !!route.params.id);
 
@@ -375,6 +376,8 @@ onMounted(async () => {
     router.push('/toko/dashboard');
     return;
   }
+  
+  statusToko.value = toko.status;
   tokoId.value = toko.id;
 
   // Load data produk kalau mode edit
