@@ -1,42 +1,5 @@
 <template>
-  <div class="page">
-    <!-- NAVBAR -->
-    <nav class="navbar">
-      <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/produk">Lihat Toko</RouterLink>
-        <RouterLink to="/toko/produk" v-if="statusToko === 'AKTIF'"
-          >Produk Saya</RouterLink
-        >
-        <RouterLink to="/toko/order" v-if="statusToko === 'AKTIF'"
-          >Order Masuk</RouterLink
-        >
-        <RouterLink to="/toko/profil">Profil Toko</RouterLink>
-        <button class="btn-nav-outline" @click="logout">Keluar</button>
-      </div>
-      <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-    </nav>
-
-    <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/produk" @click="menuOpen = false">Lihat Toko</RouterLink>
-      <RouterLink
-        to="/toko/produk"
-        v-if="statusToko === 'AKTIF'"
-        @click="menuOpen = false"
-        >Produk Saya</RouterLink
-      >
-      <RouterLink
-        to="/toko/order"
-        v-if="statusToko === 'AKTIF'"
-        @click="menuOpen = false"
-        >Order Masuk</RouterLink
-      >
-      <RouterLink to="/toko/profil" @click="menuOpen = false"
-        >Profil Toko</RouterLink
-      >
-      <button @click="logout">Keluar</button>
-    </div>
-
+  <LayoutPenjual :statusToko="statusToko">
     <!-- LOADING -->
     <div v-if="loading" class="loading-wrap">
       <div class="spinner"></div>
@@ -273,13 +236,16 @@
         </div>
       </div>
     </template>
-  </div>
+  </LayoutPenjual>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
+import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
+import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
+import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils'; 
 
 const router = useRouter();
 const menuOpen = ref(false);
@@ -297,27 +263,7 @@ const produkList = ref([]);
 const copied = ref(false);
 const baseUrl = window.location.origin;
 
-const formatRupiah = (angka) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(angka ?? 0);
-
-const formatTanggal = (iso) =>
-  new Date(iso).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-const badgeClass = (status) => ({
-  'badge-menunggu': status === 'MENUNGGU',
-  'badge-konfirmasi': status === 'DIKONFIRMASI',
-  'badge-selesai': status === 'SELESAI',
-  'badge-batal': status === 'DIBATALKAN',
-});
+const badgeClass = badgeOrderClass;
 
 const copyLink = () => {
   navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.id}`);
@@ -414,97 +360,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #fdfaf4;
-  min-height: 100vh;
-  color: #1a2e0a;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(253, 250, 244, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #e8e0d0;
-  padding: 0 2rem;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2d5016;
-  text-decoration: none;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-.nav-links a {
-  color: #374151;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.nav-links a:hover {
-  color: #2d5016;
-}
-.btn-nav-outline {
-  background: none;
-  border: 1.5px solid #2d5016;
-  color: #2d5016 !important;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-.btn-nav-outline:hover {
-  background: #f0f7e8 !important;
-}
-.hamburger {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: #2d5016;
-}
-.mobile-menu {
-  background: #fff;
-  border-bottom: 1px solid #e8e0d0;
-  padding: 1rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.mobile-menu a,
-.mobile-menu button {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #374151;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
 
 .loading-wrap {
   display: flex;
