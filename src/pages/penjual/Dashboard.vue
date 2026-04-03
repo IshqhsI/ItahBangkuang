@@ -1,5 +1,5 @@
 <template>
-  <LayoutPenjual :statusToko="statusToko">
+  <LayoutPenjual :statusToko="toko?.status" :tokoId="toko?.id">
     <!-- LOADING -->
     <div v-if="loading" class="loading-wrap">
       <div class="spinner"></div>
@@ -244,8 +244,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
-import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
-import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils'; 
+import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
 
 const router = useRouter();
 const menuOpen = ref(false);
@@ -269,11 +268,6 @@ const copyLink = () => {
   navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.id}`);
   copied.value = true;
   setTimeout(() => (copied.value = false), 2000);
-};
-
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
 };
 
 onMounted(async () => {
@@ -360,7 +354,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
 .loading-wrap {
   display: flex;
   flex-direction: column;

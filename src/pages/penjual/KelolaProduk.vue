@@ -1,5 +1,5 @@
 <template>
-  <LayoutPenjual :statusToko="statusToko">
+  <LayoutPenjual :statusToko="statusToko" :tokoId="toko?.id">
     <div class="page-header">
       <div class="container">
         <div class="header-inner">
@@ -147,6 +147,7 @@ const prosesId = ref(null);
 const showHapusModal = ref(false);
 const hapusTarget = ref(null);
 const statusToko = ref(null);
+const toko = ref(null);
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
@@ -222,6 +223,7 @@ onMounted(async () => {
     return;
   }
   
+  toko.value = toko;
   statusToko.value = toko.status;
 
   const { data } = await supabase

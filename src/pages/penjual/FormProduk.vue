@@ -1,5 +1,5 @@
 <template>
-  <LayoutPenjual :statusToko="statusToko">
+  <LayoutPenjual :statusToko="statusToko" :tokoId="tokoId">
     <div class="page-header">
       <div class="container">
         <RouterLink to="/toko/produk" class="back-link"

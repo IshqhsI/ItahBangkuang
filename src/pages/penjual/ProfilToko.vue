@@ -1,5 +1,5 @@
 <template>
-  <LayoutPenjual :statusToko="statusToko">
+  <LayoutPenjual :statusToko="statusToko" :tokoId="tokoId">
     <div class="page-header">
       <div class="container">
         <h1 class="page-title">Profil Toko</h1>
