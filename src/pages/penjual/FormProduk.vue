@@ -1,32 +1,5 @@
 <template>
-  <div class="page">
-    <nav class="navbar">
-      <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/toko/dashboard">Dashboard</RouterLink>
-        <RouterLink to="/toko/produk">Produk Saya</RouterLink>
-        <RouterLink to="/toko/order">Order Masuk</RouterLink>
-        <RouterLink to="/toko/profil">Profil Toko</RouterLink>
-        <button class="btn-nav-outline" @click="logout">Keluar</button>
-      </div>
-      <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-    </nav>
-    <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/toko/dashboard" @click="menuOpen = false"
-        >Dashboard</RouterLink
-      >
-      <RouterLink to="/toko/produk" @click="menuOpen = false"
-        >Produk Saya</RouterLink
-      >
-      <RouterLink to="/toko/order" @click="menuOpen = false"
-        >Order Masuk</RouterLink
-      >
-      <RouterLink to="/toko/profil" @click="menuOpen = false"
-        >Profil Toko</RouterLink
-      >
-      <button @click="logout">Keluar</button>
-    </div>
-
+  <LayoutPenjual>
     <div class="page-header">
       <div class="container">
         <RouterLink to="/toko/produk" class="back-link"
@@ -39,6 +12,9 @@
     </div>
 
     <div class="container main-content">
+      <!-- Alert error -->
+      <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
+      
       <!-- Loading saat edit -->
       <div v-if="loadingData" class="loading-wrap">
         <div class="spinner"></div>
@@ -46,6 +22,7 @@
       </div>
 
       <form v-else @submit.prevent="handleSubmit" class="form-grid">
+
         <!-- KOLOM KIRI -->
         <div class="form-left">
           <!-- Upload Foto -->
@@ -75,7 +52,7 @@
               <div v-else class="foto-placeholder">
                 <span class="upload-icon">📷</span>
                 <p class="upload-text">Klik atau seret foto ke sini</p>
-                <p class="upload-hint">JPG, PNG • Maks. 5MB</p>
+                <p class="upload-hint">JPG, PNG • Maks. 2MB</p>
               </div>
               <input
                 ref="fileInput"
@@ -189,9 +166,6 @@
             </div>
           </div>
 
-          <!-- Alert error -->
-          <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
-
           <!-- Alert sukses -->
           <div v-if="successMsg" class="alert-success">✅ {{ successMsg }}</div>
 
@@ -224,19 +198,20 @@
         </div>
       </form>
     </div>
-  </div>
+  </LayoutPenjual>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
+import { formatRupiah } from '@/lib/utils';
+import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 
 const route = useRoute();
 const router = useRouter();
-const menuOpen = ref(false);
 const loading = ref(false);
-const loadingData = ref(false);
+const loadingData = ref(!!route.params.id);
 const uploading = ref(false);
 const uploadProgress = ref(0);
 const errorMsg = ref('');
@@ -258,18 +233,11 @@ const form = ref({
   status: 'AKTIF',
 });
 
-const formatRupiah = (angka) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(angka);
-
 const triggerUpload = () => fileInput.value?.click();
 
 const onFileChange = (e) => {
   const file = e.target.files[0];
-  if (file) prosesFile(file);
+  if (file && file.type.startsWith('image/')) prosesFile(file);
 };
 
 const onDrop = (e) => {
@@ -279,8 +247,8 @@ const onDrop = (e) => {
 };
 
 const prosesFile = (file) => {
-  if (file.size > 5 * 1024 * 1024) {
-    errorMsg.value = 'Ukuran foto maksimal 5MB.';
+  if (file.size > 2 * 1024 * 1024) {
+    errorMsg.value = 'Ukuran foto maksimal 2MB.';
     return;
   }
   fotoFile.value = file;
@@ -294,7 +262,7 @@ const uploadFoto = async () => {
   uploadProgress.value = 30;
 
   const ext = fotoFile.value.name.split('.').pop();
-  const namaFile = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const namaFile = `${crypto.randomUUID()}.${ext}`;
 
   const { error } = await supabase.storage
     .from('foto-produk')
@@ -318,6 +286,21 @@ const handleSubmit = async () => {
   // Validasi foto wajib saat tambah
   if (!isEdit.value && !fotoFile.value) {
     errorMsg.value = 'Foto produk wajib diisi.';
+    return;
+  }
+
+  // Tambahkan validasi ini:
+  if (!form.value.harga || form.value.harga < 100) {
+    errorMsg.value = 'Harga minimal Rp 100.';
+    return;
+  }
+
+  if (
+    form.value.stok === '' ||
+    form.value.stok === null ||
+    form.value.stok < 0
+  ) {
+    errorMsg.value = 'Stok tidak boleh kosong atau negatif.';
     return;
   }
 
@@ -351,7 +334,8 @@ const handleSubmit = async () => {
     const { error } = await supabase
       .from('produk')
       .update(payload)
-      .eq('id', route.params.id);
+      .eq('id', route.params.id)
+      .eq('toko_id', tokoId.value);
     if (error) {
       errorMsg.value = 'Gagal menyimpan. Coba lagi.';
       loading.value = false;
@@ -371,11 +355,6 @@ const handleSubmit = async () => {
   }
 
   loading.value = false;
-};
-
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
 };
 
 onMounted(async () => {
@@ -422,103 +401,13 @@ onMounted(async () => {
     };
     previewUrl.value = p.foto_url;
     loadingData.value = false;
+  } else {
+    loadingData.value = false; // mode tambah: langsung tampil form
   }
 });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #fdfaf4;
-  min-height: 100vh;
-  color: #1a2e0a;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(253, 250, 244, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #e8e0d0;
-  padding: 0 2rem;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2d5016;
-  text-decoration: none;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-.nav-links a {
-  color: #374151;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.nav-links a:hover {
-  color: #2d5016;
-}
-.btn-nav-outline {
-  background: none;
-  border: 1.5px solid #2d5016;
-  color: #2d5016 !important;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-.btn-nav-outline:hover {
-  background: #f0f7e8 !important;
-}
-.hamburger {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: #2d5016;
-}
-.mobile-menu {
-  background: #fff;
-  border-bottom: 1px solid #e8e0d0;
-  padding: 1rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.mobile-menu a,
-.mobile-menu button {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #374151;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
-
 .page-header {
   background: linear-gradient(135deg, #2d5016, #3a6b1e);
   padding: 2rem 0;
