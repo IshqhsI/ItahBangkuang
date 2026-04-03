@@ -1,32 +1,5 @@
 <template>
-  <div class="page">
-    <nav class="navbar">
-      <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/toko/dashboard">Dashboard</RouterLink>
-        <RouterLink to="/toko/produk" class="active">Produk Saya</RouterLink>
-        <RouterLink to="/toko/order">Order Masuk</RouterLink>
-        <RouterLink to="/toko/profil">Profil Toko</RouterLink>
-        <button class="btn-nav-outline" @click="logout">Keluar</button>
-      </div>
-      <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-    </nav>
-    <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/toko/dashboard" @click="menuOpen = false"
-        >Dashboard</RouterLink
-      >
-      <RouterLink to="/toko/produk" @click="menuOpen = false"
-        >Produk Saya</RouterLink
-      >
-      <RouterLink to="/toko/order" @click="menuOpen = false"
-        >Order Masuk</RouterLink
-      >
-      <RouterLink to="/toko/profil" @click="menuOpen = false"
-        >Profil Toko</RouterLink
-      >
-      <button @click="logout">Keluar</button>
-    </div>
-
+  <LayoutPenjual>
     <div class="page-header">
       <div class="container">
         <div class="header-inner">
@@ -156,16 +129,17 @@
         </div>
       </div>
     </div>
-  </div>
+  </LayoutPenjual>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
+import LayoutPenjual from '@/components/LayoutPenjual.vue';
+import { formatRupiah } from '@/lib/utils';
 
 const router = useRouter();
-const menuOpen = ref(false);
 const loading = ref(true);
 const produkList = ref([]);
 const filterAktif = ref('semua');
@@ -189,12 +163,6 @@ const kategoriList = [
 
 const labelKategori = (slug) =>
   kategoriList.find((k) => k.slug === slug)?.nama ?? slug;
-const formatRupiah = (angka) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(angka);
 
 const produkFiltered = computed(() => {
   if (filterAktif.value === 'semua') return produkList.value;
@@ -233,10 +201,6 @@ const konfirmasiHapus = async () => {
   prosesId.value = null;
 };
 
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
-};
 
 onMounted(async () => {
   const {
