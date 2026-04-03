@@ -1,33 +1,5 @@
 <template>
-  <div class="page">
-    <nav class="navbar">
-      <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/toko/dashboard">Dashboard</RouterLink>
-        <RouterLink to="/toko/produk">Produk Saya</RouterLink>
-        <RouterLink to="/toko/order">Order Masuk</RouterLink>
-        <RouterLink to="/toko/profil" class="active">Profil Toko</RouterLink>
-        <button class="btn-nav-outline" @click="logout">Keluar</button>
-      </div>
-      <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-    </nav>
-
-    <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/toko/dashboard" @click="menuOpen = false"
-        >Dashboard</RouterLink
-      >
-      <RouterLink to="/toko/produk" @click="menuOpen = false"
-        >Produk Saya</RouterLink
-      >
-      <RouterLink to="/toko/order" @click="menuOpen = false"
-        >Order Masuk</RouterLink
-      >
-      <RouterLink to="/toko/profil" @click="menuOpen = false"
-        >Profil Toko</RouterLink
-      >
-      <button @click="logout">Keluar</button>
-    </div>
-
+  <LayoutPenjual :statusToko="statusToko">
     <div class="page-header">
       <div class="container">
         <h1 class="page-title">Profil Toko</h1>
@@ -59,6 +31,9 @@
             </p>
           </div>
         </div>
+
+        <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
+        <div v-if="successMsg" class="alert-success">✅ {{ successMsg }}</div>
 
         <!-- FOTO TOKO -->
         <div class="form-section">
@@ -126,7 +101,7 @@
               <input
                 v-model="form.nomor_wa"
                 type="tel"
-                placeholder="81234567890"
+                placeholder="081234567890"
                 :disabled="loading"
               />
             </div>
@@ -167,9 +142,6 @@
           </div>
         </div>
 
-        <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
-        <div v-if="successMsg" class="alert-success">✅ {{ successMsg }}</div>
-
         <!-- ACTIONS -->
         <div class="form-actions">
           <RouterLink to="/toko/dashboard" class="btn-cancel"
@@ -208,17 +180,17 @@
         </div>
       </div>
     </div>
-  </div>
+  </LayoutPenjual>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
+import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 
 const router = useRouter();
 const mode = ref('view');
-const menuOpen = ref(false);
 const loadingData = ref(true);
 const loading = ref(false);
 const uploading = ref(false);
@@ -228,6 +200,7 @@ const fileInput = ref(null);
 const previewUrl = ref('');
 const fotoFile = ref(null);
 const tokoId = ref(null);
+const statusToko = ref('');
 
 // Pisahkan: data read-only (tidak boleh diedit penjual)
 const toko = ref({ status: '', alasan_tolak: '' });
@@ -273,8 +246,8 @@ const triggerUpload = () => fileInput.value?.click();
 const onFileChange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    errorMsg.value = 'Ukuran foto maksimal 5MB.';
+  if (file.size > 2 * 1024 * 1024) {
+    errorMsg.value = 'Ukuran foto maksimal 2MB.';
     return;
   }
   if (previewUrl.value?.startsWith('blob:'))
@@ -311,6 +284,16 @@ const handleSubmit = async () => {
     errorMsg.value = 'Nomor WhatsApp wajib diisi.';
     return;
   }
+  // Validasi Format Nomor WA (Hanya angka & minimal panjang)
+  const waRegex = /^[0-9]+$/;
+  if (!waRegex.test(form.value.nomor_wa.trim())) {
+    errorMsg.value = 'Nomor WhatsApp hanya boleh berisi angka.';
+    return;
+  }
+  if (form.value.nomor_wa.trim().length < 10) {
+    errorMsg.value = 'Nomor WhatsApp minimal 10 digit.';
+    return;
+  }
   if (!form.value.alamat.trim()) {
     errorMsg.value = 'Alamat wajib diisi.';
     return;
@@ -330,13 +313,18 @@ const handleSubmit = async () => {
     }
   }
 
+  let nomorWaClean = form.value.nomor_wa.trim();
+  if (nomorWaClean.startsWith('0')) {
+    nomorWaClean = nomorWaClean.substring(1);
+  }
+
   // HANYA update kolom yang boleh diubah penjual
   // status, alasan_tolak, user_id TIDAK ikut diupdate
   const { error } = await supabase
     .from('toko')
     .update({
       nama_toko: form.value.nama_toko.trim(),
-      nomor_wa: form.value.nomor_wa.trim(),
+      nomor_wa: nomorWaClean,
       alamat: form.value.alamat.trim(),
       deskripsi: form.value.deskripsi.trim(),
       ...(fotoUrl ? { foto_toko: fotoUrl } : {}),
@@ -353,6 +341,7 @@ const handleSubmit = async () => {
   snapshot = { ...form.value }; // perbarui snapshot dengan data terbaru
   fotoFile.value = null;
   mode.value = 'view';
+  await updateViewData(); // refresh data dari server untuk memastikan sinkronisasi dengan database
   loading.value = false;
 };
 
@@ -364,13 +353,8 @@ const cancelEdit = () => {
   mode.value = 'view';
 };
 
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
-};
-
-onMounted(async () => {
-  const {
+const updateViewData = async () => {
+   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) {
@@ -388,6 +372,7 @@ onMounted(async () => {
     return;
   }
 
+  statusToko.value = data.status;
   tokoId.value = data.id;
 
   // Pisahkan data read-only dan editable
@@ -406,103 +391,15 @@ onMounted(async () => {
 
   snapshot = { ...form.value };
   previewUrl.value = data.foto_toko ?? '';
+};
+
+onMounted(async () => {
+  await updateViewData();
   loadingData.value = false;
 });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #fdfaf4;
-  min-height: 100vh;
-  color: #1a2e0a;
-}
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(253, 250, 244, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #e8e0d0;
-  padding: 0 2rem;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2d5016;
-  text-decoration: none;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-.nav-links a {
-  color: #374151;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.nav-links a:hover,
-.nav-links a.active {
-  color: #2d5016;
-  font-weight: 600;
-}
-.btn-nav-outline {
-  background: none;
-  border: 1.5px solid #2d5016;
-  color: #2d5016 !important;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-.btn-nav-outline:hover {
-  background: #f0f7e8 !important;
-}
-.hamburger {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: #2d5016;
-}
-.mobile-menu {
-  background: #fff;
-  border-bottom: 1px solid #e8e0d0;
-  padding: 1rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.mobile-menu a,
-.mobile-menu button {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #374151;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
 .page-header {
   background: linear-gradient(135deg, #2d5016, #3a6b1e);
   padding: 2.5rem 0;
