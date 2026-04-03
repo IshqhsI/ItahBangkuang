@@ -3,7 +3,7 @@
     <nav class="navbar">
       <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
       <div class="nav-links">
-        <RouterLink to="/produk">Lihat Toko</RouterLink>
+        <RouterLink :to="`/toko/${tokoId}`">Lihat Toko</RouterLink>
         <RouterLink v-if="statusToko === 'AKTIF'" to="/toko/dashboard">Dashboard</RouterLink>
         <RouterLink v-if="statusToko === 'AKTIF'" to="/toko/produk">Produk Saya</RouterLink>
         <RouterLink v-if="statusToko === 'AKTIF'" to="/toko/order">Order Masuk</RouterLink>
@@ -14,7 +14,7 @@
     </nav>
 
     <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/produk" @click="menuOpen = false">Lihat Toko</RouterLink>
+      <RouterLink :to="`/toko/${tokoId}`" @click="menuOpen = false">Lihat Toko</RouterLink>
       <RouterLink v-if="statusToko === 'AKTIF'" to="/toko/dashboard" @click="menuOpen = false">Dashboard</RouterLink>
       <RouterLink v-if="statusToko === 'AKTIF'" to="/toko/produk" @click="menuOpen = false">Produk Saya</RouterLink>
       <RouterLink v-if="statusToko === 'AKTIF'" to="/toko/order" @click="menuOpen = false">Order Masuk</RouterLink>
@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -36,11 +36,16 @@ defineProps({
     type: String,
     default: null, // 'AKTIF' | 'PENDING' | 'DITOLAK' | 'DIBLOKIR'
   },
+  tokoId: {
+    type: String,
+    default: null,
+  },
 })
 
 const router    = useRouter()
 const authStore = useAuthStore()
 const menuOpen  = ref(false)
+
 </script>
 
 <style scoped>
