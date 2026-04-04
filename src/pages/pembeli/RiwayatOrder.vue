@@ -1,25 +1,5 @@
 <template>
-  <div class="page">
-    <nav class="navbar">
-      <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/produk">Semua Produk</RouterLink>
-        <RouterLink to="/riwayat" class="active">Pesanan Saya</RouterLink>
-        <button class="btn-nav-outline" @click="logout">Keluar</button>
-      </div>
-      <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-    </nav>
-    <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/" @click="menuOpen = false">Beranda</RouterLink>
-      <RouterLink to="/produk" @click="menuOpen = false"
-        >Semua Produk</RouterLink
-      >
-      <RouterLink to="/riwayat" @click="menuOpen = false"
-        >Pesanan Saya</RouterLink
-      >
-      <button @click="logout">Keluar</button>
-    </div>
-
+  <LayoutPublic>
     <div class="page-header">
       <div class="container">
         <h1 class="page-title">Pesanan Saya</h1>
@@ -106,20 +86,21 @@
               : `Tidak ada pesanan ${labelStatus(filterAktif).toLowerCase()}`
           }}
         </h3>
-        <p>Yuk mulai belanja produk lokal kecamatan!</p>
+        <p>Yuk mulai belanja produk lokal!</p>
         <RouterLink to="/produk" class="btn-belanja">Lihat Produk →</RouterLink>
       </div>
     </div>
-  </div>
+  </LayoutPublic>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
+import LayoutPublic from '@/layouts/LayoutPublic.vue';
+import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
 
 const router = useRouter();
-const menuOpen = ref(false);
 const loading = ref(true);
 const orderList = ref([]);
 const filterAktif = ref('semua');
@@ -139,26 +120,8 @@ const labelStatus = (s) =>
     SELESAI: 'Selesai',
     DIBATALKAN: 'Dibatalkan',
   })[s] ?? s;
-const badgeClass = (s) => ({
-  'badge-menunggu': s === 'MENUNGGU',
-  'badge-konfirmasi': s === 'DIKONFIRMASI',
-  'badge-selesai': s === 'SELESAI',
-  'badge-batal': s === 'DIBATALKAN',
-});
-const formatRupiah = (a) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(a ?? 0);
-const formatTanggal = (iso) =>
-  new Date(iso).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+
+const badgeClass = badgeOrderClass;
 
 const orderFiltered = computed(() => {
   if (filterAktif.value === 'semua') return orderList.value;
@@ -177,11 +140,6 @@ const chatPenjual = (o) => {
     `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
     '_blank',
   );
-};
-
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
 };
 
 onMounted(async () => {
@@ -207,99 +165,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #fdfaf4;
-  min-height: 100vh;
-  color: #1a2e0a;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(253, 250, 244, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #e8e0d0;
-  padding: 0 2rem;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2d5016;
-  text-decoration: none;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-.nav-links a {
-  color: #374151;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.nav-links a:hover,
-.nav-links a.active {
-  color: #2d5016;
-  font-weight: 600;
-}
-.btn-nav-outline {
-  background: none;
-  border: 1.5px solid #2d5016;
-  color: #2d5016 !important;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-.btn-nav-outline:hover {
-  background: #f0f7e8 !important;
-}
-.hamburger {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: #2d5016;
-}
-.mobile-menu {
-  background: #fff;
-  border-bottom: 1px solid #e8e0d0;
-  padding: 1rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.mobile-menu a,
-.mobile-menu button {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #374151;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
 
 .page-header {
   background: linear-gradient(135deg, #2d5016, #3a6b1e);

@@ -1,26 +1,5 @@
 <template>
-  <div class="page">
-    <nav class="navbar">
-      <RouterLink to="/" class="nav-brand">🛒 ItahBangkuang</RouterLink>
-      <div class="nav-links">
-        <RouterLink to="/produk">Semua Produk</RouterLink>
-        <RouterLink to="/riwayat" class="btn-nav-outline"
-          >Pesanan Saya</RouterLink
-        >
-        <button class="btn-nav-outline" @click="logout">Keluar</button>
-      </div>
-      <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-    </nav>
-    <div class="mobile-menu" v-if="menuOpen">
-      <RouterLink to="/produk" @click="menuOpen = false"
-        >Semua Produk</RouterLink
-      >
-      <RouterLink to="/riwayat" @click="menuOpen = false"
-        >Pesanan Saya</RouterLink
-      >
-      <button @click="logout">Keluar</button>
-    </div>
-
+  <LayoutPublic>
     <div class="page-header">
       <div class="container">
         <RouterLink :to="`/produk/${route.params.id}`" class="back-link"
@@ -231,17 +210,18 @@
         </div>
       </div>
     </div>
-  </div>
+  </LayoutPublic>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
+import LayoutPublic from '@/layouts/LayoutPublic.vue';
+import { formatRupiah } from '@/lib/utils';
 
 const route = useRoute();
 const router = useRouter();
-const menuOpen = ref(false);
 const loadingData = ref(true);
 const loading = ref(false);
 const errorMsg = ref('');
@@ -257,13 +237,6 @@ const form = ref({
   catatan: '',
   jumlah: 1,
 });
-
-const formatRupiah = (a) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(a);
 
 const kurangi = () => {
   if (form.value.jumlah > 1) form.value.jumlah--;
@@ -767,7 +740,7 @@ onMounted(async () => {
   overflow: hidden;
   justify-content: center;
   width: fit-content;
-  margin: auto;
+  /* margin: auto; */
 }
 .jumlah-control button {
   width: 38px;
