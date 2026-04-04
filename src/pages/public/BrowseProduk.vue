@@ -216,7 +216,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
+/* ========================================= */
+/* PAGE HEADER                               */
+/* ========================================= */
 .page-header {
   background: linear-gradient(135deg, #2d5016, #3a6b1e);
   padding: 3rem 0 2.5rem;
@@ -238,20 +240,29 @@ onMounted(async () => {
   font-size: 0.95rem;
 }
 
+/* ========================================= */
+/* FILTER BAR (REDESIGN - COMPACT & GLASS)   */
+/* ========================================= */
 .filter-bar {
-  background: #fff;
-  border-bottom: 1px solid #e8e0d0;
-  padding: 1rem 0;
+  /* Efek Glassmorphism agar tidak terasa tebal/mengganggu */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(232, 224, 208, 0.6);
+  padding: 0.85rem 0; /* Padding vertikal dipertipis */
   position: sticky;
-  top: 64px;
+  top: 64px; /* Sesuaikan dengan tinggi navbar kamu */
   z-index: 90;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
+
 .filter-inner {
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
 }
+
+/* Search Bar Dibuat Lebih Sleek */
 .search-wrap {
   position: relative;
   flex: 1;
@@ -259,25 +270,28 @@ onMounted(async () => {
 }
 .search-icon {
   position: absolute;
-  left: 0.75rem;
+  left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.9rem;
+  color: #6b7280;
 }
 .search-input {
   width: 100%;
-  padding: 0.6rem 2.5rem 0.6rem 2.25rem;
-  border: 1.5px solid #d1d5db;
+  padding: 0.55rem 2.5rem 0.55rem 2.4rem;
+  border: 1.5px solid rgba(209, 213, 219, 0.7);
   border-radius: 10px;
   font-size: 0.875rem;
   font-family: inherit;
-  background: #fdfaf4;
+  background: rgba(253, 250, 244, 0.8);
   color: #111827;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 .search-input:focus {
   outline: none;
   border-color: #2d5016;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
 }
 .search-clear {
   position: absolute;
@@ -289,18 +303,30 @@ onMounted(async () => {
   cursor: pointer;
   color: #9ca3af;
 }
+
+/* Tab Kategori (Horizontal Scrollable) */
 .kat-tabs {
   display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-wrap: nowrap; /* KUNCI UTAMA: Jangan biarkan turun ke baris baru */
+  overflow-x: auto;  /* Memungkinkan scroll ke samping */
+  scrollbar-width: none; /* Menyembunyikan scrollbar di Firefox */
+  -ms-overflow-style: none; /* Menyembunyikan scrollbar di IE/Edge */
+  padding-bottom: 2px;
 }
+/* Menyembunyikan scrollbar di Chrome/Safari */
+.kat-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .kat-tab {
-  padding: 0.4rem 0.8rem;
-  border: 1.5px solid #e8e0d0;
+  flex-shrink: 0; /* Mencegah tombol mengecil sendirinya */
+  padding: 0.45rem 1rem;
+  border: 1.5px solid transparent;
   border-radius: 999px;
-  background: #fff;
-  color: #6b7280;
-  font-size: 0.78rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
@@ -308,20 +334,20 @@ onMounted(async () => {
   white-space: nowrap;
 }
 .kat-tab:hover {
-  border-color: #a8c97f;
-  color: #2d5016;
-  background: #f7fbf0;
+  background: #e5e7eb;
 }
 .kat-tab.active {
-  border-color: #2d5016;
   background: #2d5016;
   color: #f5edd6;
+  box-shadow: 0 2px 8px rgba(45, 80, 22, 0.2);
 }
+
 .sort-select {
-  padding: 0.5rem 0.75rem;
-  border: 1.5px solid #d1d5db;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid rgba(209, 213, 219, 0.7);
   border-radius: 10px;
   font-size: 0.8rem;
+  font-weight: 500;
   font-family: inherit;
   background: #fff;
   color: #374151;
@@ -332,8 +358,12 @@ onMounted(async () => {
   border-color: #2d5016;
 }
 
+/* ========================================= */
+/* MAIN CONTENT & RESULT INFO                */
+/* ========================================= */
 .main-content {
   padding: 2rem 0 4rem;
+  background-color: #fdfaf4; /* Latar belakang lembut */
 }
 .result-info {
   font-size: 0.875rem;
@@ -344,11 +374,27 @@ onMounted(async () => {
   color: #1a2e0a;
 }
 
+/* ========================================= */
+/* PRODUCT GRID & CARDS (OPTIMIZED)          */
+/* ========================================= */
 .produk-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(2, 1fr); /* Mobile base */
+  gap: 1rem;
 }
+
+@media (min-width: 768px) {
+  .produk-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .produk-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .produk-skeleton {
   background: linear-gradient(90deg, #f3f4f6 25%, #e9eaeb 50%, #f3f4f6 75%);
   background-size: 200% 100%;
@@ -357,12 +403,8 @@ onMounted(async () => {
   animation: shimmer 1.4s ease-in-out infinite;
 }
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .produk-card {
@@ -372,126 +414,171 @@ onMounted(async () => {
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  display: block;
-  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
 }
 .produk-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
   border-color: #a8c97f;
 }
+
+/* Aspek Rasio Kotak 1:1 */
 .produk-foto-wrap {
   position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
 }
 .produk-foto {
   width: 100%;
-  height: 170px;
+  height: 100%;
   object-fit: cover;
   display: block;
   background: #f3f4f6;
+  transition: transform 0.5s ease;
 }
+.produk-card:hover .produk-foto {
+  transform: scale(1.08);
+}
+
 .produk-kat-badge {
   position: absolute;
   top: 0.6rem;
   left: 0.6rem;
   background: rgba(45, 80, 22, 0.88);
+  backdrop-filter: blur(4px);
   color: #f5edd6;
   padding: 0.2rem 0.55rem;
   border-radius: 6px;
-  font-size: 0.67rem;
+  font-size: 0.65rem;
   font-weight: 600;
+  z-index: 2;
 }
 .produk-habis-badge {
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
   background: rgba(220, 38, 38, 0.88);
+  backdrop-filter: blur(4px);
   color: #fff;
   padding: 0.2rem 0.55rem;
   border-radius: 6px;
-  font-size: 0.67rem;
+  font-size: 0.65rem;
   font-weight: 600;
+  z-index: 2;
 }
+
 .produk-info {
-  padding: 0.85rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Memastikan info meregang jika tinggi kartu berbeda */
 }
 .produk-toko {
   font-size: 0.71rem;
   color: #6b7280;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
 }
 .produk-nama {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #1a2e0a;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
   line-height: 1.4;
+  /* Kunci Ketinggian Judul */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  height: 2.8em;
 }
 .produk-alamat {
-  font-size: 0.69rem;
+  font-size: 0.7rem;
   color: #9ca3af;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.8rem;
+  /* Cegah alamat membongkar layout */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .produk-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: auto; /* Mendorong footer ke bawah */
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e8e0d0;
 }
 .produk-harga {
   font-weight: 700;
   color: #2d5016;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 .produk-stok {
-  font-size: 0.69rem;
+  font-size: 0.7rem;
   color: #6b7280;
+  background: #f3f4f6;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
 }
 .produk-stok.low {
-  color: #d97706;
+  color: #b45309;
+  background: #fef3c7;
   font-weight: 600;
 }
 
+/* ========================================= */
+/* EMPTY STATE                               */
+/* ========================================= */
 .empty-state {
   text-align: center;
-  padding: 5rem 2rem;
+  padding: 6rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px dashed #d1d5db;
 }
 .empty-icon {
-  font-size: 3.5rem;
+  font-size: 4rem;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
 }
 .empty-state h3 {
   font-family: 'Lora', serif;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: #1a2e0a;
 }
 .empty-state p {
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 .btn-reset {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   background: #2d5016;
   color: #f5edd6;
   border: none;
-  padding: 0.7rem 1.5rem;
+  padding: 0.8rem 1.75rem;
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 .btn-reset:hover {
   background: #3a6b1e;
+  transform: translateY(-2px);
 }
 
+/* ========================================= */
+/* RESPONSIVE BREAKPOINTS (SOLUSI FILTER)    */
+/* ========================================= */
 @media (max-width: 768px) {
   .nav-links {
     display: none;
@@ -499,18 +586,28 @@ onMounted(async () => {
   .hamburger {
     display: block;
   }
+  
+  /* GRID BARU UNTUK FILTER HP (Menghemat Ruang) */
   .filter-inner {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr auto; /* Kolom 1 lebar, kolom 2 seukuran select */
+    gap: 0.75rem;
+  }
+  .search-wrap {
+    grid-column: 1 / 2;
   }
   .sort-select {
-    width: 100%;
+    grid-column: 2 / 3;
+    padding: 0.55rem; /* Lebih ringkas */
   }
-  .produk-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .kat-tabs {
+    grid-column: 1 / -1; /* Tab Kategori memenuhi baris bawah */
+    margin-top: 0.25rem;
   }
 }
-@media (max-width: 400px) {
+
+@media (max-width: 480px) {
+  /* Di HP layar sangat kecil, jadikan 1 kolom agar gambar produk tidak terlalu kekecilan */
   .produk-grid {
     grid-template-columns: 1fr;
   }
