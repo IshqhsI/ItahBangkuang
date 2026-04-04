@@ -102,9 +102,9 @@ body {
 
 .btn-nav-solid {
   background: var(--brand);
-  color: #F5EDD6;
+  color: #F5EDD6 !important;
   border: none;
-  padding: 0.4rem 0.9rem;
+  padding: 0.5rem 0.9rem;
   border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
