@@ -767,11 +767,17 @@ onMounted(async () => {
 .kat-card:hover .kat-arrow {
   color: #2d5016;
 }
+
+/* ========================================= */
+/* BAGIAN PRODUK YANG SUDAH DI-REDESIGN     */
+/* ========================================= */
+
 .produk-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(1, 1fr); /* Default HP: 2 Kolom */
+  gap: 1rem;
 }
+
 .produk-skeleton {
   background: linear-gradient(90deg, #f3f4f6 25%, #e9eaeb 50%, #f3f4f6 75%);
   background-size: 200% 100%;
@@ -787,6 +793,7 @@ onMounted(async () => {
     background-position: -200% 0;
   }
 }
+
 .produk-card {
   background: #fff;
   border: 1px solid #e8e0d0;
@@ -795,23 +802,36 @@ onMounted(async () => {
   text-decoration: none;
   color: inherit;
   display: block;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 .produk-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
   border-color: #a8c97f;
 }
+
+/* Wrapper foto dibuat presisi 1:1 */
 .produk-foto-wrap {
   position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1; 
+  overflow: hidden;
 }
+
 .produk-foto {
   width: 100%;
-  height: 170px;
+  height: 100%;
   object-fit: cover;
   display: block;
   background: #f3f4f6;
+  transition: transform 0.5s ease;
 }
+
+/* Efek zoom saat kartu di-hover */
+.produk-card:hover .produk-foto {
+  transform: scale(1.08); 
+}
+
 .produk-kat-badge {
   position: absolute;
   top: 0.6rem;
@@ -822,40 +842,68 @@ onMounted(async () => {
   border-radius: 6px;
   font-size: 0.67rem;
   font-weight: 600;
+  z-index: 2; /* Memastikan badge di atas foto saat di-zoom */
 }
+
 .produk-info {
   padding: 0.85rem;
 }
+
 .produk-toko {
   font-size: 0.72rem;
   color: #6b7280;
   margin-bottom: 0.2rem;
 }
+
 .produk-nama {
   font-weight: 600;
   font-size: 0.9rem;
   color: #1a2e0a;
   margin-bottom: 0.6rem;
+  /* Line Clamping agar seragam tingginya */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  height: 2.8em; 
   line-height: 1.4;
 }
+
 .produk-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px; /* Adds a safe breathing room between price and location */
 }
+
 .produk-harga {
   font-weight: 700;
   color: #2d5016;
   font-size: 0.9rem;
+  /* Magic trick 1: Never let the price wrap to a new line */
+  white-space: nowrap; 
+  /* Magic trick 2: Never let the price shrink, it dictates its own width */
+  flex-shrink: 0; 
 }
+
 .produk-lokasi {
   font-size: 0.7rem;
   color: #9ca3af;
+  text-align: right;
+  
+  /* Magic trick 3: The Ellipsis combo for long addresses */
+  white-space: nowrap;       /* Keeps address on one line */
+  overflow: hidden;          /* Hides the excess text */
+  text-overflow: ellipsis;   /* Adds the "..." at the end */
+  
+  /* CRITICAL: This allows truncation to work inside a flexbox container */
+  min-width: 0; 
 }
+
+/* ========================================= */
+/* SELESAI BAGIAN PRODUK                     */
+/* ========================================= */
+
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -880,7 +928,7 @@ onMounted(async () => {
   background: #3a6b1e;
 }
 .cta-section {
-  padding: 5rem 0;
+  padding: 3rem 0;
 }
 .cta-wrap {
   background: linear-gradient(135deg, #1a2e0a 0%, #2d5016 100%);
@@ -927,7 +975,6 @@ onMounted(async () => {
   color: rgba(245, 237, 214, 0.7);
   font-size: 0.875rem;
   line-height: 1.75;
-  /* margin-bottom: 1.5rem; */
 }
 .cta-list {
   list-style: none;
@@ -1034,6 +1081,25 @@ onMounted(async () => {
   color: rgba(245, 237, 214, 0.25);
   font-size: 0.75rem;
 }
+
+/* ========================================= */
+/* MEDIA QUERIES (RESPONSIVITAS UTAMA)       */
+/* ========================================= */
+
+/* Desktop & Tablet Grid Produk */
+@media (min-width: 768px) {
+  .produk-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .produk-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .hero {
     min-height: auto;
@@ -1061,6 +1127,7 @@ onMounted(async () => {
     display: none;
   }
 }
+
 @media (max-width: 640px) {
   .hero-cta-grid {
     grid-template-columns: 1fr;
@@ -1068,11 +1135,15 @@ onMounted(async () => {
   .hero-title {
     font-size: 1.85rem;
   }
-  .produk-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .cta-wrap {
     padding: 2rem;
+  }
+}
+
+/* HP Layar Sangat Kecil */
+@media (max-width: 380px) {
+  .produk-grid {
+    grid-template-columns: 1fr; /* Jadi 1 baris penuh agar tidak terlalu sempit */
   }
 }
 </style>
