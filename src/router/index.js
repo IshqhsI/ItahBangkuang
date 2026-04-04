@@ -93,12 +93,6 @@ const routes = [
     component: () => import('@/pages/penjual/ProfilToko.vue'),
     meta: { requiresAuth: true },
   },
-  {
-    path: '/toko/profil/edit',
-    name: 'ProfilTokoEdit',
-    component: () => import('@/pages/penjual/EditProfil.vue'),
-    meta: { requiresAuth: true },
-  },
 
   // Admin
   {
