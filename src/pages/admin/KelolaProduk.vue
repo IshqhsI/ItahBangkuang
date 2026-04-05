@@ -29,10 +29,9 @@
             class="filter-select"
           >
             <option value="">Semua Kategori</option>
-            <option value="kue_basah">Kue Basah</option>
-            <option value="kue_kering">Kue Kering</option>
-            <option value="makanan">Makanan</option>
-            <option value="minuman">Minuman</option>
+            <option v-for="k in kategoriList" :key="k.slug" :value="k.slug">
+              {{ k.label }}
+            </option>
           </select>
           <select
             v-model="filterStatus"
@@ -146,9 +145,9 @@ import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
 import { formatRupiah } from '@/lib/utils';
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const router = useRouter();
-const menuOpen = ref(false);
 const loading = ref(true);
 const produkList = ref([]);
 const keyword = ref('');
@@ -157,15 +156,7 @@ const filterStatus = ref('');
 const prosesId = ref(null);
 let searchTimeout = null;
 
-const kategoriList = [
-  { slug: 'kue_basah', nama: 'Kue Basah' },
-  { slug: 'kue_kering', nama: 'Kue Kering' },
-  { slug: 'makanan', nama: 'Makanan' },
-  { slug: 'minuman', nama: 'Minuman' },
-];
-
-const labelKategori = (slug) =>
-  kategoriList.find((k) => k.slug === slug)?.nama ?? slug;
+const kategoriList = KATEGORI;
 
 const badgeProduk = (s) => ({
   'badge-aktif': s === 'AKTIF',
@@ -200,15 +191,13 @@ const clearSearch = () => {
 const toggleSembunyikan = async (p) => {
   prosesId.value = p.id;
   const statusBaru = p.status === 'DISEMBUNYIKAN' ? 'AKTIF' : 'DISEMBUNYIKAN';
-  const statusUpdate = await supabase.from('produk').update({ status: statusBaru }).eq('id', p.id);
+  const statusUpdate = await supabase
+    .from('produk')
+    .update({ status: statusBaru })
+    .eq('id', p.id);
   console.log(statusUpdate, statusBaru, p.id);
   p.status = statusBaru;
   prosesId.value = null;
-};
-
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
 };
 
 onMounted(async () => {
@@ -233,7 +222,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
 .page-header {
   background: linear-gradient(135deg, #1a2e0a, #2d5016);
   padding: 2.5rem 0;
