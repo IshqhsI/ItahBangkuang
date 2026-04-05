@@ -134,10 +134,9 @@
               <label>Kategori <span class="required">*</span></label>
               <select v-model="form.kategori" required :disabled="loading">
                 <option value="" disabled>Pilih kategori...</option>
-                <option value="kue_basah">🍰 Kue Basah</option>
-                <option value="kue_kering">🍪 Kue Kering</option>
-                <option value="makanan">🍱 Makanan</option>
-                <option value="minuman">🥤 Minuman</option>
+                <option v-for="k in KATEGORI" :key="k.slug" :value="k.slug">
+                  {{ k.icon }} {{ k.label }}
+                </option>
               </select>
             </div>
 
@@ -207,6 +206,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import { formatRupiah } from '@/lib/utils';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
+import { KATEGORI } from '@/lib/kategori';
 
 const route = useRoute();
 const router = useRouter();
