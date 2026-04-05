@@ -8,6 +8,7 @@ export const KATEGORI = [
   { slug: 'pakaian_jahitan', label: 'Pakaian & Jahitan', icon: '👗' },
   { slug: 'jasa_tukang', label: 'Jasa & Tukang', icon: '🔧' },
   { slug: 'mesin_elektronik', label: 'Mesin & Elektronik', icon: '💻' },
+  { slug: 'lainnya', label: 'Lainnya', icon: '📦' },
 ];
 
 // Ambil label dari slug — pakai di card produk, badge, dsb
