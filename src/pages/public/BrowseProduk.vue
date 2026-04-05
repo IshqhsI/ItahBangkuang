@@ -24,7 +24,7 @@
             ✕
           </button>
         </div>
-        <div class="kat-tabs">
+        <div class="kat-tabs">  
           <button
             v-for="k in kategoriList"
             :key="k.slug"
@@ -32,7 +32,7 @@
             :class="{ active: kategoriAktif === k.slug }"
             @click="setKategori(k.slug)"
           >
-            {{ k.icon }} {{ k.nama }}
+            {{ k.icon }} {{ k.label }}
           </button>
         </div>
         <select v-model="sortBy" @change="fetchProduk" class="sort-select">
@@ -82,9 +82,7 @@
                 class="produk-foto"
                 loading="lazy"
               />
-              <span class="produk-kat-badge">{{
-                labelKategori(p.kategori)
-              }}</span>
+              <span class="produk-kat-badge">{{ labelKategori(p.kategori) }}</span>
               <span v-if="p.stok === 0" class="produk-habis-badge">Habis</span>
             </div>
             <div class="produk-info">
@@ -130,6 +128,7 @@ import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { formatRupiah } from '@/lib/utils';
 import { useSeo } from '@/lib/useSeo'
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 useSeo({ title: 'Semua Produk', description: 'Browse produk lokal...' })
 
@@ -150,15 +149,9 @@ if (urlParams.get('kategori')) {
 }
 
 const kategoriList = [
-  { slug: 'semua', nama: 'Semua', icon: '🛒' },
-  { slug: 'kue_basah', nama: 'Kue Basah', icon: '🍰' },
-  { slug: 'kue_kering', nama: 'Kue Kering', icon: '🍪' },
-  { slug: 'makanan', nama: 'Makanan', icon: '🍱' },
-  { slug: 'minuman', nama: 'Minuman', icon: '🥤' },
+  { slug: 'semua', label: 'Semua', icon: '📦' },
+  ...KATEGORI
 ];
-
-const labelKategori = (slug) =>
-  kategoriList.find((k) => k.slug === slug)?.nama ?? slug;
 
 const fetchProduk = async () => {
   loadingProduk.value = true;
