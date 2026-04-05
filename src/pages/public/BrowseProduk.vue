@@ -129,6 +129,9 @@ import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { formatRupiah } from '@/lib/utils';
+import { useSeo } from '@/lib/useSeo'
+
+useSeo({ title: 'Semua Produk', description: 'Browse produk lokal...' })
 
 const router = useRouter();
 const user = ref(null);
