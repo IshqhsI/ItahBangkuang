@@ -138,6 +138,7 @@ import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 import { formatRupiah } from '@/lib/utils';
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const router = useRouter();
 const loading = ref(true);
@@ -156,15 +157,7 @@ const filterList = [
   { val: 'DISEMBUNYIKAN', label: 'Disembunyikan' },
 ];
 
-const kategoriList = [
-  { slug: 'kue_basah', nama: 'Kue Basah' },
-  { slug: 'kue_kering', nama: 'Kue Kering' },
-  { slug: 'makanan', nama: 'Makanan' },
-  { slug: 'minuman', nama: 'Minuman' },
-];
-
-const labelKategori = (slug) =>
-  kategoriList.find((k) => k.slug === slug)?.nama ?? slug;
+const kategoriList = KATEGORI;
 
 const produkFiltered = computed(() => {
   if (filterAktif.value === 'semua') return produkList.value;
@@ -331,7 +324,7 @@ onMounted(async () => {
 
 .produk-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.25rem;
 }
 .skeleton {
@@ -365,7 +358,8 @@ onMounted(async () => {
 }
 .produk-foto {
   width: 100%;
-  height: 160px;
+  height: 100%;
+  max-height: 320px;
   object-fit: cover;
   display: block;
   background: #f3f4f6;
@@ -604,7 +598,7 @@ onMounted(async () => {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (max-width: 400px) {
+@media (max-width: 576px) {
   .produk-grid {
     grid-template-columns: 1fr;
   }
