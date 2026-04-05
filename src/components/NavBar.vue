@@ -156,7 +156,7 @@ const menuOpen = ref(false);
 
 // 1. Deteksi Area Secara Otomatis
 const isAdminArea = computed(() => route.path.startsWith('/admin'));
-const isTokoArea = computed(() => route.path.startsWith('/toko'));
+const isTokoArea = computed(() => route.path.startsWith('/toko')) && authStore.role === 'penjual';
 
 const menuTitle = computed(() => {
   if (isAdminArea.value) return 'Menu Admin';
