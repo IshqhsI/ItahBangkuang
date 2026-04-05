@@ -23,6 +23,7 @@ const routes = [
     name: 'ProfilTokoPublic',
     component: () => import('@/pages/public/ProfilToko.vue'),
   },
+  { path: '/tutorial', component: () => import('@/pages/public/Tutorial.vue') },
 
   // Auth
   {

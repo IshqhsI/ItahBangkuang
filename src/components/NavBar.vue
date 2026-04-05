@@ -33,6 +33,7 @@
         <!-- 3. AREA PUBLIK (PEMBELI) -->
         <template v-else>
           <RouterLink to="/produk">Semua Produk</RouterLink>
+          <RouterLink to="/tutorial">Tutorial</RouterLink>
           <template v-if="!authStore.user">
             <RouterLink to="/login" class="btn-nav-outline">Masuk</RouterLink>
             <RouterLink to="/register" class="btn-nav-solid">Daftar</RouterLink>
@@ -111,6 +112,7 @@
           <!-- Area Publik Mobile -->
           <template v-else>
             <RouterLink to="/produk">Semua Produk</RouterLink>
+            <RouterLink to="/tutorial">Tutorial</RouterLink>
             <template v-if="!authStore.user">
               <RouterLink to="/login">Masuk</RouterLink>
               <RouterLink to="/register">Daftar Akun</RouterLink>
