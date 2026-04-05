@@ -171,7 +171,7 @@
             class="kat-card"
           >
             <span class="kat-icon">{{ kat.icon }}</span>
-            <span class="kat-name">{{ kat.nama }}</span>
+            <span class="kat-name">{{ kat.label }}</span>
             <span class="kat-arrow">→</span>
           </RouterLink>
         </div>
@@ -293,21 +293,13 @@ import { supabase } from '@/lib/supabase';
 import { formatRupiah } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const authStore = useAuthStore();
 const loadingProduk = ref(true);
 const produkTerbaru = ref([]);
 const stats = ref({ produk: 0, toko: 0, alamat: 0 });
-
-const kategori = [
-  { slug: 'kue_basah', nama: 'Kue Basah', icon: '🍰' },
-  { slug: 'kue_kering', nama: 'Kue Kering', icon: '🍪' },
-  { slug: 'makanan', nama: 'Makanan', icon: '🍱' },
-  { slug: 'minuman', nama: 'Minuman', icon: '🥤' },
-];
-
-const labelKategori = (slug) =>
-  kategori.find((k) => k.slug === slug)?.nama ?? slug;
+const kategori = KATEGORI;
 
 const bukaTokoDest = computed(() => {
   if (authStore.role === 'penjual') return '/toko/dashboard';
