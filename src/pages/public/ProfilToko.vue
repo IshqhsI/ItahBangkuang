@@ -114,25 +114,17 @@ import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { formatRupiah } from '@/lib/utils';
 import { useStoreSeo } from '@/lib/useSeo';
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const route = useRoute();
 const router = useRouter();
 const user = ref(null);
-const menuOpen = ref(false);
 const loading = ref(true);
 const toko = ref(null);
 const produkList = ref([]);
 const kategoriAktif = ref('semua');
 
-const semuaKategori = [
-  { slug: 'kue_basah', nama: 'Kue Basah', icon: '🍰' },
-  { slug: 'kue_kering', nama: 'Kue Kering', icon: '🍪' },
-  { slug: 'makanan', nama: 'Makanan', icon: '🍱' },
-  { slug: 'minuman', nama: 'Minuman', icon: '🥤' },
-];
-
-const labelKategori = (slug) =>
-  semuaKategori.find((k) => k.slug === slug)?.nama ?? slug;
+const semuaKategori = KATEGORI;
 
 // Hanya tampilkan tab kategori yang ada produknya
 const kategoriTersedia = computed(() => {
