@@ -14,9 +14,9 @@
 
 const BASE_TITLE = 'ItahBangkuang';
 const BASE_URL = 'https://itah-bangkuang.vercel.app';
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.webp`;
 const DEFAULT_DESC =
-  'Belanja mudah, berjualan juga mudah. Produk rumahan langsung dari tetangga kita di Kelurahan Bangkuang.';
+  'Pusat jual beli produk unggulan warga Kelurahan Bangkuang. Mari dukung UMKM lokal dengan belanja mudah, aman, dan terpercaya di ItahBangkuang.';;
 
 function setMeta(name, content, attr = 'name') {
   if (!content) return;
