@@ -1,6 +1,6 @@
 <template>
   <LayoutPublic>
-      <!-- LOADING -->
+    <!-- LOADING -->
     <div v-if="loading" class="loading-wrap">
       <div class="spinner"></div>
       <p>Memuat toko...</p>
@@ -113,6 +113,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { formatRupiah } from '@/lib/utils';
+import { useStoreSeo } from '@/lib/useSeo';
 
 const route = useRoute();
 const router = useRouter();
@@ -176,6 +177,14 @@ onMounted(async () => {
 
   toko.value = t;
 
+  useStoreSeo({
+    namaTokoNama: toko.value.nama_toko,
+    deskripsi: toko.value.deskripsi,
+    foto: toko.value.foto_toko,
+    alamat: toko.value.alamat,
+    tokoId: toko.value.id,
+  });
+
   const { data: produk } = await supabase
     .from('produk')
     .select('*')
@@ -189,7 +198,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
 .loading-wrap {
   display: flex;
   flex-direction: column;
