@@ -168,6 +168,7 @@ import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { formatRupiah } from '@/lib/utils';
 import { useProductSeo } from '@/lib/useSeo';
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const route = useRoute();
 const router = useRouter();
@@ -179,15 +180,7 @@ const toko = ref(null);
 const produkLain = ref([]);
 const jumlah = ref(1);
 
-const kategoriList = [
-  { slug: 'kue_basah', nama: 'Kue Basah' },
-  { slug: 'kue_kering', nama: 'Kue Kering' },
-  { slug: 'makanan', nama: 'Makanan' },
-  { slug: 'minuman', nama: 'Minuman' },
-];
-
-const labelKategori = (slug) =>
-  kategoriList.find((k) => k.slug === slug)?.nama ?? slug;
+const kategoriList = KATEGORI;
 
 const kurangiJumlah = () => {
   if (jumlah.value > 1) jumlah.value--;
