@@ -1,13 +1,91 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>itahbangkuang</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary Meta -->
+  <title>itah-bangkuang — Marketplace Lokal Kelurahan Bangkuang</title>
+  <meta name="description"
+    content="Bapapili mangat, Bajualan mangat kia. Belanja dan berjualan produk lokal — kue, makanan, dan jajanan rumahan buatan warga Kelurahan Bangkuang." />
+  <meta name="keywords"
+    content="marketplace bangkuang, jual beli lokal, kue bangkuang, makanan lokal kalimantan, umkm bangkuang, jajanan rumahan" />
+  <meta name="author" content="itah-bangkuang" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://itah-bangkuang.vercel.app/" />
+
+  <!-- Open Graph (Facebook, WA link preview) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://itah-bangkuang.vercel.app/" />
+  <meta property="og:title" content="itah-bangkuang — Marketplace Lokal Kelurahan Bangkuang" />
+  <meta property="og:description"
+    content="Belanja mudah, berjualan juga mudah. Produk rumahan langsung dari tetangga kita di Kelurahan Bangkuang." />
+  <meta property="og:image" content="https://itah-bangkuang.vercel.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="id_ID" />
+  <meta property="og:site_name" content="itah-bangkuang" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="itah-bangkuang — Marketplace Lokal Kelurahan Bangkuang" />
+  <meta name="twitter:description"
+    content="Belanja mudah, berjualan juga mudah. Produk rumahan langsung dari tetangga kita." />
+  <meta name="twitter:image" content="https://itah-bangkuang.vercel.app/og-image.jpg" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Theme color (mobile browser bar) -->
+  <meta name="theme-color" content="#2D5016" />
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- JSON-LD: Organization -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "itah-bangkuang",
+      "description": "Marketplace lokal produk UMKM Kelurahan Bangkuang, Kalimantan Tengah",
+      "url": "https://itah-bangkuang.vercel.app",
+      "logo": "https://itah-bangkuang.vercel.app/favicon.svg",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Kelurahan Bangkuang",
+        "addressRegion": "Kalimantan Tengah",
+        "addressCountry": "ID"
+      }
+    }
+  </script>
+
+  <!-- JSON-LD: WebSite (enables Google Sitelinks Search) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "itah-bangkuang",
+      "url": "https://itah-bangkuang.vercel.app",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://itah-bangkuang.vercel.app/produk?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
 </html>

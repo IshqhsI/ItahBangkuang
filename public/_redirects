@@ -1,0 +1,2 @@
+# Redirect semua route ke index.html (wajib untuk Vue Router history mode)
+/*    /index.html   200

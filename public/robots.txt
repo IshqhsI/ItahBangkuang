@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Jangan index halaman private
+Disallow: /toko/dashboard
+Disallow: /toko/produk
+Disallow: /toko/order
+Disallow: /toko/profil
+Disallow: /admin/
+Disallow: /riwayat
+Disallow: /pesan/
+Disallow: /buka-toko
+Disallow: /login
+Disallow: /register
+
+# Sitemap
+Sitemap: https://itah-bangkuang.vercel.app/sitemap.xml
