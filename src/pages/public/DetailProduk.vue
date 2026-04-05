@@ -1,6 +1,6 @@
 <template>
   <LayoutPublic>
-        <!-- LOADING -->
+    <!-- LOADING -->
     <div v-if="loading" class="loading-wrap">
       <div class="loading-spinner"></div>
       <p>Memuat produk...</p>
@@ -158,7 +158,6 @@
         </div>
       </div>
     </div>
-
   </LayoutPublic>
 </template>
 
@@ -168,6 +167,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { formatRupiah } from '@/lib/utils';
+import { useProductSeo } from '@/lib/useSeo';
 
 const route = useRoute();
 const router = useRouter();
@@ -259,6 +259,15 @@ onMounted(async () => {
     role.value = profile?.role;
   }
   fetchData();
+  
+  useProductSeo({
+    nama: produk.value.nama_produk,
+    deskripsi: produk.value.deskripsi,
+    harga: produk.value.harga,
+    foto: produk.value.foto_url,
+    tokoNama: produk.value.toko.nama_toko,
+    produkId: produk.value.id,
+  });
 });
 
 // Reload kalau pindah ke produk lain
@@ -266,7 +275,6 @@ watch(() => route.params.id, fetchData);
 </script>
 
 <style scoped>
-
 /* LOADING */
 .loading-wrap {
   display: flex;
