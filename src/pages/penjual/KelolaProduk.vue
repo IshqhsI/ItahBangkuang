@@ -355,11 +355,12 @@ onMounted(async () => {
 }
 .produk-foto-wrap {
   position: relative;
+  aspect-ratio: 4 / 3;
 }
 .produk-foto {
   width: 100%;
   height: 100%;
-  max-height: 320px;
+  /* max-height: 200px; */
   object-fit: cover;
   display: block;
   background: #f3f4f6;
