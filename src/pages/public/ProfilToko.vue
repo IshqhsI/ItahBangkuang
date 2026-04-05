@@ -61,7 +61,7 @@
               :class="{ active: kategoriAktif === k.slug }"
               @click="kategoriAktif = k.slug"
             >
-              {{ k.icon }} {{ k.nama }}
+              {{ k.icon }} {{ k.label }}
             </button>
           </div>
         </div>
@@ -129,7 +129,7 @@ const semuaKategori = KATEGORI;
 // Hanya tampilkan tab kategori yang ada produknya
 const kategoriTersedia = computed(() => {
   const slugs = [...new Set(produkList.value.map((p) => p.kategori))];
-  const tabs = [{ slug: 'semua', nama: 'Semua', icon: '🛒' }];
+  const tabs = [{ slug: 'semua', label: 'Semua', icon: '🛒' }];
   semuaKategori.forEach((k) => {
     if (slugs.includes(k.slug)) tabs.push(k);
   });
@@ -378,7 +378,7 @@ onMounted(async () => {
 
 .produk-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.25rem;
 }
 .produk-card {
@@ -398,10 +398,11 @@ onMounted(async () => {
 }
 .produk-foto-wrap {
   position: relative;
+  aspect-ratio: 4 / 3;
 }
 .produk-foto {
   width: 100%;
-  height: 170px;
+  height: 100%;
   object-fit: cover;
   display: block;
   background: #f3f4f6;
@@ -490,6 +491,12 @@ onMounted(async () => {
   }
   .produk-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .produk-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
