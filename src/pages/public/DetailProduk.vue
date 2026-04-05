@@ -206,15 +206,20 @@ const chatWA = () => {
   );
 };
 
+const getProduk = async (id) => {
+  const { data: p } = await supabase
+    .from('produk')
+    .select('*, toko(*)')
+    .eq('id', id)
+    .single();
+  return p;
+};
+
 const fetchData = async () => {
   loading.value = true;
   jumlah.value = 1;
 
-  const { data: p } = await supabase
-    .from('produk')
-    .select('*, toko(*)')
-    .eq('id', route.params.id)
-    .single();
+  const p = await getProduk(route.params.id);
 
   if (!p || p.status !== 'AKTIF' || p.toko?.status !== 'AKTIF') {
     produk.value = null;
@@ -253,6 +258,8 @@ onMounted(async () => {
   }
   fetchData();
   
+  produk.value = await getProduk(route.params.id);
+
   useProductSeo({
     nama: produk.value.nama_produk,
     deskripsi: produk.value.deskripsi,
@@ -261,6 +268,7 @@ onMounted(async () => {
     tokoNama: produk.value.toko.nama_toko,
     produkId: produk.value.id,
   });
+
 });
 
 // Reload kalau pindah ke produk lain
