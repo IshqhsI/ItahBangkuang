@@ -150,11 +150,13 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useToastStore } from '@/stores/toast';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const menuOpen = ref(false);
+const toast = useToastStore();
 
 // 1. Deteksi Area Secara Otomatis
 const isAdminArea = computed(() => route.path.startsWith('/admin'));
@@ -198,6 +200,7 @@ onUnmounted(() => {
 const handleLogout = () => {
   menuOpen.value = false;
   authStore.logout(router);
+  toast.success('Logout berhasil. Sampai jumpa lagi! 👋');
 };
 </script>
 
