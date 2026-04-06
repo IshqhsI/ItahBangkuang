@@ -64,6 +64,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
+import { useToastStore } from '@/stores/toast'
 
 const router = useRouter()
 
@@ -71,6 +72,7 @@ const form = ref({ email: '', password: '' })
 const loading = ref(false)
 const showPass = ref(false)
 const errorMsg = ref('')
+const toast = useToastStore()
 
 const handleLogin = async () => {
   loading.value = true
@@ -84,6 +86,7 @@ const handleLogin = async () => {
   if (error) {
     errorMsg.value = 'Email atau password salah. Coba lagi.'
     loading.value = false
+    toast.error('Email atau password salah. Coba lagi.')
     return
   }
 
@@ -94,9 +97,20 @@ const handleLogin = async () => {
     .eq('id', data.user.id)
     .single()
 
-  if (profile?.role === 'penjual') router.push('/toko/dashboard')
-  else if (profile?.role === 'admin') router.push('/admin/dashboard')
-  else router.push('/')
+  // (profile && profile.role) ? toast.success('Login berhasil!, Selamat datang! 👋') : toast.info('Login berhasil, tapi gagal mengambil profil. Coba refresh halaman.');
+  
+  if (profile?.role === 'penjual') {
+    toast.success('Login berhasil!, Selamat datang! 👋')
+    router.push('/toko/dashboard')
+  }
+  else if (profile?.role === 'admin') {
+    toast.success('Login berhasil!, Selamat datang, Admin! 👋')
+    router.push('/admin/dashboard')
+  }
+  else {
+    toast.success('Login berhasil!, Selamat datang! 👋')
+    router.push('/')
+  }
 }
 </script>
 
