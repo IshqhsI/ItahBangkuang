@@ -199,6 +199,7 @@
 import { ref } from 'vue';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'vue-router';
+import { useToastStore } from '@/stores/toast';
 
 const router = useRouter();
 
@@ -206,6 +207,7 @@ const step = ref(1);
 const loading = ref(false);
 const showPass = ref(false);
 const errorMsg = ref('');
+const toast = useToastStore();  
 
 const form = ref({
   nama: '',
@@ -251,12 +253,15 @@ const handleSubmit = async () => {
   })
 
   if (error) {
-    errorMsg.value =
-      error.message === 'User already registered'
-        ? 'Email ini sudah terdaftar.'
-        : 'Terjadi kesalahan. Coba lagi.'
-    loading.value = false
-    return
+    if (error.message === 'User already registered') {
+      errorMsg.value = 'Email ini sudah terdaftar.';
+      toast.error('Email ini sudah terdaftar. Gunakan email lain.'); 
+    } else {
+      errorMsg.value = 'Terjadi kesalahan. Coba lagi.';
+      toast.error('Pendaftaran gagal. Coba lagi beberapa saat.'); 
+    }
+    loading.value = false;
+    return;
   }
 
   // Update nama di profiles
@@ -276,9 +281,13 @@ const handleSubmit = async () => {
       status: 'PENDING',
     })
 
-    router.push('/toko/dashboard')   // ← langsung ke dashboard penjual
+    toast.success('Pendaftaran berhasil! Tokomu sedang diverifikasi admin.'); 
+    toast.info('Sambil menunggu, lengkapi profil tokomu ya.');
+
+    router.push('/toko/dashboard')   
   } else {
-    router.push('/')                 // ← langsung ke beranda
+    toast.success('Selamat datang! Akun kamu berhasil dibuat 🎉');
+    router.push('/')                
   }
 
   loading.value = false
