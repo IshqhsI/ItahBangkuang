@@ -17,7 +17,7 @@ export default function middleware(req) {
 
   if (isBot && productId) {
     // 3. Arahkan Bot ke Supabase Edge Function
-    const supabaseUrl = `https://PROJECT_ID.supabase.co/functions/v1/get-meta?id=${productId}`;
+    const supabaseUrl = `https://nkrlzxefccailaidxamj.supabase.co/functions/v1/get-meta?id=${productId}`;
 
     // Gunakan rewrite dengan me-return fetch
     return fetch(supabaseUrl);
