@@ -14,7 +14,7 @@
     <div class="container main-content">
       <!-- Alert error -->
       <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
-      
+
       <!-- Loading saat edit -->
       <div v-if="loadingData" class="loading-wrap">
         <div class="spinner"></div>
@@ -22,7 +22,6 @@
       </div>
 
       <form v-else @submit.prevent="handleSubmit" class="form-grid">
-
         <!-- KOLOM KIRI -->
         <div class="form-left">
           <!-- Upload Foto -->
@@ -73,39 +72,86 @@
             </button>
           </div>
 
-          <!-- Info Harga & Stok -->
           <div class="form-section">
-            <h2 class="section-title">Harga & Stok</h2>
-            <div class="field-row">
+            <div class="flex-between mb-4">
+              <h2 class="section-title !mb-0">Harga & Stok</h2>
+              <button
+                type="button"
+                @click="toggleVarian"
+                class="btn-tambah-varian"
+              >
+                {{
+                  form.varian.length > 0
+                    ? '❌ Hapus Semua Varian'
+                    : '+ Pakai Varian'
+                }}
+              </button>
+            </div>
+
+            <div v-if="form.varian.length === 0" class="field-row">
               <div class="field">
                 <label>Harga (Rp) <span class="required">*</span></label>
-                <div class="input-prefix-wrap">
-                  <span class="prefix">Rp</span>
-                  <input
-                    v-model.number="form.harga"
-                    type="number"
-                    min="100"
-                    placeholder="15000"
-                    required
-                    :disabled="loading"
-                  />
-                </div>
-                <span class="field-hint">{{
-                  form.harga ? formatRupiah(form.harga) : ''
-                }}</span>
+                <input
+                  v-model.number="form.harga"
+                  type="number"
+                  placeholder="15000"
+                  required
+                />
               </div>
               <div class="field">
                 <label>Stok <span class="required">*</span></label>
                 <input
                   v-model.number="form.stok"
                   type="number"
-                  min="0"
                   placeholder="10"
                   required
-                  :disabled="loading"
                 />
-                <span class="field-hint">Isi 0 jika sedang habis</span>
               </div>
+            </div>
+
+            <div v-else class="varian-outer-wrap">
+              <p class="section-sub !mb-4">
+                Tentukan harga dan stok yang berbeda untuk setiap pilihan
+                produk.
+              </p>
+
+              <div
+                v-for="(v, index) in form.varian"
+                :key="index"
+                class="varian-card"
+              >
+                <button
+                  @click="hapusVarian(index)"
+                  type="button"
+                  class="btn-hapus-varian"
+                >
+                  ×
+                </button>
+
+                <div class="field">
+                  <label>Nama Varian (Misal: Keju / 100gr / L)</label>
+                  <input v-model="v.nama" type="text" required />
+                </div>
+
+                <div class="field-row mt-2">
+                  <div class="field">
+                    <label>Harga (Rp)</label>
+                    <input v-model.number="v.harga" type="number" required />
+                  </div>
+                  <div class="field">
+                    <label>Stok</label>
+                    <input v-model.number="v.stok" type="number" required />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                @click="tambahBarisVarian"
+                class="btn-tambah-baris mt-2"
+              >
+                + Tambah Pilihan Lain
+              </button>
             </div>
           </div>
         </div>
@@ -232,7 +278,37 @@ const form = ref({
   harga: '',
   stok: '',
   status: 'AKTIF',
+  varian: [], 
 });
+
+const toggleVarian = () => {
+  if (form.value.varian.length === 0) {
+    form.value.varian.push({
+      nama: '', 
+      harga: form.value.harga || 0,
+      stok: form.value.stok || 0
+    });
+  } else {
+    if (confirm('Hapus semua varian dan kembali ke produk tunggal?')) {
+      form.value.varian = [];
+    }
+  }
+};
+
+const tambahBarisVarian = () => {
+  form.value.varian.push({
+    nama: '',
+    harga: form.value.harga || 0,
+    stok: 1
+  });
+};
+
+const hapusVarian = (index) => {
+  form.value.varian.splice(index, 1);
+  if (form.value.varian.length === 0) {
+    form.value.varian = [];
+  }
+};
 
 const triggerUpload = () => fileInput.value?.click();
 
@@ -326,6 +402,7 @@ const handleSubmit = async () => {
     harga: form.value.harga,
     stok: form.value.stok,
     foto_url: fotoUrl,
+    varian: form.value.varian,
     ...(isEdit.value
       ? { status: form.value.status }
       : { toko_id: tokoId.value }),
@@ -376,7 +453,7 @@ onMounted(async () => {
     router.push('/toko/dashboard');
     return;
   }
-  
+
   statusToko.value = toko.status;
   tokoId.value = toko.id;
 
@@ -401,6 +478,7 @@ onMounted(async () => {
       harga: p.harga,
       stok: p.stok,
       status: p.status,
+      varian: p.varian || [],
     };
     previewUrl.value = p.foto_url;
     loadingData.value = false;
@@ -735,6 +813,99 @@ textarea {
 .btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* --- STYLE KHUSUS VARIAN --- */
+.varian-outer-wrap {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0eee6;
+}
+
+.varian-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.varian-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a2e0a;
+}
+
+.btn-tambah-varian {
+  background: #f7fbf0;
+  color: #2d5016;
+  border: 1px solid #a8c97f;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.btn-tambah-varian:hover {
+  background: #2d5016;
+  color: #f5edd6;
+}
+
+.varian-card {
+  background: #faf9f6;
+  border: 1px solid #e8e0d0;
+  padding: 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.btn-hapus-varian {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 22px;
+  height: 22px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-hapus-varian:hover {
+  background: #fecaca;
+}
+
+.btn-tambah-baris {
+  width: 100%;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1.5px dashed #d1d5db;
+  color: #4b5563;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-tambah-baris:hover {
+  background: #f9fafb;
+  border-color: #2d5016;
+  color: #2d5016;
+}
+
+/* Utility tambahan */
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mb-4 {
+  margin-bottom: 1rem !important;
 }
 
 @media (max-width: 768px) {
