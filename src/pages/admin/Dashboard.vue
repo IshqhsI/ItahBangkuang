@@ -1,6 +1,6 @@
 <template>
- <LayoutAdmin>
-  <!-- HEADER -->
+  <LayoutAdmin>
+    <!-- HEADER -->
     <div class="dashboard-header">
       <div class="container">
         <p class="header-greeting">Panel Admin 👑</p>
@@ -121,6 +121,55 @@
           </div>
         </div>
       </div>
+
+      <!-- FEEDBACK SECTION -->
+      <div class="dash-section feedback-section">
+        <div class="section-head">
+          <h2 class="section-title">
+            Feedback Pengguna
+            <span v-if="feedbackBaru.length" class="feedback-badge">{{
+              feedbackBaru.length
+            }}</span>
+          </h2>
+          <button
+            v-if="feedbackBaru.length"
+            class="btn-tandai-semua"
+            @click="tandaiSemuaDibaca"
+          >
+            Tandai Semua Dibaca
+          </button>
+        </div>
+
+        <div v-if="loadingFeedback" class="loading-mini">
+          <div class="spinner-sm"></div>
+        </div>
+
+        <div v-else-if="feedbackBaru.length" class="feedback-list">
+          <div v-for="f in feedbackBaru" :key="f.id" class="feedback-item">
+            <div class="feedback-left">
+              <span class="feedback-kat" :class="`kat-${f.kategori}`">
+                {{ ikonKategori(f.kategori) }} {{ labelKategori(f.kategori) }}
+              </span>
+              <p class="feedback-isi">{{ f.isi }}</p>
+              <p class="feedback-meta">
+                {{ f.profiles?.nama_lengkap ?? 'Pengguna' }} •
+                {{ formatTanggal(f.created_at) }}
+              </p>
+            </div>
+            <button
+              class="btn-dibaca"
+              @click="tandaiDibaca(f.id)"
+              :disabled="prosesFeedbackId === f.id"
+            >
+              {{ prosesFeedbackId === f.id ? '...' : '✓ Dibaca' }}
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="empty-mini">
+          <p>✅ Tidak ada feedback baru</p>
+        </div>
+      </div>
     </div>
 
     <!-- MODAL TOLAK -->
@@ -156,16 +205,15 @@
         </div>
       </div>
     </div>
- </LayoutAdmin>
+  </LayoutAdmin>
 </template>
 
 <script setup>
-
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
-import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils'
+import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
 
 const router = useRouter();
 const menuOpen = ref(false);
@@ -184,12 +232,33 @@ const stats = ref({
   totalOrder: 0,
 });
 
-const badgeClass = (status) => ({
-  'badge-menunggu': status === 'MENUNGGU',
-  'badge-konfirmasi': status === 'DIKONFIRMASI',
-  'badge-selesai': status === 'SELESAI',
-  'badge-batal': status === 'DIBATALKAN',
-});
+const feedbackBaru = ref([]);
+const loadingFeedback = ref(true);
+const prosesFeedbackId = ref(null);
+
+const ikonKategori = (kat) =>
+  ({ saran: '💡', keluhan: '⚠️', fitur: '🛠️' })[kat] ?? '📝';
+const labelKategori = (kat) =>
+  ({
+    saran: 'Saran & Ide',
+    keluhan: 'Keluhan & Laporan',
+    fitur: 'Request Fitur',
+  })[kat] ?? kat;
+
+const tandaiDibaca = async (id) => {
+  prosesFeedbackId.value = id;
+  await supabase.from('feedback').update({ status: 'DIBACA' }).eq('id', id);
+  feedbackBaru.value = feedbackBaru.value.filter((f) => f.id !== id);
+  prosesFeedbackId.value = null;
+};
+
+const tandaiSemuaDibaca = async () => {
+  const ids = feedbackBaru.value.map((f) => f.id);
+  await supabase.from('feedback').update({ status: 'DIBACA' }).in('id', ids);
+  feedbackBaru.value = [];
+};
+
+const badgeClass = badgeOrderClass;
 
 const accToko = async (id) => {
   prosesId.value = id;
@@ -221,11 +290,6 @@ const konfirmasiTolak = async () => {
   prosesId.value = null;
 };
 
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
-};
-
 onMounted(async () => {
   const {
     data: { session },
@@ -253,7 +317,8 @@ onMounted(async () => {
       .select('*')
       .eq('status', 'PENDING')
       .order('created_at', { ascending: true })
-      .limit(10).throwOnError(),
+      .limit(10)
+      .throwOnError(),
     supabase
       .from('orders')
       .select('*, produk(nama_produk), toko(nama_toko)')
@@ -283,6 +348,16 @@ onMounted(async () => {
   loadingToko.value = false;
   loadingOrder.value = false;
 
+  // Fetch feedback baru
+  const { data: feedbackData } = await supabase
+    .from('feedback')
+    .select('*, profiles(nama_lengkap)')
+    // .eq('status', 'BARU')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  feedbackBaru.value = feedbackData ?? [];
+  loadingFeedback.value = false;
+
   const [a, b, c, d] = statsRes;
   stats.value = {
     tokoAktif: a.count ?? 0,
@@ -294,7 +369,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
 .dashboard-header {
   background: linear-gradient(135deg, #1a2e0a, #2d5016);
   padding: 2.5rem 0;
@@ -676,5 +750,118 @@ textarea:focus {
   .toko-actions {
     flex-direction: row;
   }
+}
+
+.feedback-section {
+  margin-top: 1.5rem;
+}
+
+.feedback-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 99px;
+  padding: 0 6px;
+  margin-left: 0.5rem;
+}
+
+.btn-tandai-semua {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-tandai-semua:hover {
+  border-color: #2d5016;
+  color: #2d5016;
+}
+
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.feedback-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #fdfaf4;
+  border-radius: 10px;
+  border: 1px solid #f0ede6;
+}
+
+.feedback-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.feedback-kat {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  width: fit-content;
+}
+.kat-saran {
+  background: #fef9c3;
+  color: #854d0e;
+}
+.kat-keluhan {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.kat-fitur {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.feedback-isi {
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.feedback-meta {
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+.btn-dibaca {
+  background: #f0f7e8;
+  color: #2d5016;
+  border: 1.5px solid #a8c97f;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.btn-dibaca:hover {
+  background: #e0f0cc;
+}
+.btn-dibaca:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
