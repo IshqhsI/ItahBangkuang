@@ -185,7 +185,7 @@ const chatWA = () => {
 
 // Share ke WhatsApp (bukan ke penjual, tapi share link produk)
 const shareWA = () => {
-  const url = "https://www.itahbangkuang.my.id/produk/511278bf-a6fb-4e90-8e45-7424e58cfe44";
+  const url = window.location.href
   
   // Ambil format Rupiah asli, lalu ganti semua digit angka menjadi '?'
   const hargaSensor = formatRupiah(produk.value.harga).replace(/\d/g, '?')
