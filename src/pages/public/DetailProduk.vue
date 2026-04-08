@@ -185,8 +185,13 @@ const chatWA = () => {
 
 // Share ke WhatsApp (bukan ke penjual, tapi share link produk)
 const shareWA = () => {
-  const url = window.location.href
-  const teks = `Hei, lihat produk ini 👇\n*${produk.value.nama_produk}*\n${formatRupiah(produk.value.harga)}\n\n${url}`
+  const url = "https://www.itahbangkuang.my.id/produk/511278bf-a6fb-4e90-8e45-7424e58cfe44";
+  
+  // Ambil format Rupiah asli, lalu ganti semua digit angka menjadi '?'
+  const hargaSensor = formatRupiah(produk.value.harga).replace(/\d/g, '?')
+  
+  const teks = `Hei, lihat produk ini 👇\n\n*${produk.value.nama_produk}*\n${hargaSensor}\n\nCek harganya di sini:\n${url}`
+  
   window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank')
 }
 
