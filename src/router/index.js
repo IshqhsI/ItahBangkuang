@@ -19,6 +19,12 @@ const routes = [
     component: () => import('@/pages/public/DetailProduk.vue'),
   },
   {
+    path: '/feedback',
+    name: 'Feedback',
+    component: () => import('@/pages/public/Feedback.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/toko/:id',
     name: 'ProfilTokoPublic',
     component: () => import('@/pages/public/ProfilToko.vue'),
@@ -113,13 +119,13 @@ const routes = [
     name: 'AdminKelolaProduk',
     component: () => import('@/pages/admin/KelolaProduk.vue'),
     meta: { requiresAuth: true, role: 'admin' },
-  }, 
+  },
   {
     path: '/admin/users',
     name: 'AdminKelolaUsers',
     component: () => import('@/pages/admin/KelolaUser.vue'),
     meta: { requiresAuth: true, role: 'admin' },
-  }
+  },
 ];
 
 const router = createRouter({
