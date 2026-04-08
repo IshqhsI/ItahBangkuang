@@ -271,19 +271,6 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-brand">🛒 ItahBangkuang</div>
-        <p class="footer-tagline">Bapapili mangat, Bajualan mangat kia.</p>
-        <p class="footer-loc">📍 Kelurahan Bangkuang, Kalimantan Tengah</p>
-        <div class="footer-sep"></div>
-        <p class="footer-copy">
-          © {{ new Date().getFullYear() }} ItahBangkuang — Dibuat dengan ❤️
-          untuk warga Bangkuang
-        </p>
-      </div>
-    </footer>
   </LayoutPublic>
 </template>
 
