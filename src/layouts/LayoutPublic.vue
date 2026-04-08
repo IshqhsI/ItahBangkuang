@@ -5,6 +5,8 @@
     <main class="main-content">
       <slot />
     </main>
+
+    <FooterBar />
   </div>
 </template>
 
@@ -13,6 +15,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import NavBar from '@/components/NavBar.vue'
+import FooterBar from '@/components/FooterBar.vue'
 
 const router   = useRouter()
 const authStore = useAuthStore()
