@@ -8,7 +8,6 @@
     </div>
 
     <div class="container main-content">
-      <!-- Filter tabs -->
       <div class="filter-tabs">
         <button
           v-for="f in filterList"
@@ -47,8 +46,14 @@
               <div class="order-produk-info">
                 <p class="order-toko">🏪 {{ o.toko?.nama_toko }}</p>
                 <p class="order-nama">{{ o.produk?.nama_produk }}</p>
+
+                <!-- FIX: Tampilkan varian jika ada -->
+                <p v-if="o.varian_terpilih" class="order-varian">
+                  Varian: {{ o.varian_terpilih }}
+                </p>
+
                 <p class="order-jumlah">
-                  {{ o.jumlah }} pcs × {{ formatRupiah(o.produk?.harga) }}
+                  {{ o.jumlah }} pcs × {{ formatRupiah(o.total_harga / o.jumlah) }}
                 </p>
               </div>
             </RouterLink>
@@ -134,8 +139,14 @@ const hitungFilter = (val) => {
 };
 
 const chatPenjual = (o) => {
-  const wa = o.toko?.nomor_wa?.replace(/^(0|62)/, '') ?? '';
-  const pesan = `Halo, saya ingin tanya mengenai pesanan *${o.produk?.nama_produk}* (${o.jumlah} pcs) yang saya buat via ItahBangkuang.`;
+  // Normalisasi nomor WA — handle +62, 62, 0
+  const wa = (o.toko?.nomor_wa ?? '').replace(/^(\+62|62|0)/, '');
+
+  // Sertakan varian di pesan jika ada
+  let detailProduk = `*${o.produk?.nama_produk}*`;
+  if (o.varian_terpilih) detailProduk += ` (Varian: ${o.varian_terpilih})`;
+
+  const pesan = `Halo, saya ingin tanya mengenai pesanan ${detailProduk} (${o.jumlah} pcs) yang saya buat via ItahBangkuang.`;
   window.open(
     `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
     '_blank',
@@ -154,7 +165,8 @@ onMounted(async () => {
   const { data } = await supabase
     .from('orders')
     .select(
-      '*, produk(nama_produk, foto_url, harga), toko(nama_toko, nomor_wa)',
+      // FIX: Tambah varian_terpilih agar data tersedia di template
+      '*, varian_terpilih, produk(nama_produk, foto_url, harga), toko(nama_toko, nomor_wa)',
     )
     .eq('pembeli_id', session.user.id)
     .order('created_at', { ascending: false });
@@ -165,7 +177,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
 .page-header {
   background: linear-gradient(135deg, #2d5016, #3a6b1e);
   padding: 2.5rem 0;
@@ -186,11 +197,9 @@ onMounted(async () => {
   color: #a8c97f;
   font-size: 0.875rem;
 }
-
 .main-content {
   padding: 2rem 2rem 4rem;
 }
-
 .filter-tabs {
   display: flex;
   gap: 0.5rem;
@@ -231,7 +240,6 @@ onMounted(async () => {
   background: #fef9c3;
   color: #92400e;
 }
-
 .loading-wrap {
   display: flex;
   justify-content: center;
@@ -246,11 +254,8 @@ onMounted(async () => {
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
-
 .order-list {
   display: flex;
   flex-direction: column;
@@ -262,7 +267,6 @@ onMounted(async () => {
   border-radius: 16px;
   overflow: hidden;
 }
-
 .order-header {
   display: flex;
   align-items: center;
@@ -275,7 +279,6 @@ onMounted(async () => {
   font-size: 0.75rem;
   color: #9ca3af;
 }
-
 .order-body {
   padding: 1.1rem 1.25rem;
   display: flex;
@@ -313,6 +316,18 @@ onMounted(async () => {
   color: #1a2e0a;
   margin-bottom: 0.2rem;
 }
+/* Badge varian — konsisten dengan BuatPesanan.vue */
+.order-varian {
+  display: inline-block;
+  background: #f0f7e8;
+  color: #2d5016;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #a8c97f;
+  margin-bottom: 0.25rem;
+}
 .order-jumlah {
   font-size: 0.75rem;
   color: #6b7280;
@@ -341,7 +356,6 @@ onMounted(async () => {
   font-weight: 700;
   color: #2d5016;
 }
-
 .order-footer {
   padding: 0.65rem 1.25rem;
   background: #fdfaf4;
@@ -353,7 +367,6 @@ onMounted(async () => {
   font-weight: 600;
   margin-right: 0.3rem;
 }
-
 .order-actions {
   display: flex;
   gap: 0.75rem;
@@ -395,7 +408,6 @@ onMounted(async () => {
 .btn-beli-lagi:hover {
   background: #e0f0cc;
 }
-
 .badge {
   display: inline-block;
   padding: 0.25rem 0.65rem;
@@ -419,7 +431,6 @@ onMounted(async () => {
   background: #fee2e2;
   color: #991b1b;
 }
-
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
@@ -455,19 +466,10 @@ onMounted(async () => {
 .btn-belanja:hover {
   background: #3a6b1e;
 }
-
 @media (max-width: 640px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
-  .order-body {
-    flex-direction: column;
-  }
-  .order-kanan {
-    text-align: left;
-  }
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+  .order-body { flex-direction: column; }
+  .order-kanan { text-align: left; }
 }
 </style>
