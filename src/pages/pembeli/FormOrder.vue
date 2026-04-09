@@ -75,10 +75,16 @@
             <div class="summary-info">
               <p class="summary-toko">🏪 {{ produk.toko?.nama_toko }}</p>
               <h3 class="summary-nama">{{ produk.nama_produk }}</h3>
+
+              <div v-if="varianNama" class="summary-varian-badge">
+                Varian: {{ varianNama }}
+              </div>
+
               <p class="summary-harga">
-                {{ formatRupiah(produk.harga) }} / pcs
+                {{ formatRupiah(currentHarga) }} / pcs
               </p>
-              <p class="summary-stok">Stok tersedia: {{ produk.stok }}</p>
+              <!-- FIX: Pakai currentStok agar stok varian tampil benar -->
+              <p class="summary-stok">Stok: {{ currentStok }}</p>
             </div>
           </div>
 
@@ -97,13 +103,14 @@
                 v-model.number="form.jumlah"
                 type="number"
                 :min="1"
-                :max="produk.stok"
+                :max="currentStok"
                 @change="clampJumlah"
               />
+              <!-- FIX 1: Ganti produk.stok → currentStok agar sinkron dengan stok varian -->
               <button
                 type="button"
                 @click="tambah"
-                :disabled="form.jumlah >= produk.stok"
+                :disabled="form.jumlah >= currentStok"
               >
                 +
               </button>
@@ -114,7 +121,7 @@
           <div class="total-box">
             <span class="total-label">Total Pembayaran</span>
             <span class="total-val">{{
-              formatRupiah(produk.harga * form.jumlah)
+              formatRupiah(currentHarga * form.jumlah)
             }}</span>
           </div>
         </div>
@@ -139,15 +146,20 @@
               <label>Nomor WhatsApp <span class="required">*</span></label>
               <div class="input-prefix-wrap">
                 <span class="prefix">+62</span>
+                <!-- FIX 3: Tambah minlength untuk validasi minimal panjang nomor WA -->
                 <input
                   v-model="form.nomor_wa"
                   type="tel"
                   placeholder="81234567890"
                   required
+                  minlength="9"
+                  maxlength="13"
                   :disabled="loading"
+                  @input="sanitizeNomorWa"
                 />
               </div>
               <span class="field-hint">Penjual akan menghubungi nomor ini</span>
+              <span v-if="nomorWaError" class="field-error">{{ nomorWaError }}</span>
             </div>
 
             <div class="field">
@@ -197,7 +209,7 @@
 
             <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
 
-            <button type="submit" class="btn-order" :disabled="loading">
+            <button type="submit" class="btn-order" :disabled="loading || !!nomorWaError">
               <span v-if="loading" class="spinner-sm"></span>
               <span v-else>🛒 Kirim Pesanan</span>
             </button>
@@ -214,7 +226,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
@@ -228,6 +240,10 @@ const errorMsg = ref('');
 const produk = ref(null);
 const orderSuccess = ref(false);
 const userId = ref(null);
+const nomorWaError = ref(''); // FIX 3: State untuk error validasi nomor WA
+
+// Tangkap Varian dari Query URL
+const varianNama = ref(route.query.varian || null);
 
 const form = ref({
   nama_pemesan: '',
@@ -238,52 +254,94 @@ const form = ref({
   jumlah: 1,
 });
 
+// --- LOGIKA VARIAN REAKTIF ---
+
+const selectedVarian = computed(() => {
+  if (!produk.value?.varian || !varianNama.value) return null;
+  return produk.value.varian.find(v => v.nama === varianNama.value);
+});
+
+const currentHarga = computed(() => {
+  return selectedVarian.value ? selectedVarian.value.harga : (produk.value?.harga || 0);
+});
+
+// FIX 1 (support): currentStok sekarang juga dipakai di template untuk tombol +
+const currentStok = computed(() => {
+  return selectedVarian.value ? selectedVarian.value.stok : (produk.value?.stok || 0);
+});
+
+// --- FUNGSI VALIDASI NOMOR WA ---
+
+// FIX 3: Sanitasi & validasi nomor WA — hanya boleh angka, tanpa awalan 0/62/+62
+const sanitizeNomorWa = () => {
+  // Hapus semua karakter non-digit
+  let val = form.value.nomor_wa.replace(/\D/g, '');
+
+  // Jika user mengetik awalan 0, 62, atau +62 — strip otomatis
+  val = val.replace(/^(62|0)/, '');
+
+  form.value.nomor_wa = val;
+
+  // Validasi panjang: nomor WA Indonesia umumnya 9–12 digit setelah kode negara
+  if (val.length > 0 && val.length < 9) {
+    nomorWaError.value = 'Nomor WA terlalu pendek (min. 9 digit)';
+  } else if (val.length > 13) {
+    nomorWaError.value = 'Nomor WA terlalu panjang (maks. 13 digit)';
+  } else {
+    nomorWaError.value = '';
+  }
+};
+
+// --- FUNGSI KONTROL JUMLAH ---
+
 const kurangi = () => {
   if (form.value.jumlah > 1) form.value.jumlah--;
 };
 
 const tambah = () => {
-  if (form.value.jumlah < produk.value.stok) form.value.jumlah++;
+  // FIX 1 (support): Pakai currentStok agar sinkron dengan varian
+  if (form.value.jumlah < currentStok.value) form.value.jumlah++;
 };
 
-// FIX #2: clampJumlah tidak boleh set ke 0 kalau stok habis
 const clampJumlah = () => {
   if (form.value.jumlah < 1) form.value.jumlah = 1;
-  if (produk.value.stok > 0 && form.value.jumlah > produk.value.stok)
-    form.value.jumlah = produk.value.stok;
+  // FIX 1 (support): Clamp juga pakai currentStok
+  if (currentStok.value > 0 && form.value.jumlah > currentStok.value)
+    form.value.jumlah = currentStok.value;
 };
+
+// --- FUNGSI AKSI ---
 
 const chatPenjual = () => {
-  const wa = produk.value?.toko?.nomor_wa?.replace(/^(0|62)/, '') ?? '';
-  const pesan = `Halo, saya sudah memesan *${produk.value.nama_produk}* (${form.value.jumlah} pcs) via ItahBangkuang. Mohon dikonfirmasi ya!`;
-  window.open(
-    `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
-    '_blank',
-  );
+  // FIX 2: Normalisasi nomor WA penjual — handle format +62xxx, 62xxx, 0xxx
+  const rawWa = produk.value?.toko?.nomor_wa ?? '';
+  const wa = rawWa.replace(/^(\+62|62|0)/, '');
+
+  let detailProduk = `*${produk.value.nama_produk}*`;
+  if (varianNama.value) detailProduk += ` (Varian: ${varianNama.value})`;
+
+  const pesan = `Halo, saya sudah memesan ${detailProduk} sebanyak ${form.value.jumlah} pcs via ItahBangkuang. Mohon dikonfirmasi ya!`;
+  window.open(`https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`, '_blank');
 };
 
-// FIX #3: return Promise supaya bisa di-await dengan Promise.allSettled
 const addPhoneNumber = (number) => {
   if (!number) return Promise.resolve();
-  return supabase
-    .from('profiles')
-    .update({ no_wa: number })
-    .eq('id', userId.value);
+  return supabase.from('profiles').update({ no_wa: number }).eq('id', userId.value);
 };
 
 const addAddressToProfile = (address) => {
   if (!address) return Promise.resolve();
-  return supabase
-    .from('profiles')
-    .update({ alamat: address })
-    .eq('id', userId.value);
+  return supabase.from('profiles').update({ alamat: address }).eq('id', userId.value);
 };
 
 const handleOrder = async () => {
+  // FIX 3: Blokir submit jika nomor WA tidak valid
+  if (nomorWaError.value) return;
+
   loading.value = true;
   errorMsg.value = '';
 
-  const { error } = await supabase.rpc('handle_create_order', {
+  const { error } = await supabase.rpc('handle_create_order_v2', {
     p_produk_id: produk.value.id,
     p_pembeli_id: userId.value,
     p_nama_pemesan: form.value.nama_pemesan,
@@ -292,23 +350,22 @@ const handleOrder = async () => {
     p_jumlah: form.value.jumlah,
     p_metode: form.value.metode,
     p_catatan: form.value.catatan ?? '',
+    p_varian_pilihan: varianNama.value
   });
 
   if (error) {
+    console.error("Order Error:", error);
     if (error.message.includes('stok')) {
-      errorMsg.value = 'Produk tidak tersedia atau stok tidak cukup.';
+      errorMsg.value = 'Maaf, stok tidak mencukupi.';
     } else if (error.message.includes('sendiri')) {
-      errorMsg.value = 'Kamu tidak bisa memesan produk dari tokomu sendiri.';
-    } else if (error.message.includes('Jumlah tidak valid')) {
-      errorMsg.value = 'Jumlah pesanan tidak valid.';
+      errorMsg.value = 'Tidak bisa memesan di toko sendiri.';
     } else {
-      errorMsg.value = 'Gagal mengirim pesanan. Coba lagi.';
+      errorMsg.value = 'Gagal mengirim pesanan. Silakan coba lagi.';
     }
     loading.value = false;
     return;
   }
 
-  // FIX #3: jalankan paralel, tunggu keduanya selesai sebelum pindah state
   await Promise.allSettled([
     addPhoneNumber(form.value.nomor_wa),
     addAddressToProfile(form.value.alamat),
@@ -318,15 +375,8 @@ const handleOrder = async () => {
   loading.value = false;
 };
 
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
-};
-
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
     router.push('/login');
@@ -335,7 +385,7 @@ onMounted(async () => {
 
   userId.value = session.user.id;
 
-  // Pre-fill nama & nomor WA dari profil
+  // Ambil Data Profil
   const { data: profile } = await supabase
     .from('profiles')
     .select('nama_lengkap, no_wa')
@@ -344,33 +394,22 @@ onMounted(async () => {
 
   if (profile) {
     form.value.nama_pemesan = profile.nama_lengkap || '';
-    form.value.nomor_wa = profile.no_wa || '';
+    // FIX 2 (support): Normalkan juga nomor WA dari profil saat dimuat
+    form.value.nomor_wa = (profile.no_wa || '').replace(/^(\+62|62|0)/, '');
   }
 
-  // FIX #1: tambah user_id ke select toko supaya self-order check bisa jalan
+  // Ambil Data Produk
   const { data: produkData } = await supabase
     .from('produk')
     .select('*, toko(nama_toko, nomor_wa, status, user_id)')
     .eq('id', route.params.id)
     .single();
 
-  // Produk tidak ada, tidak aktif, atau tokonya tidak aktif
-  if (
-    !produkData ||
-    produkData.status !== 'AKTIF' ||
-    produkData.toko?.status !== 'AKTIF'
-  ) {
+  if (!produkData || produkData.status !== 'AKTIF' || produkData.toko?.status !== 'AKTIF') {
     loadingData.value = false;
     return;
   }
 
-  // FIX #2: produk stok 0 langsung tampilkan tidak tersedia
-  if (produkData.stok === 0) {
-    loadingData.value = false;
-    return;
-  }
-
-  // Self-order check — sekarang bisa jalan karena user_id sudah diambil
   if (produkData.toko?.user_id === session.user.id) {
     router.push('/toko/produk');
     return;
@@ -378,14 +417,13 @@ onMounted(async () => {
 
   produk.value = produkData;
 
-  // FIX #4: pre-fill jumlah dari query param — setelah dapat produk,
-  // dengan clamp ke stok sebenarnya dan batas maksimal 100
+  // Set Jumlah Awal dari URL — dilakukan SETELAH produk.value diset
+  // agar currentStok sudah terhitung dengan benar
   if (route.query.jumlah) {
     const parsed = parseInt(route.query.jumlah) || 1;
-    form.value.jumlah = Math.min(Math.max(parsed, 1), produkData.stok, 100);
+    form.value.jumlah = Math.min(Math.max(parsed, 1), currentStok.value);
   } else {
-    // Kalau tidak ada query param, pastikan default 1 tidak melebihi stok
-    form.value.jumlah = Math.min(1, produkData.stok);
+    form.value.jumlah = Math.min(1, currentStok.value);
   }
 
   loadingData.value = false;
@@ -393,97 +431,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.page {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #fdfaf4;
-  min-height: 100vh;
-  color: #1a2e0a;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(253, 250, 244, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #e8e0d0;
-  padding: 0 2rem;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2d5016;
-  text-decoration: none;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-.nav-links a {
-  color: #374151;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-.nav-links a:hover {
-  color: #2d5016;
-}
-.btn-nav-outline {
-  background: none;
-  border: 1.5px solid #2d5016;
-  color: #2d5016 !important;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-.btn-nav-outline:hover {
-  background: #f0f7e8 !important;
-}
-.hamburger {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: #2d5016;
-}
-.mobile-menu {
-  background: #fff;
-  border-bottom: 1px solid #e8e0d0;
-  padding: 1rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.mobile-menu a,
-.mobile-menu button {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #374151;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
-
 .page-header {
   background: linear-gradient(135deg, #2d5016, #3a6b1e);
   padding: 2rem 0;
@@ -740,7 +687,6 @@ onMounted(async () => {
   overflow: hidden;
   justify-content: center;
   width: fit-content;
-  /* margin: auto; */
 }
 .jumlah-control button {
   width: 38px;
@@ -782,6 +728,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 1.25rem;
 }
 .total-label {
   font-size: 0.82rem;
@@ -824,6 +771,12 @@ label {
 .field-hint {
   font-size: 0.72rem;
   color: #9ca3af;
+}
+/* FIX 3: Style untuk pesan error validasi WA */
+.field-error {
+  font-size: 0.72rem;
+  color: #dc2626;
+  font-weight: 500;
 }
 .required {
   color: #dc2626;
@@ -953,6 +906,24 @@ textarea {
   color: #9ca3af;
   line-height: 1.5;
   text-align: center;
+}
+
+.summary-varian-badge {
+  display: inline-block;
+  background: #f0f7e8;
+  color: #2d5016;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #a8c97f;
+  margin: 0.35rem 0;
+}
+
+.jumlah-control input::-webkit-outer-spin-button,
+.jumlah-control input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
