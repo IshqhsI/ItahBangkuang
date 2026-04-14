@@ -83,19 +83,25 @@
                 loading="lazy"
               />
               <span class="produk-kat-badge">{{ labelKategori(p.kategori) }}</span>
-              <span v-if="p.stok === 0" class="produk-habis-badge">Habis</span>
+              <!-- Logika Stok Habis Varian -->
+              <span v-if="hitungTotalStok(p) === 0" class="produk-habis-badge">Habis</span>
+              <!-- Badge info jika ada varian -->
+              <span v-if="p.varian?.length > 0" class="varian-count-badge">
+                {{ p.varian.length }} Varian
+              </span>
             </div>
             <div class="produk-info">
               <p class="produk-toko">🏪 {{ p.toko?.nama_toko }}</p>
               <h3 class="produk-nama">{{ p.nama_produk }}</h3>
               <p class="produk-alamat">📍 {{ p.toko?.alamat }}</p>
               <div class="produk-footer">
-                <span class="produk-harga">{{ formatRupiah(p.harga) }}</span>
+                <!-- Tampilkan Range Harga jika ada varian -->
+                <span class="produk-harga">{{ formatHargaProduk(p) }}</span>
                 <span
                   class="produk-stok"
-                  :class="{ low: p.stok <= 5 && p.stok > 0 }"
+                  :class="{ low: hitungTotalStok(p) <= 5 && hitungTotalStok(p) > 0 }"
                 >
-                  {{ p.stok > 0 ? `Stok: ${p.stok}` : 'Habis' }}
+                  {{ hitungTotalStok(p) > 0 ? `Stok: ${hitungTotalStok(p)}` : 'Habis' }}
                 </span>
               </div>
             </div>
@@ -153,10 +159,31 @@ const kategoriList = [
   ...KATEGORI
 ];
 
+// Helper: Hitung total stok dari kolom stok biasa atau array varian
+const hitungTotalStok = (p) => {
+  if (p.varian && p.varian.length > 0) {
+    return p.varian.reduce((acc, curr) => acc + (Number(curr.stok) || 0), 0);
+  }
+  return p.stok || 0;
+};
+
+// Helper: Format harga (Range atau Single)
+const formatHargaProduk = (p) => {
+  if (p.varian && p.varian.length > 0) {
+    const listHarga = p.varian.map(v => v.harga);
+    const min = Math.min(...listHarga);
+    const max = Math.max(...listHarga);
+    if (min === max) return formatRupiah(min);
+    return `${formatRupiah(min)} - ${formatRupiah(max)}`;
+  }
+  return formatRupiah(p.harga);
+};
+
 const fetchProduk = async () => {
   loadingProduk.value = true;
   let query = supabase
     .from('produk')
+    // Kolom 'varian' akan otomatis ikut terambil melalui '*'
     .select('*, toko(nama_toko, alamat, status)')
     .eq('status', 'AKTIF');
 
@@ -164,6 +191,7 @@ const fetchProduk = async () => {
     query = query.eq('kategori', kategoriAktif.value);
   if (keyword.value.trim())
     query = query.ilike('nama_produk', `%${keyword.value.trim()}%`);
+  
   if (sortBy.value === 'terbaru')
     query = query.order('created_at', { ascending: false });
   else if (sortBy.value === 'termurah')
@@ -524,6 +552,19 @@ onMounted(async () => {
   color: #b45309;
   background: #fef3c7;
   font-weight: 600;
+}
+
+.varian-count-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* ========================================= */
