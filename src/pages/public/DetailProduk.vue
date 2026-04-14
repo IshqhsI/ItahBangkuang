@@ -271,9 +271,16 @@ const currentHarga = computed(() => {
 
 // Computed untuk mendapatkan stok yang sedang aktif
 const currentStok = computed(() => {
-  return varianTerpilih.value
-    ? varianTerpilih.value.stok
-    : produk.value?.stok || 0;
+
+  if (varianTerpilih.value) {
+    return varianTerpilih.value.stok;
+  }
+  
+  if (produk.value.varian && produk.value.varian.length > 0) {
+    return produk.value.varian.reduce((acc, curr) => acc + (Number(curr.stok) || 0), 0);
+  }
+
+  return produk.value.stok || 0;
 });
 
 // Pengecekan apakah stok benar-benar habis
@@ -651,9 +658,7 @@ watch(() => route.params.id, fetchData);
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition:
-    background 0.2s,
-    transform 0.15s;
+  transition: background 0.2s, transform 0.15s;
   text-align: center;
 }
 .btn-pesan:hover:not(:disabled) {
@@ -903,7 +908,7 @@ watch(() => route.params.id, fetchData);
 }
 .mini-foto {
   width: 100%;
-  height: 120px;
+  height: 240px;
   object-fit: cover;
   display: block;
   background: #f3f4f6;
