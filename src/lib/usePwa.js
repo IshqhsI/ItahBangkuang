@@ -20,26 +20,44 @@ const modeStandalone = () =>
   typeof window !== 'undefined' &&
   (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
 
-export function usePasangAplikasi() {
-  const standalone = ref(modeStandalone());
-
+// Kenali perangkat untuk memilih petunjuk pemasangan yang tepat
+const kenaliPerangkat = () => {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   const iOS = /iphone|ipad|ipod/i.test(ua);
+  const android = /android/i.test(ua);
+  // Browser di dalam aplikasi (Facebook, Instagram, WebView Android) tidak bisa memasang PWA
+  const dalamAplikasi = /FBAN|FBAV|Instagram|Line\/|; wv\)|WhatsApp/i.test(ua);
   const safariIOS = iOS && /safari/i.test(ua) && !/crios|fxios|edgios/i.test(ua);
+  const samsung = /SamsungBrowser/i.test(ua);
+  const firefox = /firefox|fxios/i.test(ua);
+  if (iOS) return safariIOS && !dalamAplikasi ? 'ios-safari' : 'ios-lain';
+  if (android) {
+    if (dalamAplikasi) return 'android-aplikasi';
+    if (samsung) return 'android-samsung';
+    if (firefox) return 'android-firefox';
+    return 'android-chrome';
+  }
+  return 'desktop';
+};
 
-  const bisaPasang = computed(() => !!promptTertunda.value && !standalone.value && !sudahTerpasang.value);
-  // iPhone tidak punya tombol pasang otomatis; pengguna harus lewat menu Bagikan
-  const petunjukIOS = computed(() => safariIOS && !standalone.value && !sudahTerpasang.value);
+export function usePasangAplikasi() {
+  const standalone = ref(modeStandalone());
+  const perangkat = kenaliPerangkat();
 
-  const pasang = async () => {
+  // Sembunyikan hanya kalau aplikasi sedang dibuka dari layar utama
+  const tampil = computed(() => !standalone.value && !sudahTerpasang.value);
+  const bisaLangsung = computed(() => !!promptTertunda.value);
+
+  const pasangLangsung = async () => {
     const p = promptTertunda.value;
-    if (!p) return;
+    if (!p) return false;
     p.prompt();
     await p.userChoice;
     promptTertunda.value = null;
+    return true;
   };
 
-  return { bisaPasang, petunjukIOS, pasang };
+  return { tampil, bisaLangsung, perangkat, pasangLangsung };
 }
 
 export function useOnline() {

@@ -62,6 +62,7 @@
         </RouterLink>
       </nav>
       <div class="laci-kaki">
+        <PasangAplikasi class="laci-pasang" kelas="tombol-kuning tombol-penuh" />
         <template v-if="!authStore.user">
           <RouterLink to="/login" class="tombol tombol-penuh">Masuk</RouterLink>
           <RouterLink to="/register" class="tombol tombol-merah tombol-penuh">Daftar Akun</RouterLink>
@@ -92,6 +93,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import PasangAplikasi from '@/components/PasangAplikasi.vue';
 import {
   Menu,
   X,
@@ -410,6 +412,10 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+}
+
+.laci-pasang :deep(.tombol) {
+  width: 100%;
 }
 
 .laci-enter-active,
