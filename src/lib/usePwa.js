@@ -4,11 +4,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 // Dipasang di level modul: event ini hanya terbit sekali, sebelum komponen mana pun mungkin sudah dirender
 const promptTertunda = ref(null);
 const sudahTerpasang = ref(false);
+const sinyalPernahTerbit = ref(false);
 
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     promptTertunda.value = e;
+    sinyalPernahTerbit.value = true;
   });
   window.addEventListener('appinstalled', () => {
     sudahTerpasang.value = true;
@@ -16,12 +18,15 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// Untuk panel diagnosis (?pwa=debug)
+export const statusSinyalPasang = { sinyalPernahTerbit, promptTertunda, sudahTerpasang };
+
 const modeStandalone = () =>
   typeof window !== 'undefined' &&
   (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
 
 // Kenali perangkat untuk memilih petunjuk pemasangan yang tepat
-const kenaliPerangkat = () => {
+export const kenaliPerangkat = () => {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   const iOS = /iphone|ipad|ipod/i.test(ua);
   const android = /android/i.test(ua);
