@@ -1,261 +1,219 @@
 <template>
   <LayoutPenjual :statusToko="statusToko" :tokoId="tokoId">
-    <div class="page-header">
-      <div class="container">
-        <RouterLink to="/toko/produk" class="back-link"
-          >← Kembali ke Produk</RouterLink
-        >
-        <h1 class="page-title">
-          {{ isEdit ? 'Edit Produk' : 'Tambah Produk Baru' }}
-        </h1>
+    <section class="kepala">
+      <div class="wadah sempit">
+        <RouterLink to="/toko/produk" class="kembali">
+          <ArrowLeft :size="18" :stroke-width="2.5" />
+          Kembali ke produk
+        </RouterLink>
+        <h1 class="judul-halaman">{{ isEdit ? 'Ubah produk' : 'Pajang produk baru' }}</h1>
       </div>
+    </section>
+
+    <div v-if="loadingData" class="memuat">
+      <div class="spinner"></div>
+      <p>Mengambil data produk…</p>
     </div>
 
-    <div class="container main-content">
-      <!-- Alert error -->
-      <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
+    <div v-else class="wadah sempit isi">
+      <form class="form" novalidate @submit.prevent="handleSubmit">
+        <!-- FOTO -->
+        <section class="bagian papan" aria-labelledby="h-foto">
+          <h2 id="h-foto" class="bagian-judul">Foto produk</h2>
+          <p class="bagian-ket">Foto terang dan dekat bikin produk lebih cepat laku. Maksimal 2 MB.</p>
 
-      <!-- Loading saat edit -->
-      <div v-if="loadingData" class="loading-wrap">
-        <div class="spinner"></div>
-        <p>Memuat data produk...</p>
-      </div>
-
-      <form v-else @submit.prevent="handleSubmit" class="form-grid">
-        <!-- KOLOM KIRI -->
-        <div class="form-left">
-          <!-- Upload Foto -->
-          <div class="form-section">
-            <h2 class="section-title">
-              Foto Produk <span class="required">*</span>
-            </h2>
-            <p class="section-sub">
-              Foto yang menarik = produk lebih cepat laku. Gunakan foto terang
-              dan jernih.
-            </p>
-
-            <div
-              class="foto-upload"
-              :class="{ 'has-foto': previewUrl, 'drag-over': isDragging }"
-              @click="triggerUpload"
-              @dragover.prevent="isDragging = true"
-              @dragleave="isDragging = false"
-              @drop.prevent="onDrop"
-            >
-              <img
-                v-if="previewUrl"
-                :src="previewUrl"
-                class="foto-preview"
-                alt="preview"
-              />
-              <div v-else class="foto-placeholder">
-                <span class="upload-icon">📷</span>
-                <p class="upload-text">Klik atau seret foto ke sini</p>
-                <p class="upload-hint">JPG, PNG • Maks. 2MB</p>
-              </div>
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/*"
-                @change="onFileChange"
-                class="hidden-input"
-              />
+          <div
+            class="unggah"
+            :class="{ ada: previewUrl, seret: isDragging }"
+            role="button"
+            tabindex="0"
+            :aria-label="previewUrl ? 'Ganti foto produk' : 'Pilih foto produk'"
+            @click="triggerUpload"
+            @keydown.enter.prevent="triggerUpload"
+            @keydown.space.prevent="triggerUpload"
+            @dragover.prevent="isDragging = true"
+            @dragleave="isDragging = false"
+            @drop.prevent="onDrop"
+          >
+            <img v-if="previewUrl" :src="previewUrl" class="unggah-foto" alt="Pratinjau foto produk" />
+            <div v-else class="unggah-kosong">
+              <ImagePlus :size="40" :stroke-width="2" />
+              <p class="unggah-judul">Pilih atau seret foto ke sini</p>
+              <p class="unggah-ket">JPG atau PNG</p>
             </div>
+            <input ref="fileInput" type="file" accept="image/*" class="sr-only" tabindex="-1" @change="onFileChange" />
+          </div>
 
-            <button
-              v-if="previewUrl"
-              type="button"
-              class="btn-ganti-foto"
-              @click="triggerUpload"
-            >
-              🔄 Ganti Foto
+          <button v-if="previewUrl" type="button" class="tombol tombol-kecil ganti" @click="triggerUpload">
+            <RefreshCw :size="16" :stroke-width="2.5" />
+            Ganti foto
+          </button>
+        </section>
+
+        <!-- INFO -->
+        <section class="bagian papan" aria-labelledby="h-info">
+          <h2 id="h-info" class="bagian-judul">Tentang produk</h2>
+
+          <div class="isian">
+            <label for="nama">Nama produk</label>
+            <input
+              id="nama"
+              v-model="form.nama_produk"
+              type="text"
+              maxlength="100"
+              placeholder="Contoh: Kue Lapis Pandan isi 10"
+              :disabled="loading"
+              aria-describedby="nama-hitung"
+            />
+            <span id="nama-hitung" class="bantuan">{{ form.nama_produk.length }} dari 100 karakter</span>
+          </div>
+
+          <div class="isian">
+            <label for="kategori">Kategori</label>
+            <select id="kategori" v-model="form.kategori" :disabled="loading">
+              <option value="" disabled>Pilih kategori</option>
+              <option v-for="k in KATEGORI" :key="k.slug" :value="k.slug">{{ k.label }}</option>
+            </select>
+          </div>
+
+          <div class="isian">
+            <label for="deskripsi">Deskripsi <span class="opsional">(boleh dikosongkan)</span></label>
+            <textarea
+              id="deskripsi"
+              v-model="form.deskripsi"
+              rows="5"
+              maxlength="500"
+              placeholder="Bahan, rasa, cara simpan, minimal pesan…"
+              :disabled="loading"
+              aria-describedby="desk-hitung"
+            ></textarea>
+            <span id="desk-hitung" class="bantuan">{{ form.deskripsi.length }} dari 500 karakter</span>
+          </div>
+
+          <div v-if="isEdit" class="isian">
+            <label for="status">Tampil di toko?</label>
+            <select id="status" v-model="form.status" :disabled="loading">
+              <option value="AKTIF">Tampil</option>
+              <option value="HABIS">Tandai habis</option>
+              <option value="DISEMBUNYIKAN">Sembunyikan</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- HARGA & STOK -->
+        <section class="bagian papan" aria-labelledby="h-harga">
+          <div class="bagian-kepala">
+            <h2 id="h-harga" class="bagian-judul">Harga &amp; stok</h2>
+            <button type="button" class="tombol tombol-kecil" @click="toggleVarian">
+              <Layers v-if="form.varian.length === 0" :size="16" :stroke-width="2.5" />
+              <X v-else :size="16" :stroke-width="2.5" />
+              {{ form.varian.length > 0 ? 'Tanpa varian' : 'Pakai varian' }}
             </button>
           </div>
 
-          <div class="form-section">
-            <div class="flex-between mb-4">
-              <h2 class="section-title !mb-0">Harga & Stok</h2>
-              <button
-                type="button"
-                @click="toggleVarian"
-                class="btn-tambah-varian"
-              >
-                {{
-                  form.varian.length > 0
-                    ? '❌ Hapus Semua Varian'
-                    : '+ Pakai Varian'
-                }}
-              </button>
+          <div v-if="form.varian.length === 0" class="baris-isian">
+            <div class="isian">
+              <label for="harga">Harga (Rp)</label>
+              <input id="harga" v-model.number="form.harga" type="number" inputmode="numeric" min="0" placeholder="15000" :disabled="loading" />
             </div>
-
-            <div v-if="form.varian.length === 0" class="field-row">
-              <div class="field">
-                <label>Harga (Rp) <span class="required">*</span></label>
-                <input
-                  v-model.number="form.harga"
-                  type="number"
-                  placeholder="15000"
-                  required
-                />
-              </div>
-              <div class="field">
-                <label>Stok <span class="required">*</span></label>
-                <input
-                  v-model.number="form.stok"
-                  type="number"
-                  placeholder="10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div v-else class="varian-outer-wrap">
-              <p class="section-sub !mb-4">
-                Tentukan harga dan stok yang berbeda untuk setiap pilihan
-                produk.
-              </p>
-
-              <div
-                v-for="(v, index) in form.varian"
-                :key="index"
-                class="varian-card"
-              >
-                <button
-                  @click="hapusVarian(index)"
-                  type="button"
-                  class="btn-hapus-varian"
-                >
-                  ×
-                </button>
-
-                <div class="field">
-                  <label>Nama Varian (Misal: Keju / 100gr / L)</label>
-                  <input v-model="v.nama" type="text" required />
-                </div>
-
-                <div class="field-row mt-2">
-                  <div class="field">
-                    <label>Harga (Rp)</label>
-                    <input v-model.number="v.harga" type="number" required />
-                  </div>
-                  <div class="field">
-                    <label>Stok</label>
-                    <input v-model.number="v.stok" type="number" required />
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                @click="tambahBarisVarian"
-                class="btn-tambah-baris mt-2"
-              >
-                + Tambah Pilihan Lain
-              </button>
+            <div class="isian">
+              <label for="stok">Stok</label>
+              <input id="stok" v-model.number="form.stok" type="number" inputmode="numeric" min="0" placeholder="10" :disabled="loading" />
             </div>
           </div>
+
+          <div v-else>
+            <p class="bagian-ket">Pakai varian kalau ukuran atau rasanya beda-beda. Tiap varian punya harga dan stok sendiri.</p>
+
+            <div v-for="(v, index) in form.varian" :key="index" class="varian">
+              <div class="varian-kepala">
+                <span class="varian-no">Varian {{ index + 1 }}</span>
+                <button type="button" class="varian-hapus" :aria-label="`Hapus varian ${index + 1}`" @click="hapusVarian(index)">
+                  <Trash2 :size="18" :stroke-width="2.5" />
+                </button>
+              </div>
+              <div class="isian">
+                <label :for="`v-nama-${index}`">Nama varian</label>
+                <input :id="`v-nama-${index}`" v-model="v.nama" type="text" placeholder="Contoh: Keju, 100 gram, atau L" />
+              </div>
+              <div class="baris-isian">
+                <div class="isian">
+                  <label :for="`v-harga-${index}`">Harga (Rp)</label>
+                  <input :id="`v-harga-${index}`" v-model.number="v.harga" type="number" inputmode="numeric" min="0" />
+                </div>
+                <div class="isian">
+                  <label :for="`v-stok-${index}`">Stok</label>
+                  <input :id="`v-stok-${index}`" v-model.number="v.stok" type="number" inputmode="numeric" min="0" />
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="tombol tambah-varian" @click="tambahBarisVarian">
+              <Plus :size="18" :stroke-width="2.75" />
+              Tambah varian
+            </button>
+          </div>
+        </section>
+
+        <!-- AKSI -->
+        <div v-if="uploading" class="unggah-progres" role="progressbar" :aria-valuenow="uploadProgress" aria-valuemin="0" aria-valuemax="100">
+          <div class="progres-bar"><div class="progres-isi" :style="{ transform: `scaleX(${uploadProgress / 100})` }"></div></div>
+          <p>Mengunggah foto… {{ uploadProgress }}%</p>
         </div>
 
-        <!-- KOLOM KANAN -->
-        <div class="form-right">
-          <div class="form-section">
-            <h2 class="section-title">Informasi Produk</h2>
+        <div v-if="errorMsg" class="pesan pesan-galat" role="alert">
+          <CircleAlert :size="20" :stroke-width="2.5" />
+          <span>{{ errorMsg }}</span>
+        </div>
+        <div v-if="successMsg" class="pesan pesan-sukses" role="status">
+          <CircleCheck :size="20" :stroke-width="2.5" />
+          <span>{{ successMsg }}</span>
+        </div>
 
-            <div class="field">
-              <label>Nama Produk <span class="required">*</span></label>
-              <input
-                v-model="form.nama_produk"
-                type="text"
-                placeholder="Contoh: Kue Lapis Pandan"
-                required
-                maxlength="100"
-                :disabled="loading"
-              />
-              <span class="field-hint"
-                >{{ form.nama_produk.length }}/100 karakter</span
-              >
-            </div>
-
-            <div class="field">
-              <label>Kategori <span class="required">*</span></label>
-              <select v-model="form.kategori" required :disabled="loading">
-                <option value="" disabled>Pilih kategori...</option>
-                <option v-for="k in KATEGORI" :key="k.slug" :value="k.slug">
-                  {{ k.icon }} {{ k.label }}
-                </option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Deskripsi <span class="optional">(opsional)</span></label>
-              <textarea
-                v-model="form.deskripsi"
-                rows="5"
-                placeholder="Ceritakan tentang produk ini: bahan, rasa, cara penyimpanan, minimal order, dll..."
-                maxlength="500"
-                :disabled="loading"
-              ></textarea>
-              <span class="field-hint"
-                >{{ form.deskripsi.length }}/500 karakter</span
-              >
-            </div>
-
-            <!-- Status (hanya saat edit) -->
-            <div class="field" v-if="isEdit">
-              <label>Status Produk</label>
-              <select v-model="form.status" :disabled="loading">
-                <option value="AKTIF">✅ Aktif — tampil di toko</option>
-                <option value="HABIS">❌ Stok Habis</option>
-                <option value="DISEMBUNYIKAN">🙈 Disembunyikan</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Alert sukses -->
-          <div v-if="successMsg" class="alert-success">✅ {{ successMsg }}</div>
-
-          <!-- Upload progress -->
-          <div v-if="uploading" class="upload-progress">
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{ transform: `scaleX(${uploadProgress / 100})` }"
-              ></div>
-            </div>
-            <p class="progress-text">
-              Mengupload foto... {{ uploadProgress }}%
-            </p>
-          </div>
-
-          <div class="form-actions">
-            <RouterLink to="/toko/produk" class="btn-cancel">Batal</RouterLink>
-            <button
-              type="submit"
-              class="btn-submit"
-              :disabled="loading || uploading"
-            >
-              <span v-if="loading || uploading" class="spinner-sm"></span>
-              <span v-else>{{
-                isEdit ? '💾 Simpan Perubahan' : '🚀 Tambah Produk'
-              }}</span>
-            </button>
-          </div>
+        <div class="aksi">
+          <RouterLink to="/toko/produk" class="tombol tombol-besar">Batal</RouterLink>
+          <button type="submit" class="tombol tombol-merah tombol-besar aksi-utama" :disabled="loading || uploading">
+            <span v-if="loading || uploading" class="spinner-sm"></span>
+            {{ loading || uploading ? 'Menyimpan…' : isEdit ? 'Simpan perubahan' : 'Pajang produk' }}
+          </button>
         </div>
       </form>
     </div>
+
+    <dialog ref="dialogVarian" class="dialog">
+      <div class="dialog-isi">
+        <h2 class="huruf-papan">Hapus semua varian?</h2>
+        <p>Produk ini akan kembali jadi satu harga dan satu stok. Harga diambil dari varian termurah, stok dari jumlah semua varian.</p>
+        <div class="dialog-aksi">
+          <button type="button" class="tombol" @click="dialogVarian.close()">Batal</button>
+          <button type="button" class="tombol tombol-merah" @click="hapusSemuaVarian">Hapus varian</button>
+        </div>
+      </div>
+    </dialog>
   </LayoutPenjual>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import {
+  ArrowLeft,
+  ImagePlus,
+  RefreshCw,
+  Plus,
+  Trash2,
+  X,
+  CircleAlert,
+  CircleCheck,
+  Layers,
+} from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import { formatRupiah } from '@/lib/utils';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 import { KATEGORI } from '@/lib/kategori';
 
 const route = useRoute();
 const router = useRouter();
+
 const loading = ref(false);
 const loadingData = ref(!!route.params.id);
 const uploading = ref(false);
@@ -266,6 +224,7 @@ const fileInput = ref(null);
 const previewUrl = ref('');
 const fotoFile = ref(null);
 const isDragging = ref(false);
+const dialogVarian = ref(null);
 const tokoId = ref(null);
 const statusToko = ref(null);
 
@@ -278,36 +237,42 @@ const form = ref({
   harga: '',
   stok: '',
   status: 'AKTIF',
-  varian: [], 
+  varian: [],
 });
 
 const toggleVarian = () => {
   if (form.value.varian.length === 0) {
     form.value.varian.push({
-      nama: '', 
+      nama: '',
       harga: form.value.harga || 0,
-      stok: form.value.stok || 0
+      stok: form.value.stok || 0,
     });
   } else {
-    if (confirm('Hapus semua varian dan kembali ke produk tunggal?')) {
-      form.value.varian = [];
-    }
+    dialogVarian.value?.showModal();
   }
+};
+
+const hapusSemuaVarian = () => {
+  // Harga & stok produk diisi dari varian yang ada, supaya tidak mulai dari kosong
+  const v = form.value.varian;
+  if (v.length) {
+    form.value.harga = Math.min(...v.map((x) => Number(x.harga) || 0)) || '';
+    form.value.stok = v.reduce((a, x) => a + (Number(x.stok) || 0), 0);
+  }
+  form.value.varian = [];
+  dialogVarian.value?.close();
 };
 
 const tambahBarisVarian = () => {
   form.value.varian.push({
     nama: '',
     harga: form.value.harga || 0,
-    stok: 1
+    stok: 1,
   });
 };
 
 const hapusVarian = (index) => {
   form.value.varian.splice(index, 1);
-  if (form.value.varian.length === 0) {
-    form.value.varian = [];
-  }
 };
 
 const triggerUpload = () => fileInput.value?.click();
@@ -325,7 +290,7 @@ const onDrop = (e) => {
 
 const prosesFile = (file) => {
   if (file.size > 2 * 1024 * 1024) {
-    errorMsg.value = 'Ukuran foto maksimal 2MB.';
+    errorMsg.value = 'Fotonya terlalu besar. Pilih foto yang ukurannya di bawah 2 MB.';
     return;
   }
   fotoFile.value = file;
@@ -344,6 +309,7 @@ const uploadFoto = async () => {
   const { error } = await supabase.storage
     .from('foto-produk')
     .upload(namaFile, fotoFile.value);
+
   if (error) {
     uploading.value = false;
     return null;
@@ -360,24 +326,32 @@ const handleSubmit = async () => {
   errorMsg.value = '';
   successMsg.value = '';
 
-  // Validasi foto wajib saat tambah
   if (!isEdit.value && !fotoFile.value) {
-    errorMsg.value = 'Foto produk wajib diisi.';
+    errorMsg.value = 'Pasang foto produk dulu.';
+    return;
+  }
+
+  if (!form.value.nama_produk.trim()) {
+    errorMsg.value = 'Isi nama produknya dulu.';
+    return;
+  }
+
+  if (!form.value.kategori) {
+    errorMsg.value = 'Pilih kategori produknya dulu.';
     return;
   }
 
   const pakaiVarian = form.value.varian.length > 0;
 
   if (pakaiVarian) {
-    // Input harga & stok produk disembunyikan saat pakai varian,
-    // jadi yang divalidasi adalah tiap varian
+    // Harga & stok produk disembunyikan saat pakai varian, jadi yang dicek tiap varian
     const namaList = form.value.varian.map((v) => (v.nama || '').trim());
     if (namaList.some((n) => !n)) {
-      errorMsg.value = 'Nama setiap varian wajib diisi.';
+      errorMsg.value = 'Setiap varian perlu nama, misalnya “Keju” atau “Besar”.';
       return;
     }
     if (new Set(namaList.map((n) => n.toLowerCase())).size !== namaList.length) {
-      errorMsg.value = 'Nama varian tidak boleh sama.';
+      errorMsg.value = 'Ada dua varian yang namanya sama. Beri nama yang berbeda.';
       return;
     }
     if (form.value.varian.some((v) => !v.harga || v.harga < 100)) {
@@ -385,7 +359,7 @@ const handleSubmit = async () => {
       return;
     }
     if (form.value.varian.some((v) => v.stok === '' || v.stok == null || v.stok < 0)) {
-      errorMsg.value = 'Stok varian tidak boleh kosong atau negatif.';
+      errorMsg.value = 'Isi stok setiap varian. Angkanya tidak boleh minus.';
       return;
     }
   } else {
@@ -393,19 +367,14 @@ const handleSubmit = async () => {
       errorMsg.value = 'Harga minimal Rp 100.';
       return;
     }
-
-    if (
-      form.value.stok === '' ||
-      form.value.stok === null ||
-      form.value.stok < 0
-    ) {
-      errorMsg.value = 'Stok tidak boleh kosong atau negatif.';
+    if (form.value.stok === '' || form.value.stok === null || form.value.stok < 0) {
+      errorMsg.value = 'Isi stoknya. Angkanya tidak boleh minus.';
       return;
     }
   }
 
-  // Kalau pakai varian: harga produk = harga varian termurah, stok = total stok varian,
-  // supaya kolom harga/stok di tabel produk tetap sinkron (sorting, filter, dll)
+  // Pakai varian: harga produk = harga varian termurah, stok = total stok varian,
+  // supaya kolom harga/stok di tabel produk tetap sinkron (urutan, filter, dll)
   const varianBersih = form.value.varian.map((v) => ({
     ...v,
     nama: v.nama.trim(),
@@ -423,18 +392,17 @@ const handleSubmit = async () => {
 
   let fotoUrl = previewUrl.value; // pakai url lama kalau edit & tidak ganti foto
 
-  // Upload foto baru kalau ada
   if (fotoFile.value) {
     fotoUrl = await uploadFoto();
     if (!fotoUrl) {
-      errorMsg.value = 'Gagal upload foto. Coba lagi.';
+      errorMsg.value = 'Fotonya belum terunggah. Periksa koneksi internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
   }
 
   const payload = {
-    nama_produk: form.value.nama_produk,
+    nama_produk: form.value.nama_produk.trim(),
     kategori: form.value.kategori,
     deskripsi: form.value.deskripsi,
     harga: hargaProduk,
@@ -452,21 +420,23 @@ const handleSubmit = async () => {
       .update(payload)
       .eq('id', route.params.id)
       .eq('toko_id', tokoId.value);
+
     if (error) {
-      errorMsg.value = 'Gagal menyimpan. Coba lagi.';
+      errorMsg.value = 'Perubahan belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
-    successMsg.value = 'Produk berhasil diperbarui!';
+    successMsg.value = 'Perubahan tersimpan.';
     setTimeout(() => router.push('/toko/produk'), 750);
   } else {
     const { error } = await supabase.from('produk').insert(payload);
+
     if (error) {
-      errorMsg.value = 'Gagal menambah produk. Coba lagi.';
+      errorMsg.value = 'Produk belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
-    successMsg.value = 'Produk berhasil ditambahkan!';
+    successMsg.value = 'Produk sudah dipajang.';
     setTimeout(() => router.push('/toko/produk'), 1000);
   }
 
@@ -474,11 +444,9 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
@@ -487,6 +455,7 @@ onMounted(async () => {
     .select('id, status')
     .eq('user_id', session.user.id)
     .single();
+
   if (!toko || toko.status !== 'AKTIF') {
     router.push('/toko/dashboard');
     return;
@@ -495,7 +464,6 @@ onMounted(async () => {
   statusToko.value = toko.status;
   tokoId.value = toko.id;
 
-  // Load data produk kalau mode edit
   if (isEdit.value) {
     loadingData.value = true;
     const { data: p } = await supabase
@@ -504,6 +472,7 @@ onMounted(async () => {
       .eq('id', route.params.id)
       .eq('toko_id', toko.id)
       .single();
+
     if (!p) {
       router.push('/toko/produk');
       return;
@@ -521,444 +490,212 @@ onMounted(async () => {
     previewUrl.value = p.foto_url;
     loadingData.value = false;
   } else {
-    loadingData.value = false; // mode tambah: langsung tampil form
+    loadingData.value = false;
   }
 });
 </script>
 
 <style scoped>
-.page-header {
-  background: linear-gradient(135deg, #2d5016, #3a6b1e);
-  padding: 2rem 0;
+.sempit {
+  max-width: 760px;
 }
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala {
+  background: var(--hijau);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1rem 0 1.5rem;
 }
-.back-link {
-  color: #a8c97f;
-  font-size: 0.85rem;
+.kepala .judul-halaman {
+  color: #fff;
+}
+.kembali {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 40px;
+  color: #fff;
+  font-weight: 700;
   text-decoration: none;
-  display: inline-block;
-  margin-bottom: 0.75rem;
-  transition: opacity 0.2s;
 }
-.back-link:hover {
-  opacity: 0.7;
+.kembali:hover {
+  text-decoration: underline;
 }
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #f5edd6;
+.isi {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
 }
-
-.main-content {
-  padding: 2rem 2rem 4rem;
-}
-
-.loading-wrap {
+.form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 4rem;
-  color: #6b7280;
+  gap: 1.1rem;
 }
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.bagian {
+  padding: 1.25rem 1.2rem 1.4rem;
 }
-.spinner-sm {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(245, 237, 214, 0.3);
-  border-top-color: #f5edd6;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.3fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.form-section {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-.section-title {
-  font-family: 'Lora', serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 0.3rem;
-}
-.section-sub {
-  font-size: 0.78rem;
-  color: #9ca3af;
-  margin-bottom: 1.25rem;
-  line-height: 1.5;
-}
-.required {
-  color: #dc2626;
-}
-.optional {
-  font-size: 0.78rem;
-  color: #9ca3af;
+.bagian-judul {
+  font-family: var(--font-papan);
   font-weight: 400;
+  font-size: 1.15rem;
 }
-
-/* FOTO UPLOAD */
-.foto-upload {
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: all 0.2s;
-  min-height: 200px;
+.bagian-ket {
+  margin: 0.3rem 0 1rem;
+  color: var(--tinta-2);
+}
+.bagian-kepala {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
-.foto-upload:hover,
-.foto-upload.drag-over {
-  border-color: #2d5016;
-  background: #f7fbf0;
+.bagian > .isian:first-of-type {
+  margin-top: 1rem;
 }
-.foto-upload.has-foto {
-  border-style: solid;
-  border-color: #a8c97f;
-}
-.foto-preview {
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
-  display: block;
-}
-.foto-placeholder {
-  text-align: center;
-  padding: 2rem;
-}
-.upload-icon {
-  font-size: 2.5rem;
-  display: block;
-  margin-bottom: 0.75rem;
-}
-.upload-text {
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
-}
-.upload-hint {
-  font-size: 0.78rem;
-  color: #9ca3af;
-}
-.hidden-input {
-  display: none;
-}
-.btn-ganti-foto {
-  width: 100%;
-  margin-top: 0.75rem;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  padding: 0.6rem;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-ganti-foto:hover {
-  background: #e5e7eb;
+.opsional {
+  font-weight: 400;
+  color: var(--tinta-3);
 }
 
-/* FIELDS */
-.field {
+.unggah {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  background: var(--dinding);
+  border: 2.5px dashed var(--tinta-3);
+  border-radius: var(--sudut);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 0.15s ease;
+}
+.unggah:hover,
+.unggah.seret {
+  background: var(--kuning-muda);
+  border-color: var(--tinta);
+}
+.unggah.ada {
+  border-style: solid;
+  border-color: var(--tinta);
+  background: var(--papan);
+}
+.unggah-foto {
+  width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+}
+.unggah-kosong {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.1rem;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.5rem;
+  text-align: center;
 }
-.field:last-child {
-  margin-bottom: 0;
+.unggah-judul {
+  font-weight: 700;
 }
-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #374151;
-}
-.field-hint {
-  font-size: 0.72rem;
-  color: #9ca3af;
-}
-
-input,
-select,
-textarea {
-  padding: 0.7rem 1rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
+.unggah-ket {
   font-size: 0.9rem;
-  font-family: inherit;
-  background: #fff;
-  color: #111827;
-  transition: border-color 0.2s;
-  width: 100%;
+  color: var(--tinta-3);
 }
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #2d5016;
-}
-input:disabled,
-select:disabled,
-textarea:disabled {
-  background: #f9fafb;
-  cursor: not-allowed;
-}
-textarea {
-  resize: vertical;
+.ganti {
+  margin-top: 0.75rem;
 }
 
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.varian {
+  margin-top: 0.9rem;
+  padding: 0.9rem 1rem 1.1rem;
+  background: var(--dinding);
+  border: 2px solid var(--tinta);
+  border-radius: var(--sudut);
 }
-.input-prefix-wrap {
+.varian-kepala {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
 }
-.prefix {
-  background: #f3f4f6;
-  border: 1.5px solid #d1d5db;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
-  padding: 0.7rem 0.75rem;
-  font-size: 0.85rem;
-  color: #6b7280;
-  font-weight: 600;
+.varian-no {
+  font-weight: 700;
 }
-.input-prefix-wrap input {
-  border-radius: 0 10px 10px 0;
+.varian-hapus {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: var(--merah-tua);
+  cursor: pointer;
 }
-
-/* ALERTS */
-.alert-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+.varian-hapus:hover {
+  background: var(--merah-muda);
 }
-.alert-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+.varian .baris-isian {
+  margin-top: 1rem;
+}
+.tambah-varian {
+  margin-top: 0.9rem;
+  border-style: dashed;
 }
 
-/* UPLOAD PROGRESS */
-.upload-progress {
-  margin-bottom: 1rem;
+.unggah-progres p {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--tinta-2);
 }
-.progress-bar {
-  background: #e5e7eb;
+.progres-bar {
+  height: 10px;
+  background: var(--garis-lembut);
+  border: 2px solid var(--tinta);
   border-radius: 999px;
-  height: 6px;
   overflow: hidden;
-  margin-bottom: 0.4rem;
 }
-.progress-fill {
-  background: #2d5016;
+.progres-isi {
   width: 100%;
   height: 100%;
+  background: var(--hijau);
   transform-origin: left;
   transition: transform 0.3s ease-out;
 }
-.progress-text {
-  font-size: 0.78rem;
-  color: #6b7280;
-}
 
-/* ACTIONS */
-.form-actions {
+.aksi {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
-.btn-cancel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1.5px solid #d1d5db;
-  padding: 0.85rem 1.5rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-.btn-cancel:hover {
-  background: #e5e7eb;
-}
-.btn-submit {
+.aksi-utama {
   flex: 1;
+}
+
+.dialog {
+  margin: auto;
+  width: min(440px, calc(100vw - 2rem));
+  padding: 0;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 3px solid var(--tinta);
+  border-radius: 10px;
+}
+.dialog::backdrop {
+  background: rgba(20, 20, 20, 0.55);
+}
+.dialog-isi {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.5rem;
+}
+.dialog-isi h2 {
+  font-size: 1.25rem;
+}
+.dialog-isi p {
+  color: var(--tinta-2);
+}
+.dialog-aksi {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.85rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-submit:hover:not(:disabled) {
-  background: #3a6b1e;
-}
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* --- STYLE KHUSUS VARIAN --- */
-.varian-outer-wrap {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f0eee6;
-}
-
-.varian-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.varian-title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #1a2e0a;
-}
-
-.btn-tambah-varian {
-  background: #f7fbf0;
-  color: #2d5016;
-  border: 1px solid #a8c97f;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 0.5rem;
-}
-
-.btn-tambah-varian:hover {
-  background: #2d5016;
-  color: #f5edd6;
-}
-
-.varian-card {
-  background: #faf9f6;
-  border: 1px solid #e8e0d0;
-  padding: 1.25rem;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  position: relative;
-}
-
-.btn-hapus-varian {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 22px;
-  height: 22px;
-  background: #fee2e2;
-  color: #dc2626;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.btn-hapus-varian:hover {
-  background: #fecaca;
-}
-
-.btn-tambah-baris {
-  width: 100%;
-  padding: 0.75rem;
-  background: #fff;
-  border: 1.5px dashed #d1d5db;
-  color: #4b5563;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.btn-tambah-baris:hover {
-  background: #f9fafb;
-  border-color: #2d5016;
-  color: #2d5016;
-}
-
-/* Utility tambahan */
-.mt-2 {
-  margin-top: 0.5rem;
-}
-.mb-4 {
-  margin-bottom: 1rem !important;
-}
-
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  .field-row {
-    grid-template-columns: 1fr;
-  }
+  margin-top: 0.6rem;
 }
 </style>

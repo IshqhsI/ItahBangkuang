@@ -1,128 +1,95 @@
 <template>
   <LayoutAdmin>
-    <div class="page-header">
-      <div class="container">
-        <h1 class="page-title">Moderasi Produk</h1>
-        <p class="page-sub">Semua produk dari seluruh toko</p>
+    <section class="kepala">
+      <div class="wadah">
+        <h1 class="judul-halaman">Kelola produk</h1>
+        <p class="sub-halaman">Semua produk dari semua toko. Sembunyikan yang tidak pantas.</p>
       </div>
-    </div>
+    </section>
 
-    <div class="container main-content">
-      <div class="toolbar">
-        <div class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input
-            v-model="keyword"
-            type="text"
-            placeholder="Cari nama produk atau toko..."
-            class="search-input"
-            @input="onSearch"
-          />
-          <button v-if="keyword" class="search-clear" @click="clearSearch">
-            ✕
+    <div class="wadah isi">
+      <div class="alat">
+        <form class="cari" role="search" @submit.prevent="fetchProduk">
+          <Search class="cari-ikon" :size="20" :stroke-width="2.5" aria-hidden="true" />
+          <label for="cari-produk" class="sr-only">Cari produk</label>
+          <input id="cari-produk" v-model="keyword" type="search" placeholder="Cari nama produk…" class="cari-input" @input="onSearch" />
+          <button v-if="keyword" type="button" class="cari-hapus" aria-label="Hapus pencarian" @click="clearSearch">
+            <X :size="18" :stroke-width="2.5" />
           </button>
-        </div>
-        <div class="filter-group">
-          <select
-            v-model="filterKategori"
-            @change="fetchProduk"
-            class="filter-select"
-          >
-            <option value="">Semua Kategori</option>
-            <option v-for="k in kategoriList" :key="k.slug" :value="k.slug">
-              {{ k.label }}
-            </option>
+        </form>
+
+        <div class="isian saring">
+          <label for="f-kategori" class="sr-only">Kategori</label>
+          <select id="f-kategori" v-model="filterKategori" @change="fetchProduk">
+            <option value="">Semua kategori</option>
+            <option v-for="k in KATEGORI" :key="k.slug" :value="k.slug">{{ k.label }}</option>
           </select>
-          <select
-            v-model="filterStatus"
-            @change="fetchProduk"
-            class="filter-select"
-          >
-            <option value="">Semua Status</option>
-            <option value="AKTIF">Aktif</option>
-            <option value="HABIS">Stok Habis</option>
+        </div>
+        <div class="isian saring">
+          <label for="f-status" class="sr-only">Status</label>
+          <select id="f-status" v-model="filterStatus" @change="fetchProduk">
+            <option value="">Semua status</option>
+            <option value="AKTIF">Tampil</option>
+            <option value="HABIS">Ditandai habis</option>
             <option value="DISEMBUNYIKAN">Disembunyikan</option>
           </select>
         </div>
       </div>
 
-      <p class="result-info" v-if="!loading">
-        Menampilkan <strong>{{ produkList.length }}</strong> produk
+      <p v-if="!loading" class="hasil-info" aria-live="polite">
+        <strong>{{ produkList.length }}</strong> produk
       </p>
 
-      <div v-if="loading" class="loading-wrap"><div class="spinner"></div></div>
+      <div v-if="loading" class="memuat">
+        <div class="spinner"></div>
+        <p>Mengambil produk…</p>
+      </div>
 
-      <div v-else-if="produkList.length" class="produk-table-wrap">
-        <table class="produk-table">
+      <div v-else-if="produkList.length" class="bungkus-tabel">
+        <table class="tabel">
           <thead>
             <tr>
-              <th>Produk</th>
-              <th>Toko</th>
-              <th>Kategori</th>
-              <th>Harga</th>
-              <th>Stok</th>
-              <th>Status</th>
-              <th>Aksi</th>
+              <th scope="col">Produk</th>
+              <th scope="col">Toko</th>
+              <th scope="col">Kategori</th>
+              <th scope="col" class="angka">Harga</th>
+              <th scope="col" class="angka">Stok</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="sr-only">Aksi</span></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="p in produkList" :key="p.id">
               <td>
-                <div class="produk-cell">
-                  <img
-                    :src="p.foto_url"
-                    :alt="p.nama_produk"
-                    class="produk-thumb"
-                  />
+                <div class="produk-sel">
+                  <img :src="p.foto_url" :alt="p.nama_produk" class="thumb" />
                   <span class="produk-nama">{{ p.nama_produk }}</span>
                 </div>
               </td>
               <td>
-                <RouterLink
-                  :to="`/toko/${p.toko?.id}`"
-                  class="toko-link"
-                  target="_blank"
-                  >{{ p.toko?.nama_toko }}</RouterLink
-                >
+                <RouterLink :to="`/toko/${p.toko?.id}`" target="_blank" class="toko-link">{{ p.toko?.nama_toko }}</RouterLink>
+              </td>
+              <td>{{ labelKategori(p.kategori) }}</td>
+              <td class="angka">{{ formatHargaProduk(p) }}</td>
+              <td class="angka" :class="{ merah: totalStok(p) <= 5 }">{{ totalStok(p) }}</td>
+              <td>
+                <span class="plat" :class="platStatus[p.status]">{{ labelStatus(p.status) }}</span>
               </td>
               <td>
-                <span class="kat-pill">{{ labelKategori(p.kategori) }}</span>
-              </td>
-              <td class="harga-cell">{{ formatHargaProduk(p) }}</td>
-              <td>
-                <span
-                  class="stok-text"
-                  :class="{
-                    habis: totalStok(p) === 0,
-                    low: totalStok(p) <= 5 && totalStok(p) > 0,
-                  }"
-                  >{{ totalStok(p) }}</span
-                >
-              </td>
-              <td>
-                <span class="badge" :class="badgeProduk(p.status)">{{
-                  p.status
-                }}</span>
-              </td>
-              <td>
-                <div class="aksi-cell">
+                <div class="aksi">
                   <button
-                    class="btn-icon"
-                    @click="toggleSembunyikan(p)"
+                    type="button"
+                    class="tombol tombol-kecil"
                     :disabled="prosesId === p.id"
-                    :title="
-                      p.status === 'DISEMBUNYIKAN' ? 'Tampilkan' : 'Sembunyikan'
-                    "
+                    @click="toggleSembunyikan(p)"
                   >
-                    {{ p.status === 'DISEMBUNYIKAN' ? '👁️' : '🙈' }}
+                    <Eye v-if="p.status === 'DISEMBUNYIKAN'" :size="16" :stroke-width="2.5" />
+                    <EyeOff v-else :size="16" :stroke-width="2.5" />
+                    {{ p.status === 'DISEMBUNYIKAN' ? 'Tampilkan' : 'Sembunyikan' }}
                   </button>
-                  <RouterLink
-                    :to="`/produk/${p.id}`"
-                    class="btn-icon-link"
-                    target="_blank"
-                    title="Lihat produk"
-                    >🔗</RouterLink
-                  >
+                  <RouterLink :to="`/produk/${p.id}`" target="_blank" class="tombol tombol-kecil" :aria-label="`Lihat ${p.nama_produk}`">
+                    <ExternalLink :size="16" :stroke-width="2.5" />
+                  </RouterLink>
                 </div>
               </td>
             </tr>
@@ -130,10 +97,10 @@
         </table>
       </div>
 
-      <div v-else class="empty-state">
-        <span>📦</span>
-        <h3>Tidak ada produk ditemukan</h3>
-        <p>Coba ubah filter atau kata kunci.</p>
+      <div v-else class="kosong">
+        <PackageSearch :size="44" :stroke-width="2" />
+        <h3>Tidak ada produk yang cocok</h3>
+        <p>Coba ubah kategori, status, atau kata kuncinya.</p>
       </div>
     </div>
   </LayoutAdmin>
@@ -141,13 +108,18 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { Search, X, Eye, EyeOff, ExternalLink, PackageSearch } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
+import { useToastStore } from '@/stores/toast';
 import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
 import { totalStok, formatHargaProduk } from '@/lib/utils';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
 
+const route = useRoute();
 const router = useRouter();
+const toast = useToastStore();
+
 const loading = ref(true);
 const produkList = ref([]);
 const keyword = ref('');
@@ -156,13 +128,8 @@ const filterStatus = ref('');
 const prosesId = ref(null);
 let searchTimeout = null;
 
-const kategoriList = KATEGORI;
-
-const badgeProduk = (s) => ({
-  'badge-aktif': s === 'AKTIF',
-  'badge-habis': s === 'HABIS',
-  'badge-hidden': s === 'DISEMBUNYIKAN',
-});
+const labelStatus = (s) => ({ AKTIF: 'Tampil', HABIS: 'Habis', DISEMBUNYIKAN: 'Disembunyikan' })[s] ?? s;
+const platStatus = { AKTIF: 'plat-hijau', HABIS: 'plat-kuning', DISEMBUNYIKAN: 'plat-tinta' };
 
 const fetchProduk = async () => {
   loading.value = true;
@@ -170,10 +137,11 @@ const fetchProduk = async () => {
     .from('produk')
     .select('*, toko(id, nama_toko)')
     .order('created_at', { ascending: false });
+
   if (filterKategori.value) query = query.eq('kategori', filterKategori.value);
   if (filterStatus.value) query = query.eq('status', filterStatus.value);
-  if (keyword.value.trim())
-    query = query.ilike('nama_produk', `%${keyword.value.trim()}%`);
+  if (keyword.value.trim()) query = query.ilike('nama_produk', `%${keyword.value.trim()}%`);
+
   const { data } = await query;
   produkList.value = data ?? [];
   loading.value = false;
@@ -191,325 +159,152 @@ const clearSearch = () => {
 const toggleSembunyikan = async (p) => {
   prosesId.value = p.id;
   const statusBaru = p.status === 'DISEMBUNYIKAN' ? 'AKTIF' : 'DISEMBUNYIKAN';
-  const statusUpdate = await supabase
-    .from('produk')
-    .update({ status: statusBaru })
-    .eq('id', p.id);
-  console.log(statusUpdate, statusBaru, p.id);
-  p.status = statusBaru;
+  const { error } = await supabase.from('produk').update({ status: statusBaru }).eq('id', p.id);
+  if (error) {
+    toast.error('Statusnya belum berubah. Periksa koneksi internetmu, lalu coba lagi.');
+  } else {
+    p.status = statusBaru;
+    toast.success(statusBaru === 'AKTIF' ? `“${p.nama_produk}” tampil lagi.` : `“${p.nama_produk}” disembunyikan.`);
+  }
   prosesId.value = null;
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', session.user.id)
     .single();
+
   if (profile?.role !== 'admin') {
     router.push('/');
     return;
   }
+
   fetchProduk();
 });
 </script>
 
 <style scoped>
-.page-header {
-  background: linear-gradient(135deg, #1a2e0a, #2d5016);
-  padding: 2.5rem 0;
+.kepala {
+  background: var(--biru);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.5rem 0 1.75rem;
 }
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala .judul-halaman {
+  color: #fff;
 }
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.25rem;
+.kepala .sub-halaman {
+  color: #c9d8f2;
 }
-.page-sub {
-  color: #a8c97f;
-  font-size: 0.875rem;
+.isi {
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
 }
-.main-content {
-  padding: 2rem 2rem 4rem;
-}
-.toolbar {
+
+.alat {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
-  align-items: center;
+  gap: 0.6rem;
 }
-.search-wrap {
+.cari {
   position: relative;
-  flex: 1;
-  min-width: 200px;
+  flex: 1 1 280px;
 }
-.search-icon {
+.cari-ikon {
   position: absolute;
-  left: 0.85rem;
+  left: 0.9rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.9rem;
+  pointer-events: none;
 }
-.search-input {
+.cari-input {
   width: 100%;
-  padding: 0.65rem 2.5rem 0.65rem 2.4rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  background: #fff;
-  color: #111827;
-  transition: border-color 0.2s;
+  min-height: 48px;
+  padding: 0 2.9rem;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  border-radius: var(--sudut-kecil);
+  font-family: var(--font-teks);
+  font-size: 1rem;
+  -webkit-appearance: none;
+  appearance: none;
 }
-.search-input:focus {
+.cari-input::-webkit-search-cancel-button {
+  display: none;
+}
+.cari-input:focus {
   outline: none;
-  border-color: #2d5016;
+  border-color: var(--biru);
+  box-shadow: 0 0 0 3px var(--biru-muda);
 }
-.search-clear {
+.cari-hapus {
   position: absolute;
-  right: 0.85rem;
+  right: 0.35rem;
   top: 50%;
   transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
   background: none;
-  border: none;
-  cursor: pointer;
-  color: #9ca3af;
-}
-.filter-group {
-  display: flex;
-  gap: 0.5rem;
-}
-.filter-select {
-  padding: 0.6rem 0.85rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.82rem;
-  font-family: inherit;
-  background: #fff;
-  color: #374151;
+  border: 0;
+  border-radius: 6px;
   cursor: pointer;
 }
-.filter-select:focus {
-  outline: none;
-  border-color: #2d5016;
+.cari-hapus:hover {
+  background: var(--dinding);
 }
-.result-info {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1.25rem;
+.saring {
+  flex: 0 1 200px;
 }
-.result-info strong {
-  color: #1a2e0a;
+.saring + .saring {
+  margin-top: 0;
 }
-.loading-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 4rem;
+
+.hasil-info {
+  margin: 1rem 0 0.6rem;
+  color: var(--tinta-2);
 }
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.hasil-info strong {
+  color: var(--tinta);
 }
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.produk-table-wrap {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  overflow: hidden;
-  overflow-x: auto;
-}
-.produk-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-.produk-table thead {
-  background: #f9fafb;
-  border-bottom: 1px solid #e8e0d0;
-}
-.produk-table th {
-  padding: 0.85rem 1rem;
-  text-align: left;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-.produk-table td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid #f0ede6;
-  vertical-align: middle;
-}
-.produk-table tr:last-child td {
-  border-bottom: none;
-}
-.produk-table tr:hover td {
-  background: #fdfaf4;
-}
-.produk-cell {
+
+.produk-sel {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.7rem;
+  min-width: 220px;
 }
-.produk-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  object-fit: cover;
+.thumb {
   flex-shrink: 0;
-  background: #f3f4f6;
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: 2px solid var(--tinta);
+  border-radius: 6px;
+  background: var(--dinding);
 }
 .produk-nama {
-  font-weight: 600;
-  color: #1a2e0a;
-  font-size: 0.85rem;
-  max-width: 180px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-weight: 700;
 }
 .toko-link {
-  color: #2d5016;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.82rem;
-}
-.toko-link:hover {
-  text-decoration: underline;
-}
-.kat-pill {
-  background: #f0f7e8;
-  color: #2d5016;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.harga-cell {
   font-weight: 700;
-  color: #2d5016;
-  white-space: nowrap;
 }
-.stok-text {
-  font-weight: 600;
-  color: #374151;
+td.merah {
+  color: var(--merah-tua);
+  font-weight: 700;
 }
-.stok-text.habis {
-  color: #dc2626;
-}
-.stok-text.low {
-  color: #d97706;
-}
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-.badge-aktif {
-  background: #dcfce7;
-  color: #166534;
-}
-.badge-habis {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.badge-hidden {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-.aksi-cell {
+.aksi {
   display: flex;
   gap: 0.4rem;
-  align-items: center;
-}
-.btn-icon {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  padding: 0.35rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-icon:hover:not(:disabled) {
-  background: #f3f4f6;
-}
-.btn-icon:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.btn-icon-link {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  padding: 0.35rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-.btn-icon-link:hover {
-  background: #dbeafe;
-}
-.empty-state {
-  text-align: center;
-  padding: 5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-.empty-state span {
-  font-size: 3rem;
-}
-.empty-state h3 {
-  font-family: 'Lora', serif;
-  font-size: 1.2rem;
-  color: #1a2e0a;
-}
-.empty-state p {
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
-  .toolbar {
-    flex-direction: column;
-  }
-  .filter-group {
-    flex-wrap: wrap;
-  }
 }
 </style>

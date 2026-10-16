@@ -1,148 +1,89 @@
 <template>
-  <nav
-    class="navbar"
-    :class="{ 'nav-admin': isAdminArea, 'nav-toko': isTokoArea }"
-  >
-    <div class="nav-container">
-      <!-- LOGO -->
-      <RouterLink to="/" class="nav-brand" @click="menuOpen = false">
-        🛒 ItahBangkuang
+  <header class="bilah" :class="`bilah-${area}`">
+    <div class="bilah-dalam wadah">
+      <RouterLink to="/" class="merek" aria-label="ItahBangkuang — Beranda">
+        <span class="merek-papan">
+          <span class="merek-itah">Itah</span><span class="merek-bangkuang">Bangkuang</span>
+        </span>
+        <span v-if="area !== 'publik'" class="merek-area">{{ judulArea }}</span>
       </RouterLink>
 
-      <!-- DESKTOP MENU -->
-      <div class="nav-links">
-        <!-- 1. AREA ADMIN -->
-        <template v-if="isAdminArea">
-          <RouterLink to="/admin/dashboard">Dashboard</RouterLink>
-          <RouterLink to="/admin/toko">Kelola Toko</RouterLink>
-          <RouterLink to="/admin/produk">Kelola Produk</RouterLink>
-          <RouterLink to="/admin/users">Kelola Users</RouterLink>
-        </template>
+      <nav class="tautan" aria-label="Navigasi utama">
+        <RouterLink v-for="t in tautan" :key="t.to" :to="t.to">
+          {{ t.label }}
+        </RouterLink>
+      </nav>
 
-        <!-- 2. AREA TOKO (PENJUAL) -->
-        <template v-else-if="isTokoArea">
-          <RouterLink :to="`/toko/${authStore.tokoId}`">Lihat Toko</RouterLink>
-          <template v-if="authStore.statusToko === 'AKTIF'">
-            <RouterLink to="/toko/dashboard">Dashboard</RouterLink>
-            <RouterLink to="/toko/produk">Produk Saya</RouterLink>
-            <RouterLink to="/toko/order">Order Masuk</RouterLink>
-          </template>
-          <RouterLink to="/toko/profil">Profil Toko</RouterLink>
+      <div class="aksi">
+        <template v-if="!authStore.user">
+          <RouterLink to="/login" class="tombol tombol-kecil aksi-masuk">Masuk</RouterLink>
+          <RouterLink to="/register" class="tombol tombol-kecil tombol-kuning">Daftar</RouterLink>
         </template>
-
-        <!-- 3. AREA PUBLIK (PEMBELI) -->
         <template v-else>
-          <RouterLink to="/produk">Semua Produk</RouterLink>
-          <RouterLink to="/tutorial">Tutorial</RouterLink>
-          <template v-if="!authStore.user">
-            <RouterLink to="/login" class="btn-nav-outline">Masuk</RouterLink>
-            <RouterLink to="/register" class="btn-nav-solid">Daftar</RouterLink>
-          </template>
-          <template v-else>
-            <RouterLink
-              v-if="authStore.role === 'penjual'"
-              to="/toko/dashboard"
-              class="btn-nav-outline"
-              >Dashboard Toko</RouterLink
-            >
-            <RouterLink
-              v-else-if="authStore.role === 'admin'"
-              to="/admin/dashboard"
-              class="btn-nav-outline"
-              >Panel Admin</RouterLink
-            >
-            <RouterLink v-else to="/riwayat" class="btn-nav-outline"
-              >Pesanan Saya</RouterLink
-            >
-          </template>
+          <RouterLink
+            v-if="tautanPeran"
+            :to="tautanPeran.to"
+            class="tombol tombol-kecil tombol-kuning aksi-peran"
+          >
+            <component :is="tautanPeran.icon" :size="18" :stroke-width="2.25" />
+            {{ tautanPeran.label }}
+          </RouterLink>
+          <button class="tombol tombol-kecil aksi-keluar" @click="handleLogout">
+            <LogOut :size="18" :stroke-width="2.25" />
+            <span>Keluar</span>
+          </button>
         </template>
-
-        <!-- Tombol Logout (Jika Login) -->
-        <button
-          v-if="authStore.user"
-          class="btn-logout-desktop"
-          @click="handleLogout"
-        >
-          Logout
-        </button>
       </div>
 
-      <!-- HAMBURGER (Mobile Only) -->
       <button
-        class="hamburger"
-        @click="menuOpen = !menuOpen"
+        class="tombol-menu"
+        :aria-expanded="menuOpen"
+        aria-controls="menu-hp"
         :aria-label="menuOpen ? 'Tutup menu' : 'Buka menu'"
+        @click="menuOpen = !menuOpen"
       >
-        <span class="hamburger-icon">{{ menuOpen ? '✕' : '☰' }}</span>
+        <X v-if="menuOpen" :size="26" :stroke-width="2.5" />
+        <Menu v-else :size="26" :stroke-width="2.5" />
       </button>
     </div>
+  </header>
 
-    <!-- MOBILE OVERLAY (Darkens background) -->
-    <Transition name="fade">
-      <div v-if="menuOpen" class="menu-overlay" @click="menuOpen = false"></div>
-    </Transition>
-
-    <!-- MOBILE MENU SIDEBAR -->
-    <Transition name="slide">
-      <div class="mobile-menu" v-if="menuOpen">
-        <p class="menu-label">{{ menuTitle }}</p>
-
-        <div class="mobile-links">
-          <!-- Area Admin Mobile -->
-          <template v-if="isAdminArea">
-            <RouterLink to="/admin/dashboard">Dashboard</RouterLink>
-            <RouterLink to="/admin/toko">Kelola Toko</RouterLink>
-            <RouterLink to="/admin/produk">Produk</RouterLink>
-            <RouterLink to="/admin/users">Users</RouterLink>
-          </template>
-
-          <!-- Area Toko Mobile -->
-          <template v-else-if="isTokoArea">
-            <RouterLink :to="`/toko/${authStore.tokoId}`"
-              >Lihat Toko</RouterLink
-            >
-            <template v-if="authStore.statusToko === 'AKTIF'">
-              <RouterLink to="/toko/dashboard">Dashboard</RouterLink>
-              <RouterLink to="/toko/produk">Produk Saya</RouterLink>
-              <RouterLink to="/toko/order">Order Masuk</RouterLink>
-            </template>
-            <RouterLink to="/toko/profil">Profil Toko</RouterLink>
-          </template>
-
-          <!-- Area Publik Mobile -->
-          <template v-else>
-            <RouterLink to="/produk">Semua Produk</RouterLink>
-            <RouterLink to="/tutorial">Tutorial</RouterLink>
-            <template v-if="!authStore.user">
-              <RouterLink to="/login">Masuk</RouterLink>
-              <RouterLink to="/register">Daftar Akun</RouterLink>
-            </template>
-            <template v-else>
-              <RouterLink
-                v-if="authStore.role === 'penjual'"
-                to="/toko/dashboard"
-                >Dashboard Toko</RouterLink
-              >
-              <RouterLink
-                v-else-if="authStore.role === 'admin'"
-                to="/admin/dashboard"
-                >Panel Admin</RouterLink
-              >
-              <RouterLink v-else to="/riwayat">Pesanan Saya</RouterLink>
-            </template>
-          </template>
-        </div>
-
-        <hr v-if="authStore.user" class="menu-divider" />
-        <button
-          v-if="authStore.user"
-          class="btn-logout-mobile"
-          @click="handleLogout"
-        >
-          Logout
+  <!-- MENU HP -->
+  <Transition name="fade">
+    <div v-if="menuOpen" class="tirai" @click="menuOpen = false"></div>
+  </Transition>
+  <Transition name="laci">
+    <div v-if="menuOpen" id="menu-hp" class="laci" role="dialog" aria-label="Menu">
+      <p class="laci-judul">{{ judulArea }}</p>
+      <nav class="laci-tautan">
+        <RouterLink v-for="t in tautanLengkap" :key="t.to" :to="t.to">
+          <component :is="t.icon" :size="22" :stroke-width="2.25" />
+          {{ t.label }}
+        </RouterLink>
+      </nav>
+      <div class="laci-kaki">
+        <template v-if="!authStore.user">
+          <RouterLink to="/login" class="tombol tombol-penuh">Masuk</RouterLink>
+          <RouterLink to="/register" class="tombol tombol-merah tombol-penuh">Daftar Akun</RouterLink>
+        </template>
+        <button v-else class="tombol tombol-bahaya tombol-penuh" @click="handleLogout">
+          <LogOut :size="20" :stroke-width="2.25" />
+          Keluar
         </button>
       </div>
-    </Transition>
+    </div>
+  </Transition>
+
+  <!-- TAB BAWAH PENJUAL (HP) -->
+  <nav
+    v-if="area === 'toko' && authStore.statusToko === 'AKTIF'"
+    class="tab-bawah"
+    aria-label="Menu toko"
+  >
+    <RouterLink v-for="t in tabToko" :key="t.to" :to="t.to">
+      <component :is="t.icon" :size="22" :stroke-width="2.25" />
+      <span>{{ t.label }}</span>
+    </RouterLink>
   </nav>
 </template>
 
@@ -151,36 +92,101 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import {
+  Menu,
+  X,
+  LogOut,
+  Store,
+  ShoppingBasket,
+  BookOpen,
+  ReceiptText,
+  LayoutDashboard,
+  Package,
+  ClipboardList,
+  UserRound,
+  Shield,
+  Users,
+  House,
+} from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const menuOpen = ref(false);
 const toast = useToastStore();
+const menuOpen = ref(false);
 
-// 1. Deteksi Area Secara Otomatis
-const isAdminArea = computed(() => route.path.startsWith('/admin'));
-const isTokoArea = computed(() => route.path.startsWith('/toko')) && authStore.role === 'penjual';
-
-const menuTitle = computed(() => {
-  if (isAdminArea.value) return 'Menu Admin';
-  if (isTokoArea.value) return 'Menu Penjual';
-  return 'Navigasi';
+// Area ditentukan dari rute + peran (reaktif)
+const RUTE_TOKO = /^\/toko\/(dashboard|produk|order|profil)(\/|$)/;
+const area = computed(() => {
+  if (route.path.startsWith('/admin')) return 'admin';
+  if (authStore.role === 'penjual' && RUTE_TOKO.test(route.path)) return 'toko';
+  return 'publik';
 });
 
-// 2. Logika Auto-Close & Clean Up
-const handleResize = () => {
-  if (window.innerWidth > 768 && menuOpen.value) {
-    menuOpen.value = false;
-  }
-};
+const judulArea = computed(
+  () => ({ admin: 'Panel Admin', toko: 'Toko Saya', publik: 'Menu' })[area.value],
+);
 
-// 3. Kunci Scroll Body saat Menu Terbuka (UX Pro)
+const tautanAdmin = [
+  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/toko', label: 'Kelola Toko', icon: Store },
+  { to: '/admin/produk', label: 'Kelola Produk', icon: Package },
+  { to: '/admin/users', label: 'Kelola Pengguna', icon: Users },
+];
+
+const tabToko = [
+  { to: '/toko/dashboard', label: 'Ringkasan', icon: LayoutDashboard },
+  { to: '/toko/produk', label: 'Produk', icon: Package },
+  { to: '/toko/order', label: 'Pesanan', icon: ClipboardList },
+  { to: '/toko/profil', label: 'Profil', icon: UserRound },
+];
+
+const tautanToko = computed(() => {
+  const list = [];
+  if (authStore.statusToko === 'AKTIF') list.push(...tabToko.slice(0, 3));
+  list.push(tabToko[3]);
+  if (authStore.tokoId)
+    list.push({ to: `/toko/${authStore.tokoId}`, label: 'Lihat Toko', icon: Store });
+  return list;
+});
+
+const tautanPublik = [
+  { to: '/produk', label: 'Semua Produk', icon: ShoppingBasket },
+  { to: '/tutorial', label: 'Cara Pakai', icon: BookOpen },
+];
+
+const tautan = computed(() => {
+  if (area.value === 'admin') return tautanAdmin;
+  if (area.value === 'toko') return tautanToko.value;
+  return tautanPublik;
+});
+
+// Tombol pintas sesuai peran (hanya di area publik)
+const tautanPeran = computed(() => {
+  if (area.value !== 'publik') {
+    return { to: '/', label: 'Beranda', icon: House };
+  }
+  if (authStore.role === 'penjual')
+    return { to: '/toko/dashboard', label: 'Toko Saya', icon: Store };
+  if (authStore.role === 'admin')
+    return { to: '/admin/dashboard', label: 'Panel Admin', icon: Shield };
+  return { to: '/riwayat', label: 'Pesanan Saya', icon: ReceiptText };
+});
+
+const tautanLengkap = computed(() => {
+  const list = [{ to: '/', label: 'Beranda', icon: House }, ...tautan.value];
+  if (area.value === 'publik') {
+    if (!authStore.user) {
+      return list;
+    }
+    if (tautanPeran.value) list.push(tautanPeran.value);
+  }
+  return list.filter((t, i, arr) => arr.findIndex((x) => x.to === t.to) === i);
+});
+
 watch(menuOpen, (val) => {
   document.body.style.overflow = val ? 'hidden' : '';
 });
-
-// 4. Tutup menu setiap kali pindah halaman
 watch(
   () => route.path,
   () => {
@@ -188,223 +194,263 @@ watch(
   },
 );
 
+const tutupDenganEsc = (e) => {
+  if (e.key === 'Escape') menuOpen.value = false;
+};
+const handleResize = () => {
+  if (window.innerWidth > 900 && menuOpen.value) menuOpen.value = false;
+};
 onMounted(() => {
   window.addEventListener('resize', handleResize);
+  window.addEventListener('keydown', tutupDenganEsc);
 });
-
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  window.removeEventListener('keydown', tutupDenganEsc);
   document.body.style.overflow = '';
 });
 
 const handleLogout = () => {
   menuOpen.value = false;
   authStore.logout(router);
-  toast.success('Logout berhasil. Sampai jumpa lagi! 👋');
+  toast.success('Kamu sudah keluar. Sampai jumpa lagi!');
 };
 </script>
 
 <style scoped>
-.navbar {
+.bilah {
+  --bilah-bg: var(--merah);
+  --bilah-list: var(--kuning);
   position: fixed;
-  /* display: block; */
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  background: rgba(253, 250, 244, 0.98);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  z-index: 1000;
-  transition: border-color 0.3s;
-  width: 100% !important;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: var(--nav-h);
+  background: var(--bilah-bg);
+  border-bottom: 3px solid var(--tinta);
+  box-shadow: inset 0 -5px 0 var(--bilah-list);
+  color: #fff;
+}
+.bilah-toko {
+  --bilah-bg: var(--hijau);
+}
+.bilah-admin {
+  --bilah-bg: var(--biru);
+  --bilah-list: #fff;
 }
 
-/* Tema Warna Area khusus */
-.nav-admin {
-  border-bottom: 2px solid #ef4444;
-} /* Merah untuk Admin */
-.nav-toko {
-  border-bottom: 2px solid var(--brand);
-} /* Hijau untuk Penjual */
-
-.nav-container {
-  /* max-width: 1200px; */
-  margin: 0 auto;
+.bilah-dalam {
   height: 100%;
-  padding: 0 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between !important;
-  width: 85%;
+  gap: 1.5rem;
+  padding-bottom: 5px;
 }
 
-.nav-brand {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
+/* Papan merek */
+.merek {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.merek-papan {
+  display: inline-flex;
+  align-items: baseline;
+  padding: 0.3rem 0.55rem 0.25rem;
+  background: var(--kuning);
+  border: 2.5px solid var(--tinta);
+  border-radius: 6px;
+  font-family: var(--font-papan);
+  font-size: 1.05rem;
+  line-height: 1;
+  transform: rotate(-1.5deg);
+  transform-origin: left center;
+  transition: transform 0.4s var(--ease-out);
+}
+.merek:hover .merek-papan {
+  transform: rotate(0deg);
+}
+.merek-itah {
+  color: var(--merah);
+}
+.merek-bangkuang {
+  color: var(--tinta);
+}
+.merek-area {
   font-weight: 700;
-  color: var(--brand);
-  text-decoration: none;
+  font-size: 0.9rem;
+  color: #fff;
+  opacity: 0.92;
 }
 
-.nav-links {
+/* Tautan desktop */
+.tautan {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
 }
-
-.nav-links a {
+.tautan a {
+  position: relative;
+  padding: 0.55rem 0.7rem;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.97rem;
   text-decoration: none;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color 0.2s;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+.tautan a:hover {
+  background: rgba(0, 0, 0, 0.16);
+}
+.tautan a.router-link-exact-active::after,
+.tautan a.router-link-active::after {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 0.15rem;
+  height: 4px;
+  background: var(--bilah-list);
+  border-radius: 2px;
 }
 
-.nav-links a:hover,
-.nav-links a.router-link-active {
-  color: var(--brand);
+.aksi {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.aksi-masuk,
+.aksi-keluar {
+  --t-bg: transparent;
+  --t-bg-hover: rgba(0, 0, 0, 0.18);
+  --t-fg: #fff;
+  border-color: #fff;
 }
 
-/* Hamburger */
-.hamburger {
+.tombol-menu {
   display: none;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--brand);
-  padding: 0.5rem;
-}
-
-/* Mobile Menu & Overlay */
-.menu-overlay {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 998;
-}
-
-.mobile-menu {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  background: white;
-  padding: 1.5rem 2rem;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-}
-
-.mobile-links {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.mobile-links a {
-  text-decoration: none;
-  color: var(--text-primary);
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.5rem 0;
-}
-
-.menu-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  font-weight: 800;
-}
-
-.btn-logout-desktop {
-  background: none;
-  border: 2px solid #dc2626;
-  color: #dc2626;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0.45rem 1rem;
+  margin-left: auto;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  background: var(--kuning);
+  color: var(--tinta);
+  border: 2.5px solid var(--tinta);
   border-radius: 8px;
-  margin-left: 1.5rem;
-}
-
-.btn-logout-desktop:hover {
-  background: #dc2626;
-  color: white;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
-}
-
-.btn-logout-mobile {
-  background: #dc2626;
-  border: none;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
   cursor: pointer;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  width: 100%;
 }
 
-.btn-logout-mobile:hover {
-  background: #b91c1c;
-  transition: background-color 0.2s;
-}
-
-.menu-divider {
-  border: 0;
-  border-top: 1px solid var(--border);
-  margin: 0.5rem 0;
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    width: 100%;
-    padding: 0 1rem;
-  }
-
-  .nav-container {
-    justify-content: space-between !important;
-    width: 100%;
-    padding: 0;
-  }
-
-  .nav-links {
+@media (max-width: 900px) {
+  .tautan,
+  .aksi {
     display: none;
   }
-  .hamburger {
-    display: block;
+  .tombol-menu {
+    display: inline-flex;
   }
 }
 
-/* Animations */
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.3s ease;
+/* Laci menu HP */
+.tirai {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(20, 20, 20, 0.5);
 }
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateY(-10px);
-  opacity: 0;
+.laci {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 160;
+  width: min(86vw, 340px);
+  display: flex;
+  flex-direction: column;
+  background: var(--papan);
+  box-shadow: -3px 0 0 var(--tinta);
+  padding: 1.25rem 1rem 1.25rem;
+  overflow-y: auto;
 }
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.laci-judul {
+  font-family: var(--font-papan);
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem 1rem;
+  border-bottom: 2.5px solid var(--tinta);
+  margin-bottom: 0.5rem;
 }
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.laci-tautan {
+  display: flex;
+  flex-direction: column;
+}
+.laci-tautan a {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 56px;
+  padding: 0 0.6rem;
+  color: var(--tinta);
+  font-weight: 700;
+  font-size: 1.08rem;
+  text-decoration: none;
+  border-bottom: 1px solid var(--garis-lembut);
+}
+.laci-tautan a.router-link-exact-active {
+  color: var(--merah);
+}
+.laci-tautan a.router-link-exact-active svg {
+  color: var(--merah);
+}
+.laci-kaki {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.laci-enter-active,
+.laci-leave-active {
+  transition: transform 0.32s var(--ease-out);
+}
+.laci-enter-from,
+.laci-leave-to {
+  transform: translateX(100%);
+}
+
+/* Tab bawah penjual */
+.tab-bawah {
+  display: none;
+}
+@media (max-width: 900px) {
+  .tab-bawah {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 90;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--papan);
+    border-top: 3px solid var(--tinta);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab-bawah a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 62px;
+    color: var(--tinta-3);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .tab-bawah a.router-link-active {
+    color: var(--hijau);
+    box-shadow: inset 0 4px 0 var(--hijau);
+  }
 }
 </style>

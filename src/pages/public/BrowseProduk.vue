@@ -1,170 +1,150 @@
 <template>
   <LayoutPublic>
-    <!-- PAGE HEADER -->
-    <div class="page-header">
-      <div class="container">
-        <h1 class="page-title">Semua Produk</h1>
-        <p class="page-sub">Jajanan & makanan rumahan dari warga lokal</p>
-      </div>
-    </div>
+    <!-- KEPALA -->
+    <section class="kepala">
+      <div class="wadah">
+        <h1 class="kepala-judul huruf-papan berbayang">Semua produk</h1>
+        <p class="kepala-sub">Dagangan tetangga se-Kelurahan Bangkuang, dari jajanan sampai jasa.</p>
 
-    <!-- FILTER & SEARCH -->
-    <div class="filter-bar">
-      <div class="container filter-inner">
-        <div class="search-wrap">
-          <span class="search-icon">🔍</span>
+        <form class="cari" role="search" @submit.prevent="fetchProduk">
+          <Search class="cari-ikon" :size="22" :stroke-width="2.5" aria-hidden="true" />
+          <label for="cari-produk" class="sr-only">Cari produk</label>
           <input
+            id="cari-produk"
             v-model="keyword"
-            type="text"
-            placeholder="Cari produk..."
+            type="search"
+            placeholder="Cari kue, sambal, jahit baju…"
+            class="cari-input"
+            enterkeyhint="search"
             @input="onSearch"
-            class="search-input"
           />
-          <button v-if="keyword" class="search-clear" @click="clearSearch">
-            ✕
+          <button
+            v-if="keyword"
+            type="button"
+            class="cari-hapus"
+            aria-label="Hapus pencarian"
+            @click="clearSearch"
+          >
+            <X :size="20" :stroke-width="2.5" />
           </button>
-        </div>
-        <div class="kat-tabs">  
+        </form>
+      </div>
+    </section>
+
+    <!-- FILTER -->
+    <div class="saring">
+      <div class="wadah saring-dalam">
+        <div class="deret-chip" role="group" aria-label="Kategori">
           <button
             v-for="k in kategoriList"
             :key="k.slug"
-            class="kat-tab"
-            :class="{ active: kategoriAktif === k.slug }"
+            type="button"
+            class="chip"
+            :aria-pressed="kategoriAktif === k.slug"
             @click="setKategori(k.slug)"
           >
-            {{ k.icon }} {{ k.label }}
+            <component :is="k.icon" :size="18" :stroke-width="2.25" />
+            {{ k.label }}
           </button>
         </div>
-        <select v-model="sortBy" @change="fetchProduk" class="sort-select">
-          <option value="terbaru">Terbaru</option>
-          <option value="termurah">Harga: Termurah</option>
-          <option value="termahal">Harga: Termahal</option>
-        </select>
+        <div class="urut">
+          <label for="urutan" class="sr-only">Urutkan</label>
+          <ArrowDownUp :size="18" :stroke-width="2.25" aria-hidden="true" />
+          <select id="urutan" v-model="sortBy" class="urut-pilih" @change="fetchProduk">
+            <option value="terbaru">Paling baru</option>
+            <option value="termurah">Harga termurah</option>
+            <option value="termahal">Harga termahal</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <!-- CONTENT -->
-    <div class="main-content">
-      <div class="container">
-        <div class="result-info" v-if="!loadingProduk">
-          <span v-if="keyword || kategoriAktif !== 'semua'">
-            Menampilkan <strong>{{ produkList.length }}</strong> produk
-            <span v-if="keyword">
-              untuk "<em>{{ keyword }}</em
-              >"</span
-            >
-            <span v-if="kategoriAktif !== 'semua'">
-              • {{ labelKategori(kategoriAktif) }}</span
-            >
-          </span>
-          <span v-else
-            ><strong>{{ produkList.length }}</strong> produk tersedia</span
-          >
+    <!-- HASIL -->
+    <section class="hasil">
+      <div class="wadah">
+        <p v-if="!loadingProduk && produkList.length" class="hasil-info" aria-live="polite">
+          <template v-if="keyword || kategoriAktif !== 'semua'">
+            Ketemu <strong>{{ produkList.length }}</strong> produk
+            <template v-if="keyword"> untuk “{{ keyword }}”</template>
+            <template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>
+          </template>
+          <template v-else>
+            <strong>{{ produkList.length }}</strong> produk dari tetangga
+          </template>
+        </p>
+
+        <div v-if="loadingProduk" class="grid-produk">
+          <div v-for="n in 8" :key="n" class="kerangka" style="aspect-ratio: 3 / 4"></div>
         </div>
 
-        <!-- Loading skeleton -->
-        <div v-if="loadingProduk" class="produk-grid">
-          <div v-for="n in 8" :key="n" class="produk-skeleton"></div>
+        <div v-else-if="produkList.length" class="grid-produk">
+          <KartuProduk v-for="p in produkList" :key="p.id" :produk="p" />
         </div>
 
-        <!-- Produk grid -->
-        <div v-else-if="produkList.length" class="produk-grid">
-          <RouterLink
-            v-for="p in produkList"
-            :key="p.id"
-            :to="`/produk/${p.id}`"
-            class="produk-card"
-          >
-            <div class="produk-foto-wrap">
-              <img
-                :src="p.foto_url"
-                :alt="p.nama_produk"
-                class="produk-foto"
-                loading="lazy"
-              />
-              <span class="produk-kat-badge">{{ labelKategori(p.kategori) }}</span>
-              <!-- Logika Stok Habis Varian -->
-              <span v-if="totalStok(p) === 0" class="produk-habis-badge">Habis</span>
-              <!-- Badge info jika ada varian -->
-              <span v-if="p.varian?.length > 0" class="varian-count-badge">
-                {{ p.varian.length }} Varian
-              </span>
-            </div>
-            <div class="produk-info">
-              <p class="produk-toko">🏪 {{ p.toko?.nama_toko }}</p>
-              <h3 class="produk-nama">{{ p.nama_produk }}</h3>
-              <p class="produk-alamat">📍 {{ p.toko?.alamat }}</p>
-              <div class="produk-footer">
-                <!-- Tampilkan Range Harga jika ada varian -->
-                <span class="produk-harga">{{ formatHargaProduk(p) }}</span>
-                <span
-                  class="produk-stok"
-                  :class="{ low: totalStok(p) <= 5 && totalStok(p) > 0 }"
-                >
-                  {{ totalStok(p) > 0 ? `Stok: ${totalStok(p)}` : 'Habis' }}
-                </span>
-              </div>
-            </div>
-          </RouterLink>
-        </div>
-
-        <!-- Empty state -->
-        <div v-else class="empty-state">
-          <span class="empty-icon">🍽️</span>
-          <h3>Produk tidak ditemukan</h3>
-          <p v-if="keyword">Coba kata kunci lain atau hapus filter.</p>
-          <p v-else>Belum ada produk di kategori ini.</p>
-          <button
-            v-if="keyword || kategoriAktif !== 'semua'"
-            @click="resetFilter"
-            class="btn-reset"
-          >
-            Tampilkan Semua Produk
-          </button>
+        <div v-else class="kosong">
+          <SearchX :size="44" :stroke-width="2" />
+          <template v-if="keyword || kategoriAktif !== 'semua'">
+            <h3>Belum ketemu</h3>
+            <p v-if="keyword">
+              Tidak ada produk dengan nama “{{ keyword }}”<template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>. Coba kata lain yang lebih pendek.
+            </p>
+            <p v-else>Belum ada yang jualan di kategori {{ labelKategori(kategoriAktif) }}.</p>
+            <button type="button" class="tombol tombol-merah" @click="resetFilter">
+              Lihat semua produk
+            </button>
+          </template>
+          <template v-else>
+            <h3>Etalase masih kosong</h3>
+            <p>Belum ada tetangga yang memajang produk.</p>
+          </template>
         </div>
       </div>
-    </div>
+    </section>
   </LayoutPublic>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch, markRaw } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { Search, SearchX, X, ArrowDownUp, LayoutGrid } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { totalStok, formatHargaProduk } from '@/lib/utils';
-import { useSeo } from '@/lib/useSeo'
+import KartuProduk from '@/components/KartuProduk.vue';
+import { useSeo } from '@/lib/useSeo';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
 
-useSeo({ title: 'Semua Produk', description: 'Browse produk lokal...' })
+useSeo({
+  title: 'Semua Produk',
+  description:
+    'Lihat semua produk warga Kelurahan Bangkuang: jajanan, lauk, minuman, jahitan, sampai jasa tukang.',
+});
 
+const route = useRoute();
 const router = useRouter();
-const user = ref(null);
-const role = ref(null);
 const loadingProduk = ref(true);
 const produkList = ref([]);
-const keyword = ref('');
-const kategoriAktif = ref('semua');
+const keyword = ref(route.query.q ?? '');
+const kategoriAktif = ref(route.query.kategori ?? 'semua');
 const sortBy = ref('terbaru');
 let searchTimeout = null;
 
-// Get From url query
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('kategori')) {
-  kategoriAktif.value = urlParams.get('kategori');
-}
-
 const kategoriList = [
-  { slug: 'semua', label: 'Semua', icon: '📦' },
-  ...KATEGORI
+  { slug: 'semua', label: 'Semua', icon: markRaw(LayoutGrid) },
+  ...KATEGORI,
 ];
 
+// Simpan filter di URL supaya bisa dibagikan & tombol kembali tetap jalan
+const sinkronUrl = () => {
+  const query = {};
+  if (kategoriAktif.value !== 'semua') query.kategori = kategoriAktif.value;
+  if (keyword.value.trim()) query.q = keyword.value.trim();
+  router.replace({ query });
+};
 
 const fetchProduk = async () => {
   loadingProduk.value = true;
   let query = supabase
     .from('produk')
-    // Kolom 'varian' akan otomatis ikut terambil melalui '*'
     .select('*, toko(nama_toko, alamat, status)')
     .eq('status', 'AKTIF');
 
@@ -172,7 +152,7 @@ const fetchProduk = async () => {
     query = query.eq('kategori', kategoriAktif.value);
   if (keyword.value.trim())
     query = query.ilike('nama_produk', `%${keyword.value.trim()}%`);
-  
+
   if (sortBy.value === 'terbaru')
     query = query.order('created_at', { ascending: false });
   else if (sortBy.value === 'termurah')
@@ -187,447 +167,178 @@ const fetchProduk = async () => {
 
 const setKategori = (slug) => {
   kategoriAktif.value = slug;
+  sinkronUrl();
   fetchProduk();
 };
 const onSearch = () => {
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(fetchProduk, 400);
+  searchTimeout = setTimeout(() => {
+    sinkronUrl();
+    fetchProduk();
+  }, 400);
 };
 const clearSearch = () => {
   keyword.value = '';
+  sinkronUrl();
   fetchProduk();
 };
 const resetFilter = () => {
   keyword.value = '';
   kategoriAktif.value = 'semua';
+  sinkronUrl();
   fetchProduk();
 };
 
-onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (session) {
-    user.value = session.user;
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-    role.value = profile?.role;
-  }
-  fetchProduk();
-});
+// Kalau datang dari papan kategori lain (mis. lewat footer/beranda) saat sudah di halaman ini
+watch(
+  () => route.query.kategori,
+  (val) => {
+    const slug = val ?? 'semua';
+    if (slug !== kategoriAktif.value) {
+      kategoriAktif.value = slug;
+      fetchProduk();
+    }
+  },
+);
+
+onMounted(fetchProduk);
 </script>
 
 <style scoped>
-/* ========================================= */
-/* PAGE HEADER                               */
-/* ========================================= */
-.page-header {
-  background: linear-gradient(135deg, #2d5016, #3a6b1e);
-  padding: 3rem 0 2.5rem;
+.kepala {
+  background: var(--kuning);
+  border-bottom: 3px solid var(--tinta);
+  padding: 2rem 0 2.25rem;
 }
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala-judul {
+  --bayang: var(--merah);
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  color: var(--papan);
+  -webkit-text-stroke: 1.5px var(--tinta);
+  paint-order: stroke fill;
 }
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.4rem;
-}
-.page-sub {
-  color: #a8c97f;
-  font-size: 0.95rem;
+.kepala-sub {
+  margin-top: 0.5rem;
+  font-size: 1.05rem;
+  color: #3a2f00;
+  max-width: 52ch;
 }
 
-/* ========================================= */
-/* FILTER BAR (REDESIGN - COMPACT & GLASS)   */
-/* ========================================= */
-.filter-bar {
-  /* Efek Glassmorphism agar tidak terasa tebal/mengganggu */
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(232, 224, 208, 0.6);
-  padding: 0.85rem 0; /* Padding vertikal dipertipis */
-  position: sticky;
-  top: 64px; /* Sesuaikan dengan tinggi navbar kamu */
-  z-index: 90;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-}
-
-.filter-inner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-/* Search Bar Dibuat Lebih Sleek */
-.search-wrap {
+.cari {
   position: relative;
-  flex: 1;
-  min-width: 180px;
+  margin-top: 1.4rem;
+  max-width: 640px;
 }
-.search-icon {
+.cari-ikon {
   position: absolute;
-  left: 0.85rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.9rem;
-  color: #6b7280;
+  pointer-events: none;
 }
-.search-input {
+.cari-input {
   width: 100%;
-  padding: 0.55rem 2.5rem 0.55rem 2.4rem;
-  border: 1.5px solid rgba(209, 213, 219, 0.7);
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  background: rgba(253, 250, 244, 0.8);
-  color: #111827;
-  transition: all 0.2s;
+  min-height: 56px;
+  padding: 0 3.25rem;
+  background: var(--papan);
+  color: var(--tinta);
+  border: var(--tebal) solid var(--tinta);
+  border-radius: var(--sudut);
+  font-family: var(--font-teks);
+  font-size: 1.05rem;
+  -webkit-appearance: none;
+  appearance: none;
 }
-.search-input:focus {
-  outline: none;
-  border-color: #2d5016;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
-}
-.search-clear {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #9ca3af;
-}
-
-/* Tab Kategori (Horizontal Scrollable) */
-.kat-tabs {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: nowrap; /* KUNCI UTAMA: Jangan biarkan turun ke baris baru */
-  overflow-x: auto;  /* Memungkinkan scroll ke samping */
-  scrollbar-width: none; /* Menyembunyikan scrollbar di Firefox */
-  -ms-overflow-style: none; /* Menyembunyikan scrollbar di IE/Edge */
-  padding-bottom: 2px;
-}
-/* Menyembunyikan scrollbar di Chrome/Safari */
-.kat-tabs::-webkit-scrollbar {
+.cari-input::-webkit-search-cancel-button {
   display: none;
 }
-
-.kat-tab {
-  flex-shrink: 0; /* Mencegah tombol mengecil sendirinya */
-  padding: 0.45rem 1rem;
-  border: 1.5px solid transparent;
-  border-radius: 999px;
-  background: #f3f4f6;
-  color: #4b5563;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  white-space: nowrap;
+.cari-input::placeholder {
+  color: #6b6b6b;
 }
-.kat-tab:hover {
-  background: #e5e7eb;
-}
-.kat-tab.active {
-  background: #2d5016;
-  color: #f5edd6;
-  box-shadow: 0 2px 8px rgba(45, 80, 22, 0.2);
-}
-
-.sort-select {
-  padding: 0.55rem 0.75rem;
-  border: 1.5px solid rgba(209, 213, 219, 0.7);
-  border-radius: 10px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  font-family: inherit;
-  background: #fff;
-  color: #374151;
-  cursor: pointer;
-}
-.sort-select:focus {
+.cari-input:focus {
   outline: none;
-  border-color: #2d5016;
+  box-shadow: 0 0 0 4px var(--papan), 0 0 0 7px var(--biru);
 }
-
-/* ========================================= */
-/* MAIN CONTENT & RESULT INFO                */
-/* ========================================= */
-.main-content {
-  padding: 2rem 0 4rem;
-  background-color: #fdfaf4; /* Latar belakang lembut */
-}
-.result-info {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1.5rem;
-}
-.result-info strong {
-  color: #1a2e0a;
-}
-
-/* ========================================= */
-/* PRODUCT GRID & CARDS (OPTIMIZED)          */
-/* ========================================= */
-.produk-grid {
+.cari-hapus {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Mobile base */
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .produk-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-}
-@media (min-width: 1024px) {
-  .produk-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.produk-skeleton {
-  background: linear-gradient(90deg, #f3f4f6 25%, #e9eaeb 50%, #f3f4f6 75%);
-  background-size: 200% 100%;
-  border-radius: 16px;
-  height: 290px;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.produk-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-}
-.produk-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-  border-color: #a8c97f;
-}
-
-/* Aspek Rasio Kotak 1:1 */
-.produk-foto-wrap {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-}
-.produk-foto {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  background: #f3f4f6;
-  transition: transform 0.5s ease;
-}
-.produk-card:hover .produk-foto {
-  transform: scale(1.08);
-}
-
-.produk-kat-badge {
-  position: absolute;
-  top: 0.6rem;
-  left: 0.6rem;
-  background: rgba(45, 80, 22, 0.88);
-  backdrop-filter: blur(4px);
-  color: #f5edd6;
-  padding: 0.2rem 0.55rem;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
   border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  z-index: 2;
+  cursor: pointer;
 }
-.produk-habis-badge {
-  position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
-  background: rgba(220, 38, 38, 0.88);
-  backdrop-filter: blur(4px);
-  color: #fff;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  z-index: 2;
+.cari-hapus:hover {
+  background: var(--dinding);
 }
 
-.produk-info {
-  padding: 1rem;
+.saring {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 20;
+  background: var(--papan);
+  border-bottom: 2px solid var(--tinta);
+}
+.saring-dalam {
   display: flex;
-  flex-direction: column;
-  flex: 1; /* Memastikan info meregang jika tinggi kartu berbeda */
-}
-.produk-toko {
-  font-size: 0.71rem;
-  color: #6b7280;
-  margin-bottom: 0.3rem;
-  font-weight: 500;
-}
-.produk-nama {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #1a2e0a;
-  margin-bottom: 0.4rem;
-  line-height: 1.4;
-  /* Kunci Ketinggian Judul */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  height: 2.8em;
-}
-.produk-alamat {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  margin-bottom: 0.8rem;
-  /* Cegah alamat membongkar layout */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.produk-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto; /* Mendorong footer ke bawah */
-  padding-top: 0.5rem;
-  border-top: 1px dashed #e8e0d0;
-}
-.produk-harga {
-  font-weight: 700;
-  color: #2d5016;
-  font-size: 0.95rem;
-}
-.produk-stok {
-  font-size: 0.7rem;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-}
-.produk-stok.low {
-  color: #b45309;
-  background: #fef3c7;
-  font-weight: 600;
-}
-
-.varian-count-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* ========================================= */
-/* EMPTY STATE                               */
-/* ========================================= */
-.empty-state {
-  text-align: center;
-  padding: 6rem 2rem;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px dashed #d1d5db;
+  padding-top: 0.6rem;
+  padding-bottom: 0.35rem;
 }
-.empty-icon {
-  font-size: 4rem;
-  opacity: 0.8;
-  margin-bottom: 0.5rem;
+.saring .deret-chip {
+  flex: 1;
+  min-width: 0;
 }
-.empty-state h3 {
-  font-family: 'Lora', serif;
-  font-size: 1.4rem;
-  color: #1a2e0a;
+.urut {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-bottom: 0.25rem;
 }
-.empty-state p {
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-.btn-reset {
-  margin-top: 1rem;
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.8rem 1.75rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: inherit;
+.urut-pilih {
+  min-height: 42px;
+  padding: 0 2.2rem 0 0.75rem;
+  background: var(--papan)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23141414' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 7 5 5 5-5'/%3E%3C/svg%3E")
+    no-repeat right 0.6rem center;
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  font-family: var(--font-teks);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--tinta);
+  -webkit-appearance: none;
+  appearance: none;
   cursor: pointer;
-  transition: all 0.2s;
 }
-.btn-reset:hover {
-  background: #3a6b1e;
-  transform: translateY(-2px);
-}
-
-/* ========================================= */
-/* RESPONSIVE BREAKPOINTS (SOLUSI FILTER)    */
-/* ========================================= */
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
+@media (max-width: 640px) {
+  .saring-dalam {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
   }
-  .hamburger {
-    display: block;
-  }
-  
-  /* GRID BARU UNTUK FILTER HP (Menghemat Ruang) */
-  .filter-inner {
-    display: grid;
-    grid-template-columns: 1fr auto; /* Kolom 1 lebar, kolom 2 seukuran select */
-    gap: 0.75rem;
-  }
-  .search-wrap {
-    grid-column: 1 / 2;
-  }
-  .sort-select {
-    grid-column: 2 / 3;
-    padding: 0.55rem; /* Lebih ringkas */
-  }
-  .kat-tabs {
-    grid-column: 1 / -1; /* Tab Kategori memenuhi baris bawah */
-    margin-top: 0.25rem;
+  .urut {
+    justify-content: flex-end;
   }
 }
 
-@media (max-width: 480px) {
-  /* Di HP layar sangat kecil, jadikan 1 kolom agar gambar produk tidak terlalu kekecilan */
-  .produk-grid {
-    grid-template-columns: 1fr;
-  }
+.hasil {
+  background: var(--dinding);
+  padding: 1.5rem 0 4rem;
+  min-height: 50vh;
+}
+.hasil-info {
+  margin-bottom: 1rem;
+  color: var(--tinta-2);
+}
+.hasil-info strong {
+  color: var(--tinta);
 }
 </style>

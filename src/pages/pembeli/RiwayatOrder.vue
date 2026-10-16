@@ -1,98 +1,84 @@
 <template>
   <LayoutPublic>
-    <div class="page-header">
-      <div class="container">
-        <h1 class="page-title">Pesanan Saya</h1>
-        <p class="page-sub">Riwayat semua pesananmu</p>
+    <section class="kepala">
+      <div class="wadah">
+        <h1 class="judul-halaman">Pesanan saya</h1>
+        <p class="sub-halaman">Semua yang pernah kamu pesan, beserta statusnya.</p>
       </div>
-    </div>
+    </section>
 
-    <div class="container main-content">
-      <div class="filter-tabs">
+    <div class="wadah isi">
+      <div class="deret-chip" role="group" aria-label="Saring menurut status">
         <button
           v-for="f in filterList"
           :key="f.val"
-          class="filter-tab"
-          :class="{ active: filterAktif === f.val }"
+          type="button"
+          class="chip"
+          :aria-pressed="filterAktif === f.val"
           @click="filterAktif = f.val"
         >
           {{ f.label }}
-          <span class="tab-count" v-if="hitungFilter(f.val) > 0">{{
-            hitungFilter(f.val)
-          }}</span>
+          <span v-if="hitungFilter(f.val) > 0" class="hitung">{{ hitungFilter(f.val) }}</span>
         </button>
       </div>
 
-      <div v-if="loading" class="loading-wrap">
+      <div v-if="loading" class="memuat">
         <div class="spinner"></div>
+        <p>Mengambil pesananmu…</p>
       </div>
 
-      <div v-else-if="orderFiltered.length" class="order-list">
-        <div v-for="o in orderFiltered" :key="o.id" class="order-card">
-          <div class="order-header">
-            <span class="badge" :class="badgeClass(o.status)">{{
-              labelStatus(o.status)
-            }}</span>
-            <span class="order-date">{{ formatTanggal(o.created_at) }}</span>
+      <ul v-else-if="orderFiltered.length" class="daftar">
+        <li v-for="o in orderFiltered" :key="o.id" class="nota papan">
+          <div class="nota-kepala">
+            <span class="badge" :class="badgeClass(o.status)">{{ labelStatus(o.status) }}</span>
+            <time class="nota-tanggal" :datetime="o.created_at">{{ formatTanggal(o.created_at) }}</time>
           </div>
 
-          <div class="order-body">
-            <RouterLink :to="`/produk/${o.produk_id}`" class="order-produk">
-              <img
-                :src="o.produk?.foto_url"
-                :alt="o.produk?.nama_produk"
-                class="order-foto"
-              />
-              <div class="order-produk-info">
-                <p class="order-toko">🏪 {{ o.toko?.nama_toko }}</p>
-                <p class="order-nama">{{ o.produk?.nama_produk }}</p>
+          <RouterLink :to="`/produk/${o.produk_id}`" class="nota-produk">
+            <img :src="o.produk?.foto_url" :alt="o.produk?.nama_produk" class="nota-foto" />
+            <span class="nota-teks">
+              <span class="nota-toko"><Store :size="15" :stroke-width="2.25" /> {{ o.toko?.nama_toko }}</span>
+              <span class="nota-nama">{{ o.produk?.nama_produk }}</span>
+              <span v-if="o.varian_terpilih" class="nota-varian">{{ o.varian_terpilih }}</span>
+              <span class="nota-jumlah">{{ o.jumlah }} × {{ formatRupiah(o.total_harga / o.jumlah) }}</span>
+            </span>
+          </RouterLink>
 
-                <!-- FIX: Tampilkan varian jika ada -->
-                <p v-if="o.varian_terpilih" class="order-varian">
-                  Varian: {{ o.varian_terpilih }}
-                </p>
-
-                <p class="order-jumlah">
-                  {{ o.jumlah }} pcs × {{ formatRupiah(o.total_harga / o.jumlah) }}
-                </p>
-              </div>
-            </RouterLink>
-
-            <div class="order-kanan">
-              <div class="order-metode" :class="{ cod: o.metode === 'COD' }">
-                {{ o.metode === 'COD' ? '🤝 COD' : '🏦 Transfer' }}
-              </div>
-              <p class="order-total">{{ formatRupiah(o.total_harga) }}</p>
+          <dl class="nota-rincian">
+            <div>
+              <dt>Bayar</dt>
+              <dd>{{ o.metode === 'COD' ? 'COD' : 'Transfer' }}</dd>
             </div>
-          </div>
+            <div v-if="o.catatan">
+              <dt>Catatan</dt>
+              <dd class="catatan">{{ o.catatan }}</dd>
+            </div>
+            <div class="total">
+              <dt>Total</dt>
+              <dd>{{ formatRupiah(o.total_harga) }}</dd>
+            </div>
+          </dl>
 
-          <div class="order-footer" v-if="o.catatan">
-            <span class="catatan-label">📝 Catatan:</span>
-            <span class="catatan-val">{{ o.catatan }}</span>
-          </div>
-
-          <div class="order-actions">
-            <button class="btn-wa" @click="chatPenjual(o)">
-              💬 Hubungi Penjual
+          <div class="nota-aksi">
+            <button type="button" class="tombol tombol-hijau tombol-kecil" @click="chatPenjual(o)">
+              <IkonWa :size="18" />
+              Tanya penjual
             </button>
-            <RouterLink :to="`/produk/${o.produk_id}`" class="btn-beli-lagi">
-              🔁 Beli Lagi
+            <RouterLink :to="`/produk/${o.produk_id}`" class="tombol tombol-kecil">
+              <RotateCw :size="18" :stroke-width="2.5" />
+              Pesan lagi
             </RouterLink>
           </div>
-        </div>
-      </div>
+        </li>
+      </ul>
 
-      <div v-else class="empty-state">
-        <span>🛒</span>
-        <h3>
-          {{
-            filterAktif === 'semua'
-              ? 'Belum ada pesanan'
-              : `Tidak ada pesanan ${labelStatus(filterAktif).toLowerCase()}`
-          }}
-        </h3>
-        <p>Yuk mulai belanja produk lokal!</p>
-        <RouterLink to="/produk" class="btn-belanja">Lihat Produk →</RouterLink>
+      <div v-else class="kosong">
+        <ReceiptText :size="44" :stroke-width="2" />
+        <h3>{{ filterAktif === 'semua' ? 'Belum ada pesanan' : `Tidak ada pesanan yang ${labelStatus(filterAktif).toLowerCase()}` }}</h3>
+        <p v-if="filterAktif === 'semua'">Pesanan yang kamu buat akan muncul di sini.</p>
+        <p v-else>Coba lihat status lainnya.</p>
+        <RouterLink v-if="filterAktif === 'semua'" to="/produk" class="tombol tombol-merah">Lihat produk</RouterLink>
+        <button v-else type="button" class="tombol" @click="filterAktif = 'semua'">Lihat semua pesanan</button>
       </div>
     </div>
   </LayoutPublic>
@@ -100,11 +86,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { Store, RotateCw, ReceiptText } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
+import IkonWa from '@/components/IkonWa.vue';
+import { formatRupiah, formatTanggal, badgeOrderClass, tautanWa } from '@/lib/utils';
 
+const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 const orderList = ref([]);
@@ -112,10 +101,10 @@ const filterAktif = ref('semua');
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
-  { val: 'MENUNGGU', label: '⏳ Menunggu' },
-  { val: 'DIKONFIRMASI', label: '✅ Dikonfirmasi' },
-  { val: 'SELESAI', label: '🎉 Selesai' },
-  { val: 'DIBATALKAN', label: '❌ Dibatalkan' },
+  { val: 'MENUNGGU', label: 'Menunggu' },
+  { val: 'DIKONFIRMASI', label: 'Dikonfirmasi' },
+  { val: 'SELESAI', label: 'Selesai' },
+  { val: 'DIBATALKAN', label: 'Dibatalkan' },
 ];
 
 const labelStatus = (s) =>
@@ -128,46 +117,32 @@ const labelStatus = (s) =>
 
 const badgeClass = badgeOrderClass;
 
-const orderFiltered = computed(() => {
-  if (filterAktif.value === 'semua') return orderList.value;
-  return orderList.value.filter((o) => o.status === filterAktif.value);
-});
+const orderFiltered = computed(() =>
+  filterAktif.value === 'semua'
+    ? orderList.value
+    : orderList.value.filter((o) => o.status === filterAktif.value),
+);
 
-const hitungFilter = (val) => {
-  if (val === 'semua') return orderList.value.length;
-  return orderList.value.filter((o) => o.status === val).length;
-};
+const hitungFilter = (val) =>
+  val === 'semua' ? orderList.value.length : orderList.value.filter((o) => o.status === val).length;
 
 const chatPenjual = (o) => {
-  // Normalisasi nomor WA — handle +62, 62, 0
-  const wa = (o.toko?.nomor_wa ?? '').replace(/^(\+62|62|0)/, '');
-
-  // Sertakan varian di pesan jika ada
-  let detailProduk = `*${o.produk?.nama_produk}*`;
-  if (o.varian_terpilih) detailProduk += ` (Varian: ${o.varian_terpilih})`;
-
-  const pesan = `Halo, saya ingin tanya mengenai pesanan ${detailProduk} (${o.jumlah} pcs) yang saya buat via ItahBangkuang.`;
-  window.open(
-    `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
-    '_blank',
-  );
+  let detail = `*${o.produk?.nama_produk}*`;
+  if (o.varian_terpilih) detail += ` (varian ${o.varian_terpilih})`;
+  const pesan = `Halo, saya mau tanya soal pesanan ${detail} sebanyak ${o.jumlah} yang saya buat lewat ItahBangkuang.`;
+  window.open(tautanWa(o.toko?.nomor_wa, pesan), '_blank');
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
   const { data } = await supabase
     .from('orders')
-    .select(
-      // FIX: Tambah varian_terpilih agar data tersedia di template
-      '*, varian_terpilih, produk(nama_produk, foto_url, harga), toko(nama_toko, nomor_wa)',
-    )
+    .select('*, varian_terpilih, produk(nama_produk, foto_url, harga), toko(nama_toko, nomor_wa)')
     .eq('pembeli_id', session.user.id)
     .order('created_at', { ascending: false });
 
@@ -177,299 +152,130 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page-header {
-  background: linear-gradient(135deg, #2d5016, #3a6b1e);
-  padding: 2.5rem 0;
+.kepala {
+  background: var(--kuning);
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.75rem 0 2rem;
 }
-.container {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala .sub-halaman {
+  color: #3a2f00;
 }
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.25rem;
+.isi {
+  padding-top: 1.25rem;
+  padding-bottom: 4rem;
+  max-width: 860px;
 }
-.page-sub {
-  color: #a8c97f;
-  font-size: 0.875rem;
-}
-.main-content {
-  padding: 2rem 2rem 4rem;
-}
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.75rem;
-  flex-wrap: wrap;
-}
-.filter-tab {
-  padding: 0.45rem 1rem;
-  border: 1.5px solid #e8e0d0;
-  border-radius: 999px;
-  background: #fff;
-  color: #6b7280;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.filter-tab:hover {
-  border-color: #a8c97f;
-  color: #2d5016;
-}
-.filter-tab.active {
-  border-color: #2d5016;
-  background: #2d5016;
-  color: #f5edd6;
-}
-.tab-count {
-  background: rgba(255, 255, 255, 0.25);
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-}
-.filter-tab:not(.active) .tab-count {
-  background: #fef9c3;
-  color: #92400e;
-}
-.loading-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 4rem;
-}
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-.order-list {
+
+.daftar {
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-}
-.order-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  overflow: hidden;
-}
-.order-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1.25rem;
-  background: #fdfaf4;
-  border-bottom: 1px solid #f0ede6;
-}
-.order-date {
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-.order-body {
-  padding: 1.1rem 1.25rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 1rem;
+  margin-top: 0.75rem;
 }
-.order-produk {
+.nota {
+  padding: 1rem 1.1rem 1.1rem;
+}
+.nota-kepala {
   display: flex;
-  gap: 0.85rem;
-  text-decoration: none;
-  color: inherit;
-  flex: 1;
-  transition: opacity 0.2s;
-}
-.order-produk:hover {
-  opacity: 0.8;
-}
-.order-foto {
-  width: 64px;
-  height: 64px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #f3f4f6;
-}
-.order-toko {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  margin-bottom: 0.2rem;
-}
-.order-nama {
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: #1a2e0a;
-  margin-bottom: 0.2rem;
-}
-/* Badge varian — konsisten dengan BuatPesanan.vue */
-.order-varian {
-  display: inline-block;
-  background: #f0f7e8;
-  color: #2d5016;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #a8c97f;
-  margin-bottom: 0.25rem;
-}
-.order-jumlah {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-.order-kanan {
-  text-align: right;
-  flex-shrink: 0;
-}
-.order-metode {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  margin-bottom: 0.4rem;
-  display: inline-block;
-}
-.order-metode.cod {
-  background: #eff6ff;
-  color: #1e40af;
-}
-.order-total {
-  font-family: 'Lora', serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #2d5016;
-}
-.order-footer {
-  padding: 0.65rem 1.25rem;
-  background: #fdfaf4;
-  border-top: 1px solid #f0ede6;
-  font-size: 0.78rem;
-  color: #6b7280;
-}
-.catatan-label {
-  font-weight: 600;
-  margin-right: 0.3rem;
-}
-.order-actions {
-  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.85rem 1.25rem;
-  border-top: 1px solid #f0ede6;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px dashed var(--garis-lembut);
 }
-.btn-wa {
-  flex: 1;
-  background: #f0fff4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-  padding: 0.55rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  text-align: center;
+.nota-tanggal {
+  font-size: 0.9rem;
+  color: var(--tinta-3);
 }
-.btn-wa:hover {
-  background: #dcfce7;
-}
-.btn-beli-lagi {
-  flex: 1;
-  background: #f0f7e8;
-  color: #2d5016;
-  border: 1px solid #a8c97f;
-  padding: 0.55rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
+
+.nota-produk {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+  color: var(--tinta);
   text-decoration: none;
-  transition: background 0.2s;
-  text-align: center;
-  display: block;
 }
-.btn-beli-lagi:hover {
-  background: #e0f0cc;
+.nota-foto {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 2.5px solid var(--tinta);
+  border-radius: var(--sudut);
+  background: var(--dinding);
 }
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-.badge-menunggu {
-  background: #fef9c3;
-  color: #92400e;
-}
-.badge-konfirmasi {
-  background: #dbeafe;
-  color: #1e40af;
-}
-.badge-selesai {
-  background: #dcfce7;
-  color: #166534;
-}
-.badge-batal {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.empty-state {
-  text-align: center;
-  padding: 5rem 2rem;
+.nota-teks {
   display: flex;
   flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.nota-toko {
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+  color: var(--tinta-3);
 }
-.empty-state span {
-  font-size: 3rem;
+.nota-nama {
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.25;
 }
-.empty-state h3 {
-  font-family: 'Lora', serif;
-  font-size: 1.2rem;
-  color: #1a2e0a;
+.nota-produk:hover .nota-nama {
+  text-decoration: underline;
 }
-.empty-state p {
-  color: #6b7280;
-  font-size: 0.875rem;
+.nota-varian {
+  align-self: flex-start;
+  padding: 0 0.45rem;
+  background: var(--kuning);
+  border: 2px solid var(--tinta);
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
-.btn-belanja {
-  margin-top: 0.5rem;
-  display: inline-block;
-  background: #2d5016;
-  color: #f5edd6;
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: background 0.2s;
+.nota-jumlah {
+  color: var(--tinta-2);
+  font-size: 0.95rem;
 }
-.btn-belanja:hover {
-  background: #3a6b1e;
+
+.nota-rincian {
+  margin-top: 0.9rem;
+  border-top: 1px solid var(--garis-lembut);
 }
-@media (max-width: 640px) {
-  .nav-links { display: none; }
-  .hamburger { display: block; }
-  .order-body { flex-direction: column; }
-  .order-kanan { text-align: left; }
+.nota-rincian > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--garis-lembut);
+}
+.nota-rincian dt {
+  color: var(--tinta-3);
+}
+.nota-rincian dd {
+  font-weight: 700;
+  text-align: right;
+}
+.nota-rincian dd.catatan {
+  font-weight: 400;
+  max-width: 34ch;
+  overflow-wrap: anywhere;
+}
+.nota-rincian .total {
+  border-bottom: 0;
+}
+.nota-rincian .total dd {
+  font-family: var(--font-papan);
+  font-weight: 400;
+  font-size: 1.25rem;
+}
+
+.nota-aksi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
 }
 </style>

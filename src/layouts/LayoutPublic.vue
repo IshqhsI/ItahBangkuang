@@ -1,34 +1,27 @@
 <template>
-  <div class="beranda">
-    <NavBar/>
-
-    <main class="main-content">
+  <div class="tata-letak">
+    <NavBar />
+    <main class="isi-utama">
       <slot />
     </main>
-
     <FooterBar />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import NavBar from '@/components/NavBar.vue'
-import FooterBar from '@/components/FooterBar.vue'
-
-const router   = useRouter()
-const authStore = useAuthStore()
-const menuOpen = ref(false)
+import NavBar from '@/components/NavBar.vue';
+import FooterBar from '@/components/FooterBar.vue';
 </script>
 
 <style scoped>
-.page {
+.tata-letak {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--papan);
 }
-
-.main-content {
-  padding-top: 64px; /* Harus sama dengan tinggi navbar */
-  min-height: 100vh;
+.isi-utama {
+  flex: 1;
+  padding-top: var(--nav-h);
 }
 </style>

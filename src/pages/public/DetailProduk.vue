@@ -1,294 +1,277 @@
 <template>
   <LayoutPublic>
-    <div v-if="loading" class="loading-wrap">
-      <div class="loading-spinner"></div>
-      <p>Memuat produk...</p>
+    <div v-if="loading" class="memuat">
+      <div class="spinner"></div>
+      <p>Mengambil produk…</p>
     </div>
 
-    <div v-else-if="!produk" class="not-found">
-      <span>😕</span>
-      <h2>Produk tidak ditemukan</h2>
-      <RouterLink to="/produk" class="btn-back">← Kembali ke Produk</RouterLink>
+    <div v-else-if="!produk" class="wadah tidak-ada">
+      <div class="kosong">
+        <PackageX :size="48" :stroke-width="2" />
+        <h3>Produk ini tidak ada</h3>
+        <p>Mungkin sudah dihapus penjualnya, atau tokonya sedang tutup.</p>
+        <RouterLink to="/produk" class="tombol tombol-merah">Lihat produk lain</RouterLink>
+      </div>
     </div>
 
-    <div v-else class="detail-wrap">
-      <div class="container">
-        <div class="breadcrumb">
-          <RouterLink to="/">Beranda</RouterLink>
-          <span>›</span>
-          <RouterLink to="/produk">Produk</RouterLink>
-          <span>›</span>
-          <span>{{ produk.nama_produk }}</span>
-        </div>
+    <template v-else>
+      <div class="detail">
+        <div class="wadah">
+          <nav class="remah" aria-label="Lokasi halaman">
+            <RouterLink to="/">Beranda</RouterLink>
+            <ChevronRight :size="16" :stroke-width="2.5" aria-hidden="true" />
+            <RouterLink to="/produk">Produk</RouterLink>
+            <ChevronRight :size="16" :stroke-width="2.5" aria-hidden="true" />
+            <span aria-current="page">{{ produk.nama_produk }}</span>
+          </nav>
 
-        <div class="detail-grid">
-          <div class="foto-section">
-            <div class="foto-wrap">
-              <img
-                :src="produk.foto_url"
-                :alt="produk.nama_produk"
-                class="foto-utama"
-              />
-              <span class="kat-badge">{{
-                labelKategori(produk.kategori)
-              }}</span>
-              <span v-if="isHabis" class="habis-overlay">Stok Habis</span>
+          <div class="detail-grid">
+            <!-- FOTO -->
+            <div class="foto-papan">
+              <img :src="produk.foto_url" :alt="produk.nama_produk" class="foto-utama" />
+              <RouterLink
+                :to="`/produk?kategori=${produk.kategori}`"
+                class="plat foto-kategori"
+              >
+                <component :is="iconKategori(produk.kategori)" :size="14" :stroke-width="2.5" />
+                {{ labelKategori(produk.kategori) }}
+              </RouterLink>
+              <div v-if="isHabis" class="foto-habis"><span>Habis</span></div>
             </div>
-          </div>
 
-          <div class="info-section">
-            <h1 class="produk-nama">{{ produk.nama_produk }}</h1>
+            <!-- INFO -->
+            <div class="info">
+              <h1 class="nama">{{ produk.nama_produk }}</h1>
 
-            <div class="produk-harga">{{ formatRupiah(currentHarga) }}</div>
-
-            <div class="produk-meta">
-              <div class="meta-item">
-                <span class="meta-label">Stok</span>
-                <span
-                  class="meta-val"
-                  :class="{
-                    habis: currentStok === 0,
-                    low: currentStok <= 5 && currentStok > 0,
-                  }"
-                >
-                  {{
-                    currentStok === 0
-                      ? 'Habis'
-                      : currentStok <= 5
-                        ? `Sisa ${currentStok}`
-                        : currentStok + ' tersedia'
-                  }}
+              <div class="harga-baris">
+                <span class="plat-harga harga">{{ teksHarga }}</span>
+                <span class="stok" :class="kelasStok">
+                  <template v-if="currentStok === 0">Stok habis</template>
+                  <template v-else-if="currentStok <= 5">Tinggal {{ currentStok }}</template>
+                  <template v-else>Stok {{ currentStok }}</template>
                 </span>
               </div>
-              <div class="meta-item">
-                <span class="meta-label">Kategori</span>
-                <span class="meta-val">{{
-                  labelKategori(produk.kategori)
-                }}</span>
-              </div>
-            </div>
 
-            <div
-              class="varian-section"
-              v-if="produk.varian && produk.varian.length > 0"
-            >
-              <h3 class="varian-label">
-                Pilih Varian:
-                <span class="required" v-if="!varianTerpilih">*</span>
-              </h3>
-              <div class="varian-list">
-                <button
-                  v-for="(v, index) in produk.varian"
-                  :key="index"
-                  class="btn-varian"
-                  :class="{
-                    active: varianTerpilih?.nama === v.nama,
-                    'varian-habis': v.stok === 0,
-                  }"
-                  @click="pilihVarian(v)"
-                  :disabled="v.stok === 0"
-                >
-                  {{ v.nama }}
-                </button>
-              </div>
-              <p v-if="!varianTerpilih" class="error-text">
-                Silakan pilih varian terlebih dahulu
-              </p>
-            </div>
-
-            <div class="deskripsi-section" v-if="produk.deskripsi">
-              <h3>Deskripsi</h3>
-              <p>{{ produk.deskripsi }}</p>
-            </div>
-
-            <div class="jumlah-section" v-if="currentStok > 0">
-              <label>Jumlah</label>
-              <div class="jumlah-control">
-                <button @click="kurangiJumlah" :disabled="jumlah <= 1">
-                  −
-                </button>
-                <span>{{ jumlah }}</span>
-                <button @click="tambahJumlah" :disabled="jumlah >= currentStok">
-                  +
-                </button>
-              </div>
-              <span class="subtotal"
-                >Total:
-                <strong>{{ formatRupiah(currentHarga * jumlah) }}</strong></span
-              >
-            </div>
-
-            <div class="aksi-wrap">
-              <button
-                v-if="currentStok > 0"
-                class="btn-pesan"
-                @click="handlePesan"
-                :disabled="produk.varian?.length > 0 && !varianTerpilih"
-              >
-                🛒 Pesan Sekarang
-              </button>
-
-              <button class="btn-wa" @click="chatWA">
-                💬 Chat via WhatsApp
-              </button>
-
-              <div class="share-wrap">
-                <span class="share-label">Bagikan produk ini:</span>
-                <div class="share-btns">
+              <!-- VARIAN -->
+              <fieldset v-if="punyaVarian(produk)" class="varian">
+                <legend class="label">
+                  Pilih varian
+                  <span v-if="!varianTerpilih" class="varian-wajib">— wajib dipilih</span>
+                </legend>
+                <div class="varian-daftar">
                   <button
-                    class="share-btn share-wa"
-                    @click="shareWA"
-                    title="Bagikan ke WhatsApp"
+                    v-for="(v, index) in produk.varian"
+                    :key="index"
+                    type="button"
+                    class="varian-pilihan"
+                    :class="{ aktif: varianTerpilih?.nama === v.nama }"
+                    :aria-pressed="varianTerpilih?.nama === v.nama"
+                    :disabled="Number(v.stok) <= 0"
+                    @click="pilihVarian(v)"
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path
-                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
-                      />
-                      <path
-                        d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.117 1.528 5.845L.057 23.5l5.815-1.527A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.373l-.36-.213-3.712.975.991-3.624-.234-.373A9.818 9.818 0 1112 21.818z"
-                      />
-                    </svg>
+                    <span class="varian-nama">{{ v.nama }}</span>
+                    <span class="varian-ket">
+                      {{ Number(v.stok) <= 0 ? 'Habis' : formatRupiah(v.harga) }}
+                    </span>
+                  </button>
+                </div>
+              </fieldset>
+
+              <!-- JUMLAH -->
+              <div v-if="currentStok > 0" class="jumlah">
+                <span class="label" id="label-jumlah">Jumlah</span>
+                <div class="jumlah-atur" role="group" aria-labelledby="label-jumlah">
+                  <button
+                    type="button"
+                    aria-label="Kurangi jumlah"
+                    :disabled="jumlah <= 1"
+                    @click="kurangiJumlah"
+                  >
+                    <Minus :size="20" :stroke-width="2.75" />
+                  </button>
+                  <output aria-live="polite">{{ jumlah }}</output>
+                  <button
+                    type="button"
+                    aria-label="Tambah jumlah"
+                    :disabled="jumlah >= currentStok"
+                    @click="tambahJumlah"
+                  >
+                    <Plus :size="20" :stroke-width="2.75" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- AKSI -->
+              <div class="aksi">
+                <div v-if="currentStok > 0" class="aksi-lekat">
+                  <div class="aksi-total">
+                    <span>Total</span>
+                    <strong>{{ formatRupiah(currentHarga * jumlah) }}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    class="tombol tombol-merah tombol-besar aksi-pesan"
+                    :disabled="perluVarian"
+                    @click="handlePesan"
+                  >
+                    <ShoppingBasket :size="22" :stroke-width="2.25" />
+                    {{ perluVarian ? 'Pilih varian dulu' : 'Pesan sekarang' }}
+                  </button>
+                </div>
+                <p v-if="currentStok > 0 && !authStore.user" class="aksi-catatan">
+                  Kamu perlu masuk dulu sebelum memesan.
+                </p>
+
+                <div v-if="currentStok === 0" class="pesan pesan-awas">
+                  <TriangleAlert :size="20" :stroke-width="2.5" />
+                  <span>
+                    {{ varianTerpilih ? 'Varian ini sedang habis.' : 'Stok sedang habis.' }}
+                    Tanya penjualnya kapan ada lagi.
+                  </span>
+                </div>
+
+                <a
+                  :href="tautanChat"
+                  target="_blank"
+                  rel="noopener"
+                  class="tombol tombol-hijau tombol-besar tombol-penuh"
+                >
+                  <IkonWa :size="22" />
+                  Tanya penjual di WA
+                </a>
+              </div>
+
+              <!-- DESKRIPSI -->
+              <section v-if="produk.deskripsi" class="deskripsi">
+                <h2 class="label">Tentang produk ini</h2>
+                <p>{{ produk.deskripsi }}</p>
+              </section>
+
+              <!-- TOKO -->
+              <RouterLink :to="`/toko/${toko?.id}`" class="papan-toko papan">
+                <span class="toko-foto">
+                  <img v-if="toko?.foto_toko" :src="toko.foto_toko" :alt="toko.nama_toko" />
+                  <Store v-else :size="28" :stroke-width="2.25" />
+                </span>
+                <span class="toko-teks">
+                  <span class="toko-label">Dijual oleh</span>
+                  <span class="toko-nama">{{ toko?.nama_toko }}</span>
+                  <span v-if="toko?.alamat" class="toko-alamat">
+                    <MapPin :size="15" :stroke-width="2.25" />
+                    {{ toko.alamat }}
+                  </span>
+                </span>
+                <ChevronRight :size="24" :stroke-width="2.5" class="toko-panah" />
+              </RouterLink>
+
+              <!-- BAGIKAN -->
+              <div class="bagikan">
+                <span class="label">Bagikan ke teman</span>
+                <div class="bagikan-tombol">
+                  <button type="button" class="tombol tombol-kecil" @click="shareWA">
+                    <IkonWa :size="18" />
                     WhatsApp
                   </button>
-
-                  <button
-                    class="share-btn share-fb"
-                    @click="shareFB"
-                    title="Bagikan ke Facebook"
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path
-                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                      />
-                    </svg>
+                  <button type="button" class="tombol tombol-kecil" @click="shareFB">
+                    <IkonFb :size="18" />
                     Facebook
                   </button>
-
-                  <button class="share-btn share-copy" @click="copyLink">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                      <path
-                        d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
-                      ></path>
-                    </svg>
-                    {{ copied ? '✅ Tersalin!' : 'Salin Link' }}
+                  <button type="button" class="tombol tombol-kecil" @click="copyLink">
+                    <Check v-if="copied" :size="18" :stroke-width="2.75" />
+                    <Link2 v-else :size="18" :stroke-width="2.5" />
+                    {{ copied ? 'Tautan disalin' : 'Salin tautan' }}
                   </button>
                 </div>
               </div>
             </div>
-
-            <div v-if="currentStok === 0" class="info-habis">
-              Stok sedang habis. Chat penjual untuk tanya ketersediaan.
-            </div>
-
-            <RouterLink :to="`/toko/${toko?.id}`" class="toko-card">
-              <div class="toko-foto-wrap">
-                <img
-                  v-if="toko?.foto_toko"
-                  :src="toko.foto_toko"
-                  :alt="toko.nama_toko"
-                  class="toko-foto"
-                />
-                <div v-else class="toko-foto-placeholder">🏪</div>
-              </div>
-              <div class="toko-info">
-                <p class="toko-label">Dijual oleh</p>
-                <p class="toko-nama">{{ toko?.nama_toko }}</p>
-                <p class="toko-alamat">📍 {{ toko?.alamat }}</p>
-              </div>
-              <span class="toko-arrow">›</span>
-            </RouterLink>
-          </div>
-        </div>
-
-        <div class="produk-lain" v-if="produkLain.length">
-          <h2 class="section-title">Produk Lain dari Toko Ini</h2>
-          <div class="produk-lain-grid">
-            <RouterLink
-              v-for="p in produkLain"
-              :key="p.id"
-              :to="`/produk/${p.id}`"
-              class="mini-card"
-            >
-              <img :src="p.foto_url" :alt="p.nama_produk" class="mini-foto" />
-              <div class="mini-info">
-                <p class="mini-nama">{{ p.nama_produk }}</p>
-                <p class="mini-harga">{{ formatRupiah(p.harga) }}</p>
-              </div>
-            </RouterLink>
           </div>
         </div>
       </div>
-    </div>
+
+      <section v-if="produkLain.length" class="lain">
+        <div class="wadah">
+          <h2 class="lain-judul huruf-papan">Dagangan lain dari {{ toko?.nama_toko }}</h2>
+          <div class="grid-produk">
+            <KartuProduk v-for="p in produkLain" :key="p.id" :produk="p" :tampil-toko="false" />
+          </div>
+        </div>
+      </section>
+    </template>
   </LayoutPublic>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import {
+  ChevronRight,
+  PackageX,
+  Minus,
+  Plus,
+  ShoppingBasket,
+  Store,
+  MapPin,
+  Check,
+  Link2,
+  TriangleAlert,
+} from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { formatRupiah } from '@/lib/utils';
+import KartuProduk from '@/components/KartuProduk.vue';
+import IkonWa from '@/components/IkonWa.vue';
+import IkonFb from '@/components/IkonFb.vue';
+import {
+  formatRupiah,
+  formatHargaProduk,
+  punyaVarian,
+  tautanWa,
+} from '@/lib/utils';
 import { useProductSeo } from '@/lib/useSeo';
-import { labelKategori } from '@/lib/kategori';
+import { labelKategori, iconKategori } from '@/lib/kategori';
 
 const route = useRoute();
 const router = useRouter();
-const user = ref(null);
+const authStore = useAuthStore();
 const loading = ref(true);
 const produk = ref(null);
 const toko = ref(null);
 const produkLain = ref([]);
 const jumlah = ref(1);
 const copied = ref(false);
-
-// --- STATE BARU UNTUK VARIAN ---
 const varianTerpilih = ref(null);
 
-// Computed untuk mendapatkan harga yang sedang aktif
-const currentHarga = computed(() => {
-  return varianTerpilih.value
-    ? varianTerpilih.value.harga
-    : produk.value?.harga || 0;
-});
+// Harga yang sedang aktif (varian terpilih, atau harga produk)
+const currentHarga = computed(() =>
+  varianTerpilih.value ? Number(varianTerpilih.value.harga) || 0 : produk.value?.harga || 0,
+);
 
-// Computed untuk mendapatkan stok yang sedang aktif
+// Sebelum memilih varian, tampilkan rentang harga
+const teksHarga = computed(() =>
+  varianTerpilih.value ? formatRupiah(currentHarga.value) : formatHargaProduk(produk.value),
+);
+
+// Stok aktif: varian terpilih, total semua varian, atau stok produk
 const currentStok = computed(() => {
   if (varianTerpilih.value) {
     return Number(varianTerpilih.value.stok) || 0;
   }
-
-  if (produk.value?.varian?.length > 0) {
+  if (punyaVarian(produk.value)) {
     return produk.value.varian.reduce((acc, curr) => acc + (Number(curr.stok) || 0), 0);
   }
-
   return Number(produk.value?.stok) || 0;
 });
 
-// Pengecekan apakah stok benar-benar habis
-// (varian terpilih habis, atau jika belum pilih: semua varian habis)
 const isHabis = computed(() => currentStok.value === 0);
+const perluVarian = computed(() => punyaVarian(produk.value) && !varianTerpilih.value);
+const kelasStok = computed(() => ({
+  habis: currentStok.value === 0,
+  sedikit: currentStok.value > 0 && currentStok.value <= 5,
+}));
 
 const pilihVarian = (v) => {
   varianTerpilih.value = v;
-  jumlah.value = 1; // Reset jumlah beli ke 1 setiap ganti varian
+  jumlah.value = 1;
 };
 
 const kurangiJumlah = () => {
@@ -299,42 +282,32 @@ const tambahJumlah = () => {
 };
 
 const handlePesan = () => {
-  if (!user.value) {
-    router.push('/login');
-    return;
-  }
+  if (perluVarian.value) return;
 
-  // Jika ada varian tapi belum pilih
-  if (produk.value.varian?.length > 0 && !varianTerpilih.value) {
-    alert('Silakan pilih varian terlebih dahulu!');
-    return;
-  }
-
-  // Kirim data pesanan termasuk varian terpilih ke form order
   let urlPesanan = `/pesan/${produk.value.id}?jumlah=${jumlah.value}`;
   if (varianTerpilih.value) {
     urlPesanan += `&varian=${encodeURIComponent(varianTerpilih.value.nama)}`;
   }
 
+  if (!authStore.user) {
+    router.push({ path: '/login', query: { redirect: urlPesanan } });
+    return;
+  }
   router.push(urlPesanan);
 };
 
-const chatWA = () => {
-  const wa = toko.value?.nomor_wa?.replace(/^0/, '') ?? '';
-  let spek = `produk *${produk.value.nama_produk}*`;
-  if (varianTerpilih.value) spek += ` varian *${varianTerpilih.value.nama}*`;
-
-  const pesan = `Halo, saya tertarik dengan ${spek} di toko ${toko.value?.nama_toko}. Apakah masih tersedia?`;
-  window.open(
-    `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
-    '_blank',
-  );
-};
+const tautanChat = computed(() => {
+  if (!produk.value) return '#';
+  let spek = `*${produk.value.nama_produk}*`;
+  if (varianTerpilih.value) spek += ` (varian ${varianTerpilih.value.nama})`;
+  const pesan = `Halo, saya lihat ${spek} di toko ${toko.value?.nama_toko} lewat ItahBangkuang. Masih ada?`;
+  return tautanWa(toko.value?.nomor_wa, pesan);
+});
 
 const shareWA = () => {
   const url = window.location.href;
   const hargaSensor = formatRupiah(currentHarga.value).replace(/\d/g, '?');
-  const teks = `Hei, lihat produk ini 👇\n\n*${produk.value.nama_produk}*\n${hargaSensor}\n\nCek harganya di sini:\n${url}`;
+  const teks = `Coba lihat ini:\n\n*${produk.value.nama_produk}*\n${hargaSensor}\n\nHarganya ada di sini:\n${url}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
 };
 
@@ -353,21 +326,16 @@ const copyLink = async () => {
   setTimeout(() => (copied.value = false), 2500);
 };
 
-const getProduk = async (id) => {
-  const { data: p } = await supabase
-    .from('produk')
-    .select('*, toko(*)')
-    .eq('id', id)
-    .single();
-  return p;
-};
-
 const fetchData = async () => {
   loading.value = true;
   jumlah.value = 1;
   varianTerpilih.value = null; // Reset varian saat pindah produk
 
-  const p = await getProduk(route.params.id);
+  const { data: p } = await supabase
+    .from('produk')
+    .select('*, toko(*)')
+    .eq('id', route.params.id)
+    .single();
 
   if (!p || p.status !== 'AKTIF' || p.toko?.status !== 'AKTIF') {
     produk.value = null;
@@ -389,7 +357,7 @@ const fetchData = async () => {
 
   const { data: lain } = await supabase
     .from('produk')
-    .select('id, nama_produk, foto_url, harga')
+    .select('id, nama_produk, foto_url, harga, stok, varian')
     .eq('toko_id', p.toko_id)
     .eq('status', 'AKTIF')
     .neq('id', p.id)
@@ -399,539 +367,361 @@ const fetchData = async () => {
   loading.value = false;
 };
 
-onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (session) user.value = session.user;
-  fetchData();
-});
-
+onMounted(fetchData);
 watch(() => route.params.id, fetchData);
 </script>
 
 <style scoped>
-/* --- KODE CSS LAMA ANDA --- */
-.loading-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 6rem 2rem;
-  color: #6b7280;
+.tidak-ada {
+  padding-top: 3rem;
+  padding-bottom: 4rem;
 }
-.loading-spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+
+.detail {
+  background: var(--papan);
+  padding: 1.25rem 0 3rem;
 }
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.not-found {
-  text-align: center;
-  padding: 6rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-.not-found span {
-  font-size: 3rem;
-}
-.not-found h2 {
-  font-family: 'Lora', serif;
-  font-size: 1.5rem;
-  color: #1a2e0a;
-}
-.btn-back {
-  color: #2d5016;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-.detail-wrap {
-  padding: 2rem 0 5rem;
-}
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-.breadcrumb {
+
+.remah {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #9ca3af;
-  margin-bottom: 2rem;
+  gap: 0.35rem;
   flex-wrap: wrap;
+  font-size: 0.92rem;
+  color: var(--tinta-3);
+  margin-bottom: 1.25rem;
 }
-.breadcrumb a {
-  color: #6b7280;
-  text-decoration: none;
-  transition: color 0.2s;
+.remah a {
+  color: var(--tinta-2);
+  font-weight: 700;
 }
-.breadcrumb a:hover {
-  color: #2d5016;
+.remah span {
+  color: var(--tinta-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 24ch;
 }
-.breadcrumb span:last-child {
-  color: #374151;
-  font-weight: 500;
-}
+
 .detail-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  margin-bottom: 4rem;
+  gap: 1.75rem;
 }
-.foto-wrap {
+@media (min-width: 900px) {
+  .detail-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: start;
+  }
+  .foto-papan {
+    position: sticky;
+    top: calc(var(--nav-h) + 1.5rem);
+  }
+}
+
+/* Foto */
+.foto-papan {
   position: relative;
-  border-radius: 20px;
+  background: var(--dinding);
+  border: 3px solid var(--tinta);
+  border-radius: 10px;
   overflow: hidden;
-  aspect-ratio: 1;
 }
 .foto-utama {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
-  display: block;
-  background: #f3f4f6;
 }
-.kat-badge {
+.foto-kategori {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: rgba(45, 80, 22, 0.88);
-  color: #f5edd6;
-  padding: 0.3rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  pointer-events: none;
+  top: 0.75rem;
+  left: 0.75rem;
+  text-decoration: none;
+  background: var(--papan);
 }
-.habis-overlay {
+.foto-habis {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
+  background: rgba(20, 20, 20, 0.5);
+}
+.foto-habis span {
+  font-family: var(--font-papan);
+  font-size: 2rem;
+  color: #fff;
+  background: var(--merah);
+  border: 3px solid #fff;
+  border-radius: 6px;
+  padding: 0.3rem 1rem;
+  transform: rotate(-6deg);
+}
+
+/* Info */
+.nama {
+  font-size: clamp(1.6rem, 4.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.harga-baris {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.4rem;
-  font-weight: 700;
-  font-family: 'Lora', serif;
-  pointer-events: none;
-  z-index: 2;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 1rem;
 }
-.info-section {
+.harga {
+  font-size: clamp(1.35rem, 4vw, 1.7rem);
+  padding: 0.35rem 0.75rem 0.3rem;
+}
+.stok {
+  font-weight: 700;
+  color: var(--hijau);
+}
+.stok.sedikit {
+  color: var(--merah-tua);
+}
+.stok.habis {
+  color: var(--merah-tua);
+}
+
+/* Varian */
+.varian {
+  border: 0;
+  margin-top: 1.75rem;
+}
+.varian legend {
+  margin-bottom: 0.6rem;
+}
+.varian-wajib {
+  font-weight: 400;
+  color: var(--merah-tua);
+}
+.varian-daftar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+.varian-pilihan {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  align-items: flex-start;
+  gap: 0.1rem;
+  min-height: 60px;
+  padding: 0.55rem 0.8rem;
+  background: var(--papan);
+  border: 2px solid var(--tinta);
+  border-radius: var(--sudut);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
-.produk-nama {
-  font-family: 'Lora', serif;
-  font-size: 1.8rem;
+.varian-pilihan:hover:not(:disabled) {
+  background: var(--kuning-muda);
+}
+.varian-pilihan.aktif {
+  background: var(--kuning);
+  box-shadow:
+    inset 0 0 0 2px var(--kuning),
+    inset 0 0 0 4px var(--tinta);
+}
+.varian-pilihan:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  color: var(--tinta-3);
+}
+.varian-nama {
   font-weight: 700;
-  line-height: 1.3;
-  color: #1a2e0a;
+  font-size: 1rem;
+  line-height: 1.25;
 }
-.produk-harga {
-  font-size: 1.75rem;
+.varian-ket {
+  font-size: 0.88rem;
+  color: var(--tinta-2);
+}
+.varian-pilihan:disabled .varian-ket {
+  color: var(--merah-tua);
   font-weight: 700;
-  color: #2d5016;
 }
-.produk-meta {
-  display: flex;
-  gap: 1.5rem;
-}
-.meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-.meta-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.meta-val {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #374151;
-}
-.meta-val.habis {
-  color: #dc2626;
-}
-.meta-val.low {
-  color: #d97706;
-}
-.deskripsi-section h3 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-.deskripsi-section p {
-  font-size: 0.95rem;
-  color: #4b5563;
-  line-height: 1.7;
-}
-.jumlah-section {
+
+/* Jumlah */
+.jumlah {
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
-.jumlah-section label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-}
-.jumlah-control {
-  display: flex;
-  align-items: center;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
+.jumlah-atur {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2.5px solid var(--tinta);
+  border-radius: var(--sudut);
   overflow: hidden;
 }
-.jumlah-control button {
-  width: 36px;
-  height: 36px;
-  background: #f3f4f6;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: 600;
+.jumlah-atur button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: var(--papan);
+  border: 0;
   cursor: pointer;
-  color: #374151;
-  transition: background 0.2s;
 }
-.jumlah-control button:hover:not(:disabled) {
-  background: #e5e7eb;
+.jumlah-atur button:hover:not(:disabled) {
+  background: var(--kuning-muda);
 }
-.jumlah-control button:disabled {
-  opacity: 0.4;
+.jumlah-atur button:disabled {
+  color: #b5b5b5;
   cursor: not-allowed;
 }
-.jumlah-control span {
-  width: 44px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.95rem;
+.jumlah-atur output {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  font-weight: 700;
+  font-size: 1.15rem;
+  border-left: 2px solid var(--tinta);
+  border-right: 2px solid var(--tinta);
 }
-.subtotal {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-.subtotal strong {
-  color: #2d5016;
-}
-.aksi-wrap {
+
+/* Aksi */
+.aksi {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.7rem;
+  margin-top: 1.75rem;
 }
-.btn-pesan {
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 1rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  text-align: center;
-}
-.btn-pesan:hover:not(:disabled) {
-  background: #3a6b1e;
-  transform: translateY(-1px);
-}
-.btn-pesan:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-wa {
-  background: #fff;
-  color: #374151;
-  border: 1.5px solid #d1d5db;
-  padding: 0.9rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-wa:hover {
-  border-color: #25d366;
-  color: #25d366;
-  background: #f0fff4;
-}
-
-/* --- CSS BARU UNTUK VARIAN --- */
-.varian-section {
-  background: #f9fafb;
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid #e8e0d0;
-}
-.varian-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.75rem;
-}
-.varian-label .required {
-  color: #dc2626;
-  margin-left: 4px;
-}
-.varian-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.btn-varian {
-  background: #fff;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #4b5563;
-}
-.btn-varian:hover:not(.varian-habis) {
-  border-color: #2d5016;
-  color: #2d5016;
-}
-.btn-varian.active {
-  background: #2d5016;
-  border-color: #2d5016;
-  color: #f5edd6;
-}
-.btn-varian.active:hover {
-  background: #3a6b1e;
-  border-color: #3a6b1e;
-  color: #f5edd6;
-}
-.btn-varian.varian-habis {
-  opacity: 0.4;
-  background: #f3f4f6;
-  cursor: not-allowed;
-  text-decoration: line-through;
-}
-.error-text {
-  font-size: 0.75rem;
-  color: #dc2626;
-  margin-top: 0.5rem;
-  font-weight: 500;
-}
-
-/* (Sisa CSS Anda tetap sama) */
-.share-wrap {
-  border-top: 1px solid #f0ede6;
-  padding-top: 0.85rem;
-}
-.share-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.share-btns {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.share-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  border: 1.5px solid;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.share-wa {
-  background: #f0fff4;
-  color: #16a34a;
-  border-color: #bbf7d0;
-}
-.share-wa:hover {
-  background: #25d366;
-  color: #fff;
-  border-color: #25d366;
-}
-.share-fb {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-}
-.share-fb:hover {
-  background: #1877f2;
-  color: #fff;
-  border-color: #1877f2;
-}
-.share-copy {
-  background: #f9fafb;
-  color: #374151;
-  border-color: #e5e7eb;
-}
-.share-copy:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-}
-.info-habis {
-  font-size: 0.85rem;
-  color: #d97706;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-}
-.toko-card {
+.aksi-lekat {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  background: #fff;
-  border: 1.5px solid #e8e0d0;
-  border-radius: 14px;
-  padding: 0.85rem 1rem;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.2s;
-  margin-top: 0.25rem;
+  gap: 1rem;
 }
-.toko-card:hover {
-  border-color: #2d5016;
-  background: #f7fbf0;
-}
-.toko-foto-wrap {
+.aksi-total {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
   flex-shrink: 0;
 }
-.toko-foto {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  object-fit: cover;
+.aksi-total span {
+  font-size: 0.85rem;
+  color: var(--tinta-3);
+  font-weight: 700;
 }
-.toko-foto-placeholder {
-  width: 48px;
-  height: 48px;
-  background: #f0f7e8;
-  border-radius: 10px;
+.aksi-total strong {
+  font-size: 1.25rem;
+}
+.aksi-pesan {
+  flex: 1;
+}
+.aksi-catatan {
+  font-size: 0.9rem;
+  color: var(--tinta-3);
+}
+@media (max-width: 899px) {
+  .aksi-lekat {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 80;
+    padding: 0.7rem 1.25rem calc(0.7rem + env(safe-area-inset-bottom));
+    background: var(--papan);
+    border-top: 3px solid var(--tinta);
+  }
+  .detail {
+    padding-bottom: 6rem;
+  }
+}
+
+.deskripsi {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--tinta);
+}
+.deskripsi p {
+  margin-top: 0.5rem;
+  white-space: pre-line;
+  line-height: 1.65;
+  color: var(--tinta-2);
+  max-width: 65ch;
+}
+
+/* Papan toko */
+.papan-toko {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
+  gap: 0.9rem;
+  margin-top: 1.75rem;
+  padding: 0.85rem 1rem;
+  color: var(--tinta);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
 }
-.toko-info {
+.papan-toko:hover {
+  background: var(--kuning-muda);
+}
+.toko-foto {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--hijau);
+  color: #fff;
+  border: 2px solid var(--tinta);
+  border-radius: 50%;
+  overflow: hidden;
+}
+.toko-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.toko-teks {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   flex: 1;
 }
 .toko-label {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  margin-bottom: 0.15rem;
+  font-size: 0.82rem;
+  color: var(--tinta-3);
+  font-weight: 700;
 }
 .toko-nama {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #1a2e0a;
+  font-family: var(--font-papan);
+  font-size: 1.05rem;
+  line-height: 1.2;
 }
 .toko-alamat {
-  font-size: 0.75rem;
-  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+  color: var(--tinta-2);
   margin-top: 0.15rem;
 }
-.toko-arrow {
-  color: #9ca3af;
-  font-size: 1.2rem;
-  pointer-events: none;
-}
-.produk-lain {
-  border-top: 1px solid #e8e0d0;
-  padding-top: 3rem;
-}
-.section-title {
-  font-family: 'Lora', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 1.5rem;
-}
-.produk-lain-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-.mini-card {
-  text-decoration: none;
-  color: inherit;
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-.mini-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: #a8c97f;
-}
-.mini-foto {
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
-  display: block;
-  background: #f3f4f6;
-}
-.mini-info {
-  padding: 0.65rem;
-}
-.mini-nama {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #1a2e0a;
-  margin-bottom: 0.25rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.mini-harga {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #2d5016;
+.toko-panah {
+  flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
-  .detail-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  .produk-lain-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.bagikan {
+  margin-top: 1.5rem;
+}
+.bagikan-tombol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Produk lain */
+.lain {
+  background: var(--dinding);
+  border-top: 3px solid var(--tinta);
+  padding: 2.5rem 0 3.5rem;
+}
+.lain-judul {
+  font-size: clamp(1.3rem, 3.6vw, 1.75rem);
+  margin-bottom: 1.25rem;
 }
 </style>

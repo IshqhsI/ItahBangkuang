@@ -1,291 +1,256 @@
 <template>
   <LayoutPenjual :statusToko="toko?.status" :tokoId="toko?.id">
-    <!-- LOADING -->
-    <div v-if="loading" class="loading-wrap">
+    <div v-if="loading" class="memuat">
       <div class="spinner"></div>
-      <p>Memuat dashboard...</p>
+      <p>Membuka tokomu…</p>
     </div>
 
     <template v-else>
-      <!-- ==================== STATUS: PENDING ==================== -->
-      <div v-if="statusToko === 'PENDING'" class="status-page">
-        <div class="status-card pending">
-          <div class="status-icon">⏳</div>
-          <h2>Toko Sedang Diverifikasi</h2>
-          <p>
-            Terima kasih sudah mendaftar! Tim admin sedang memeriksa informasi
-            toko kamu. Proses verifikasi biasanya memakan waktu
-            <strong>1×24 jam</strong>.
-          </p>
-          <div class="status-info-box">
-            <div class="info-row">
-              <span class="info-label">Nama Toko</span>
-              <span class="info-val">{{ toko?.nama_toko }}</span>
+      <!-- STATUS: PENDING / DITOLAK / DIBLOKIR -->
+      <div v-if="statusToko !== 'AKTIF'" class="wadah status-wrap">
+        <div class="papan status" :class="`status-${statusToko?.toLowerCase()}`">
+          <component :is="statusInfo.icon" :size="44" :stroke-width="2.25" />
+          <h1 class="huruf-papan">{{ statusInfo.judul }}</h1>
+          <p class="status-teks">{{ statusInfo.teks }}</p>
+
+          <dl class="status-data">
+            <div><dt>Nama toko</dt><dd>{{ toko?.nama_toko }}</dd></div>
+            <div><dt>Alamat</dt><dd>{{ toko?.alamat }}</dd></div>
+            <div>
+              <dt>Status</dt>
+              <dd><span class="badge" :class="`badge-${statusToko?.toLowerCase()}`">{{ statusInfo.label }}</span></dd>
             </div>
-            <div class="info-row">
-              <span class="info-label">Alamat</span>
-              <span class="info-val">{{ toko?.alamat }}</span>
+          </dl>
+
+          <div v-if="statusToko === 'DITOLAK' && toko?.alasan_tolak" class="alasan">
+            <p class="label">Alasan dari admin</p>
+            <p>“{{ toko.alasan_tolak }}”</p>
+          </div>
+
+          <div class="status-aksi">
+            <RouterLink v-if="statusToko !== 'DIBLOKIR'" to="/toko/profil" class="tombol tombol-kuning tombol-besar">
+              {{ statusToko === 'DITOLAK' ? 'Perbaiki profil toko' : 'Lengkapi profil toko' }}
+            </RouterLink>
+            <a :href="tautanAdmin" target="_blank" rel="noopener" class="tombol tombol-besar">
+              <IkonWa :size="20" />
+              Hubungi admin
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- AKTIF -->
+      <template v-else>
+        <section class="kepala">
+          <div class="wadah kepala-dalam">
+            <div>
+              <p class="kepala-sapa">Halo, selamat datang kembali</p>
+              <h1 class="judul-halaman">{{ toko?.nama_toko }}</h1>
             </div>
-            <div class="info-row">
-              <span class="info-label">Status</span>
-              <span class="badge badge-pending">Menunggu Verifikasi</span>
+            <div class="kepala-aksi">
+              <RouterLink to="/toko/produk/tambah" class="tombol tombol-merah">
+                <Plus :size="20" :stroke-width="2.75" />
+                Tambah produk
+              </RouterLink>
+              <RouterLink :to="`/toko/${toko?.id}`" class="tombol">
+                <ExternalLink :size="18" :stroke-width="2.5" />
+                Lihat tokoku
+              </RouterLink>
             </div>
           </div>
-          <p class="status-hint">
-            Kamu akan bisa mengelola toko dan mengupload produk setelah
-            diverifikasi admin.
-          </p>
-          <RouterLink to="/toko/profil" class="btn-secondary"
-            >Lengkapi Profil Toko →</RouterLink
+        </section>
+
+        <div class="wadah isi">
+          <!-- Yang perlu dikerjakan -->
+          <RouterLink
+            v-if="stats.orderMenunggu > 0"
+            to="/toko/order"
+            class="perlu papan papan-kuning papan-bingkai"
           >
-        </div>
-      </div>
-
-      <!-- ==================== STATUS: DITOLAK ==================== -->
-      <div v-else-if="statusToko === 'DITOLAK'" class="status-page">
-        <div class="status-card ditolak">
-          <div class="status-icon">❌</div>
-          <h2>Pendaftaran Toko Ditolak</h2>
-          <p>Maaf, pendaftaran toko kamu belum bisa kami setujui saat ini.</p>
-          <div class="alasan-box" v-if="toko?.alasan_tolak">
-            <p class="alasan-label">Alasan dari Admin:</p>
-            <p class="alasan-text">"{{ toko.alasan_tolak }}"</p>
-          </div>
-          <p class="status-hint">
-            Perbaiki informasi toko sesuai alasan di atas, lalu hubungi admin
-            untuk verifikasi ulang.
+            <BellRing :size="30" :stroke-width="2.25" />
+            <span class="perlu-teks">
+              <strong class="huruf-papan">{{ stats.orderMenunggu }} pesanan menunggu konfirmasimu</strong>
+              <span>Balas secepatnya supaya pembeli tidak membatalkan.</span>
+            </span>
+            <ArrowRight :size="24" :stroke-width="2.5" />
+          </RouterLink>
+          <p v-else class="perlu-tenang">
+            <CircleCheck :size="20" :stroke-width="2.5" />
+            Tidak ada pesanan yang menunggu. Mantap.
           </p>
-          <div class="btn-row">
-            <RouterLink to="/toko/profil" class="btn-primary"
-              >Perbaiki Profil Toko</RouterLink
-            >
-          </div>
-        </div>
-      </div>
 
-      <!-- ==================== STATUS: DIBLOKIR ==================== -->
-      <div v-else-if="statusToko === 'DIBLOKIR'" class="status-page">
-        <div class="status-card diblokir">
-          <div class="status-icon">🚫</div>
-          <h2>Toko Diblokir</h2>
-          <p>
-            Toko kamu telah diblokir oleh admin. Silakan hubungi admin untuk
-            informasi lebih lanjut.
-          </p>
-        </div>
-      </div>
+          <!-- Ringkasan -->
+          <dl class="ringkasan papan">
+            <div>
+              <dt>Produk dipajang</dt>
+              <dd>{{ stats.totalProduk }}</dd>
+            </div>
+            <div>
+              <dt>Pesanan selesai</dt>
+              <dd>{{ stats.orderSelesai }}</dd>
+            </div>
+            <div>
+              <dt>Total pendapatan</dt>
+              <dd>{{ formatRupiah(stats.totalPendapatan) }}</dd>
+            </div>
+          </dl>
 
-      <!-- ==================== STATUS: AKTIF ==================== -->
-      <div v-else-if="statusToko === 'AKTIF'" class="dashboard">
-        <!-- Header -->
-        <div class="dashboard-header">
-          <div class="container">
-            <div class="header-inner">
-              <div>
-                <p class="header-greeting">Selamat datang kembali 👋</p>
-                <h1 class="header-title">{{ toko?.nama_toko }}</h1>
-                <p class="header-sub">📍 {{ toko?.alamat }}</p>
+          <div class="kolom">
+            <!-- Pesanan terbaru -->
+            <section aria-labelledby="judul-pesanan">
+              <div class="kepala-bagian">
+                <h2 id="judul-pesanan" class="huruf-papan">Pesanan terbaru</h2>
+                <RouterLink to="/toko/order" class="lihat">Lihat semua</RouterLink>
               </div>
-              <div class="header-actions">
-                <RouterLink to="/toko/produk/tambah" class="btn-primary"
-                  >+ Tambah Produk</RouterLink
-                >
-                <RouterLink :to="`/toko/${toko?.id}`" class="btn-outline"
-                  >Lihat Toko →</RouterLink
-                >
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="container dashboard-body">
-          <!-- STAT CARDS -->
-          <div class="stat-grid">
-            <div class="stat-card">
-              <div class="stat-icon" style="background: #eff6ff">📦</div>
-              <div class="stat-info">
-                <p class="stat-num">{{ stats.totalProduk }}</p>
-                <p class="stat-label">Produk Aktif</p>
+              <ul v-if="orderTerbaru.length" class="daftar papan">
+                <li v-for="o in orderTerbaru" :key="o.id" class="baris">
+                  <div class="baris-teks">
+                    <p class="baris-nama">{{ o.nama_pemesan }}</p>
+                    <p class="baris-ket">{{ o.produk?.nama_produk }} × {{ o.jumlah }}</p>
+                    <p class="baris-ket">{{ o.metode === 'COD' ? 'COD' : 'Transfer' }} · {{ formatTanggal(o.created_at) }}</p>
+                  </div>
+                  <div class="baris-kanan">
+                    <p class="baris-harga">{{ formatRupiah(o.total_harga) }}</p>
+                    <span class="badge" :class="badgeClass(o.status)">{{ labelStatus(o.status) }}</span>
+                  </div>
+                </li>
+              </ul>
+              <div v-else class="kosong">
+                <Inbox :size="36" :stroke-width="2" />
+                <h3>Belum ada pesanan</h3>
+                <p>Bagikan tautan tokomu ke grup WA supaya tetangga tahu.</p>
               </div>
-            </div>
-            <div class="stat-card highlight">
-              <div class="stat-icon" style="background: #fef9c3">🔔</div>
-              <div class="stat-info">
-                <p class="stat-num">{{ stats.orderMenunggu }}</p>
-                <p class="stat-label">Order Menunggu</p>
+            </section>
+
+            <!-- Produk -->
+            <section aria-labelledby="judul-produk">
+              <div class="kepala-bagian">
+                <h2 id="judul-produk" class="huruf-papan">Produkmu</h2>
+                <RouterLink to="/toko/produk" class="lihat">Kelola</RouterLink>
               </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background: #f0fdf4">✅</div>
-              <div class="stat-info">
-                <p class="stat-num">{{ stats.orderSelesai }}</p>
-                <p class="stat-label">Order Selesai</p>
+
+              <ul v-if="produkList.length" class="daftar papan">
+                <li v-for="p in produkList" :key="p.id">
+                  <RouterLink :to="`/toko/produk/${p.id}/edit`" class="baris baris-tautan">
+                    <img :src="p.foto_url" :alt="p.nama_produk" class="baris-foto" />
+                    <div class="baris-teks">
+                      <p class="baris-nama">{{ p.nama_produk }}</p>
+                      <p class="baris-ket">{{ formatHargaProduk(p) }}</p>
+                    </div>
+                    <span class="stok" :class="{ habis: totalStok(p) === 0, sedikit: totalStok(p) > 0 && totalStok(p) <= 5 }">
+                      {{ totalStok(p) === 0 ? 'Habis' : `Stok ${totalStok(p)}` }}
+                    </span>
+                  </RouterLink>
+                </li>
+              </ul>
+              <div v-else class="kosong">
+                <PackageOpen :size="36" :stroke-width="2" />
+                <h3>Belum ada produk</h3>
+                <p>Pajang produk pertamamu supaya bisa dilihat pembeli.</p>
+                <RouterLink to="/toko/produk/tambah" class="tombol tombol-merah">Tambah produk pertama</RouterLink>
               </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background: #fff7ed">💰</div>
-              <div class="stat-info">
-                <p class="stat-num">
-                  {{ formatRupiah(stats.totalPendapatan) }}
-                </p>
-                <p class="stat-label">Total Pendapatan</p>
-              </div>
-            </div>
+            </section>
           </div>
 
-          <div class="dashboard-cols">
-            <!-- ORDER TERBARU -->
-            <div class="dash-section">
-              <div class="section-head">
-                <h2 class="section-title">Order Masuk Terbaru</h2>
-                <RouterLink to="/toko/order" class="lihat-semua"
-                  >Lihat Semua →</RouterLink
-                >
-              </div>
-
-              <div v-if="orderTerbaru.length" class="order-list">
-                <div v-for="o in orderTerbaru" :key="o.id" class="order-item">
-                  <div class="order-info">
-                    <p class="order-nama">{{ o.nama_pemesan }}</p>
-                    <p class="order-produk">
-                      {{ o.produk?.nama_produk }} × {{ o.jumlah }}
-                    </p>
-                    <p class="order-metode">
-                      {{ o.metode }} • {{ formatTanggal(o.created_at) }}
-                    </p>
-                  </div>
-                  <div class="order-right">
-                    <p class="order-total">{{ formatRupiah(o.total_harga) }}</p>
-                    <span class="badge" :class="badgeClass(o.status)">{{
-                      o.status
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else class="empty-mini">
-                <p>🎉 Belum ada order masuk</p>
-                <span>Share toko kamu agar pembeli menemukanmu!</span>
-              </div>
+          <!-- Tautan toko -->
+          <div class="bagikan papan papan-bingkai">
+            <div class="bagikan-teks">
+              <p class="label">Tautan tokomu</p>
+              <p class="bagikan-url">{{ baseUrl }}/toko/{{ toko?.id }}</p>
             </div>
-
-            <!-- PRODUK & STOK -->
-            <div class="dash-section">
-              <div class="section-head">
-                <h2 class="section-title">Produk Saya</h2>
-                <RouterLink to="/toko/produk" class="lihat-semua"
-                  >Kelola →</RouterLink
-                >
-              </div>
-
-              <div v-if="produkList.length" class="produk-mini-list">
-                <RouterLink
-                  v-for="p in produkList"
-                  :key="p.id"
-                  :to="`/toko/produk/${p.id}/edit`"
-                  class="produk-mini-item"
-                >
-                  <img
-                    :src="p.foto_url"
-                    :alt="p.nama_produk"
-                    class="produk-mini-foto"
-                  />
-                  <div class="produk-mini-info">
-                    <p class="produk-mini-nama">{{ p.nama_produk }}</p>
-                    <p class="produk-mini-harga">{{ formatHargaProduk(p) }}</p>
-                  </div>
-                  <div
-                    class="produk-mini-stok"
-                    :class="{
-                      habis: totalStok(p) === 0,
-                      low: totalStok(p) <= 5 && totalStok(p) > 0,
-                    }"
-                  >
-                    {{ totalStok(p) === 0 ? 'Habis' : `Stok: ${totalStok(p)}` }}
-                  </div>
-                </RouterLink>
-              </div>
-
-              <div v-else class="empty-mini">
-                <p>📭 Belum ada produk</p>
-                <RouterLink
-                  to="/toko/produk/tambah"
-                  class="btn-primary"
-                  style="
-                    margin-top: 0.75rem;
-                    font-size: 0.875rem;
-                    padding: 0.6rem 1.25rem;
-                  "
-                >
-                  + Tambah Produk Pertama
-                </RouterLink>
-              </div>
-            </div>
-          </div>
-
-          <!-- LINK TOKO -->
-          <div class="share-box">
-            <div class="share-info">
-              <p class="share-label">🔗 Link Toko Kamu</p>
-              <p class="share-url">{{ baseUrl }}/toko/{{ toko?.id }}</p>
-            </div>
-            <button class="btn-copy" @click="copyLink">
-              {{ copied ? '✅ Tersalin!' : '📋 Salin' }}
+            <button type="button" class="tombol" @click="copyLink">
+              <Check v-if="copied" :size="20" :stroke-width="2.75" />
+              <Copy v-else :size="20" :stroke-width="2.5" />
+              {{ copied ? 'Tersalin' : 'Salin tautan' }}
             </button>
           </div>
         </div>
-      </div>
+      </template>
     </template>
   </LayoutPenjual>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, markRaw } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  Plus,
+  ExternalLink,
+  BellRing,
+  ArrowRight,
+  CircleCheck,
+  Inbox,
+  PackageOpen,
+  Copy,
+  Check,
+  Hourglass,
+  CircleX,
+  Ban,
+} from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
+import IkonWa from '@/components/IkonWa.vue';
 import {
   formatRupiah,
   formatTanggal,
   badgeOrderClass,
   totalStok,
   formatHargaProduk,
+  tautanWa,
 } from '@/lib/utils';
 
+const route = useRoute();
 const router = useRouter();
-const menuOpen = ref(false);
 const loading = ref(true);
 const toko = ref(null);
 const statusToko = ref(null);
-const stats = ref({
-  totalProduk: 0,
-  orderMenunggu: 0,
-  orderSelesai: 0,
-  totalPendapatan: 0,
-});
+const stats = ref({ totalProduk: 0, orderMenunggu: 0, orderSelesai: 0, totalPendapatan: 0 });
 const orderTerbaru = ref([]);
 const produkList = ref([]);
 const copied = ref(false);
 const baseUrl = window.location.origin;
-
 const badgeClass = badgeOrderClass;
 
-const copyLink = () => {
-  navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.id}`);
+const labelStatus = (s) =>
+  ({ MENUNGGU: 'Menunggu', DIKONFIRMASI: 'Dikonfirmasi', SELESAI: 'Selesai', DIBATALKAN: 'Dibatalkan' })[s] ?? s;
+
+const INFO_STATUS = {
+  PENDING: {
+    icon: markRaw(Hourglass),
+    label: 'Menunggu pemeriksaan',
+    judul: 'Tokomu sedang diperiksa',
+    teks: 'Terima kasih sudah mendaftar. Admin sedang memeriksa info tokomu, biasanya kurang dari 24 jam. Setelah disetujui, kamu bisa memajang produk.',
+  },
+  DITOLAK: {
+    icon: markRaw(CircleX),
+    label: 'Ditolak',
+    judul: 'Tokomu belum bisa disetujui',
+    teks: 'Info tokomu perlu diperbaiki dulu. Setelah diperbaiki, hubungi admin supaya diperiksa lagi.',
+  },
+  DIBLOKIR: {
+    icon: markRaw(Ban),
+    label: 'Diblokir',
+    judul: 'Tokomu diblokir',
+    teks: 'Admin memblokir tokomu. Hubungi admin untuk tahu penyebabnya dan apa yang bisa dilakukan.',
+  },
+};
+const statusInfo = computed(() => INFO_STATUS[statusToko.value] ?? INFO_STATUS.PENDING);
+const tautanAdmin = tautanWa('6282253158560', 'Halo admin, saya penjual di ItahBangkuang dan mau tanya soal status toko saya.');
+
+const copyLink = async () => {
+  await navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.id}`);
   copied.value = true;
   setTimeout(() => (copied.value = false), 2000);
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
-  // Ambil data toko
   const { data: tokoData } = await supabase
     .from('toko')
     .select('*')
@@ -305,54 +270,37 @@ onMounted(async () => {
     return;
   }
 
-  // Fetch semua data dashboard paralel
-  const [produkRes, orderRes] = await Promise.all([
+  const idToko = tokoData.id;
+  const hitung = (status) =>
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('toko_id', idToko).eq('status', status);
+
+  const [produkRes, orderRes, totalProdukRes, menungguRes, selesaiRes, pendapatanRes] = await Promise.all([
     supabase
       .from('produk')
       .select('id, nama_produk, foto_url, harga, stok, varian')
-      .eq('toko_id', tokoData.id)
+      .eq('toko_id', idToko)
       .eq('status', 'AKTIF')
       .order('created_at', { ascending: false })
       .limit(5),
     supabase
       .from('orders')
       .select('*, produk(nama_produk)')
-      .eq('toko_id', tokoData.id)
+      .eq('toko_id', idToko)
       .order('created_at', { ascending: false })
       .limit(5),
+    supabase.from('produk').select('*', { count: 'exact', head: true }).eq('toko_id', idToko).eq('status', 'AKTIF'),
+    hitung('MENUNGGU'),
+    hitung('SELESAI'),
+    supabase.from('orders').select('total_harga').eq('toko_id', idToko).eq('status', 'SELESAI'),
   ]);
 
   produkList.value = produkRes.data ?? [];
   orderTerbaru.value = orderRes.data ?? [];
-
-  // Hitung stats
-  const { count: totalProduk } = await supabase
-    .from('produk')
-    .select('*', { count: 'exact', head: true })
-    .eq('toko_id', tokoData.id)
-    .eq('status', 'AKTIF');
-  const { count: orderMenunggu } = await supabase
-    .from('orders')
-    .select('*', { count: 'exact', head: true })
-    .eq('toko_id', tokoData.id)
-    .eq('status', 'MENUNGGU');
-  const { count: orderSelesai } = await supabase
-    .from('orders')
-    .select('*', { count: 'exact', head: true })
-    .eq('toko_id', tokoData.id)
-    .eq('status', 'SELESAI');
-  const { data: pendapatanData } = await supabase
-    .from('orders')
-    .select('total_harga')
-    .eq('toko_id', tokoData.id)
-    .eq('status', 'SELESAI');
-
   stats.value = {
-    totalProduk: totalProduk ?? 0,
-    orderMenunggu: orderMenunggu ?? 0,
-    orderSelesai: orderSelesai ?? 0,
-    totalPendapatan:
-      pendapatanData?.reduce((sum, o) => sum + o.total_harga, 0) ?? 0,
+    totalProduk: totalProdukRes.count ?? 0,
+    orderMenunggu: menungguRes.count ?? 0,
+    orderSelesai: selesaiRes.count ?? 0,
+    totalPendapatan: pendapatanRes.data?.reduce((sum, o) => sum + o.total_harga, 0) ?? 0,
   };
 
   loading.value = false;
@@ -360,524 +308,278 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.loading-wrap {
+/* Status non-aktif */
+.status-wrap {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+  max-width: 680px;
+}
+.status {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 6rem 2rem;
-  color: #6b7280;
-}
-.spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* STATUS PAGES */
-.status-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 64px);
-  padding: 2rem;
-}
-.status-card {
-  max-width: 480px;
-  width: 100%;
-  text-align: center;
-  background: #fff;
-  border-radius: 24px;
-  padding: 3rem 2.5rem;
-  border: 1.5px solid #e8e0d0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-}
-.status-card.pending {
-  border-color: #fde68a;
-}
-.status-card.ditolak {
-  border-color: #fecaca;
-}
-.status-card.diblokir {
-  border-color: #d1d5db;
-}
-.status-icon {
-  font-size: 3.5rem;
-  margin-bottom: 1.25rem;
-  display: block;
-}
-.status-card h2 {
-  font-family: 'Lora', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 0.75rem;
-}
-.status-card p {
-  color: #4b5563;
-  font-size: 0.9rem;
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-}
-
-.status-info-box {
-  background: #fdfaf4;
-  border: 1px solid #e8e0d0;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-.info-label {
-  font-size: 0.78rem;
-  color: #9ca3af;
-  font-weight: 500;
-}
-.info-val {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-  text-align: right;
-}
-
-.status-hint {
-  font-size: 0.82rem !important;
-  color: #9ca3af !important;
-  margin-bottom: 1.5rem !important;
-}
-
-.alasan-box {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
-  text-align: left;
-}
-.alasan-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-weight: 500;
-  margin-bottom: 0.3rem;
-}
-.alasan-text {
-  font-size: 0.9rem;
-  color: #dc2626;
-  font-style: italic;
-  line-height: 1.6;
-}
-
-/* BADGES */
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-.badge-pending {
-  background: #fef9c3;
-  color: #92400e;
-}
-.badge-menunggu {
-  background: #fef9c3;
-  color: #92400e;
-}
-.badge-konfirmasi {
-  background: #dbeafe;
-  color: #1e40af;
-}
-.badge-selesai {
-  background: #dcfce7;
-  color: #166534;
-}
-.badge-batal {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-/* BUTTONS */
-.btn-primary {
-  display: inline-block;
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-.btn-primary:hover {
-  background: #3a6b1e;
-}
-.btn-secondary {
-  display: inline-block;
-  background: #f0f7e8;
-  color: #2d5016;
-  border: 1.5px solid #a8c97f;
-  padding: 0.8rem 1.5rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-.btn-secondary:hover {
-  background: #e0f0cc;
-}
-.btn-outline {
-  display: inline-block;
-  background: transparent;
-  color: #f5edd6;
-  border: 1.5px solid rgba(245, 237, 214, 0.5);
-  padding: 0.8rem 1.5rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-.btn-outline:hover {
-  background: rgba(245, 237, 214, 0.1);
-}
-.btn-row {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-/* DASHBOARD AKTIF */
-.dashboard-header {
-  background: linear-gradient(135deg, #2d5016, #3a6b1e);
-  padding: 2.5rem 0;
-}
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-.header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-.header-greeting {
-  font-size: 0.85rem;
-  color: #a8c97f;
-  margin-bottom: 0.25rem;
-}
-.header-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.25rem;
-}
-.header-sub {
-  font-size: 0.85rem;
-  color: #a8c97f;
-}
-.header-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.dashboard-body {
-  padding: 2rem 2rem 4rem;
-}
-
-/* STATS */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.stat-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: box-shadow 0.2s;
-}
-.stat-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
-}
-.stat-card.highlight {
-  border-color: #fde68a;
-  background: #fffbeb;
-}
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  flex-shrink: 0;
-}
-.stat-num {
-  font-family: 'Lora', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #1a2e0a;
-}
-.stat-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.1rem;
-}
-
-/* DASHBOARD COLS */
-.dashboard-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-.dash-section {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.5rem;
-}
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-.section-title {
-  font-family: 'Lora', serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a2e0a;
-}
-.lihat-semua {
-  font-size: 0.8rem;
-  color: #2d5016;
-  text-decoration: none;
-  font-weight: 600;
-}
-.lihat-semua:hover {
-  opacity: 0.7;
-}
-
-/* ORDER LIST */
-.order-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.order-item {
-  display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 0.85rem;
-  background: #fdfaf4;
-  border-radius: 10px;
-  border: 1px solid #f0ede6;
+  gap: 0.8rem;
+  padding: 1.75rem 1.4rem;
 }
-.order-nama {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1a2e0a;
-  margin-bottom: 0.15rem;
+.status-pending {
+  --papan-bg: var(--kuning-muda);
 }
-.order-produk {
-  font-size: 0.78rem;
-  color: #6b7280;
-  margin-bottom: 0.1rem;
+.status-ditolak {
+  --papan-bg: var(--merah-muda);
 }
-.order-metode {
-  font-size: 0.72rem;
-  color: #9ca3af;
+.status-diblokir {
+  --papan-bg: #e8e8e8;
 }
-.order-right {
-  text-align: right;
-  flex-shrink: 0;
+.status h1 {
+  font-size: clamp(1.5rem, 5vw, 2rem);
 }
-.order-total {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #2d5016;
-  margin-bottom: 0.25rem;
+.status-teks {
+  max-width: 54ch;
+  color: var(--tinta-2);
 }
-
-/* PRODUK MINI */
-.produk-mini-list {
+.status-data {
+  width: 100%;
+  background: var(--papan);
+  border: 2px solid var(--tinta);
+  border-radius: var(--sudut);
+}
+.status-data > div {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.produk-mini-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem;
-  background: #fdfaf4;
-  border-radius: 10px;
-  border: 1px solid #f0ede6;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.2s;
-}
-.produk-mini-item:hover {
-  border-color: #a8c97f;
-}
-.produk-mini-foto {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #f3f4f6;
-}
-.produk-mini-info {
-  flex: 1;
-}
-.produk-mini-nama {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #1a2e0a;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.produk-mini-harga {
-  font-size: 0.78rem;
-  color: #2d5016;
-  font-weight: 600;
-  margin-top: 0.1rem;
-}
-.produk-mini-stok {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #6b7280;
-  flex-shrink: 0;
-}
-.produk-mini-stok.habis {
-  color: #dc2626;
-}
-.produk-mini-stok.low {
-  color: #d97706;
-}
-
-.empty-mini {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-.empty-mini p {
-  font-size: 0.9rem;
-  color: #374151;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-.empty-mini span {
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-/* SHARE BOX */
-.share-box {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 14px;
-  padding: 1.1rem 1.5rem;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--garis-lembut);
 }
-.share-label {
-  font-size: 0.78rem;
-  color: #9ca3af;
-  font-weight: 500;
+.status-data > div:last-child {
+  border-bottom: 0;
+}
+.status-data dt {
+  color: var(--tinta-3);
+}
+.status-data dd {
+  font-weight: 700;
+  text-align: right;
+}
+.alasan {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: var(--papan);
+  border: 2px solid var(--merah);
+  border-radius: var(--sudut);
+}
+.alasan p:last-child {
+  margin-top: 0.25rem;
+}
+.status-aksi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+/* Aktif */
+.kepala {
+  background: var(--hijau);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.75rem 0 2rem;
+}
+.kepala .judul-halaman {
+  color: #fff;
+}
+.kepala-dalam {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+.kepala-sapa {
+  color: #cfe8d7;
+  font-weight: 700;
   margin-bottom: 0.2rem;
 }
-.share-url {
-  font-size: 0.875rem;
-  color: #374151;
-  font-weight: 500;
-  word-break: break-all;
-}
-.btn-copy {
-  background: #f0f7e8;
-  color: #2d5016;
-  border: 1.5px solid #a8c97f;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-.btn-copy:hover {
-  background: #e0f0cc;
+.kepala-aksi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-@media (max-width: 900px) {
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
+.isi {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.perlu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  color: var(--tinta);
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-out);
+}
+.perlu:hover {
+  transform: translateY(-2px);
+}
+.perlu svg {
+  flex-shrink: 0;
+}
+.perlu-teks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+.perlu-teks strong {
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+.perlu-tenang {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: var(--hijau-tua);
+}
+
+.ringkasan {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 1.25rem;
+}
+.ringkasan > div {
+  padding: 0.9rem 1rem;
+  border-right: 1px solid var(--garis-lembut);
+  min-width: 0;
+}
+.ringkasan > div:last-child {
+  border-right: 0;
+}
+.ringkasan dt {
+  font-size: 0.85rem;
+  color: var(--tinta-3);
+  font-weight: 700;
+}
+.ringkasan dd {
+  margin-top: 0.1rem;
+  font-family: var(--font-papan);
+  font-size: clamp(1rem, 3.6vw, 1.5rem);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+  .ringkasan {
+    grid-template-columns: 1fr 1fr;
   }
-  .dashboard-cols {
-    grid-template-columns: 1fr;
+  .ringkasan > div:last-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-top: 1px solid var(--garis-lembut);
   }
 }
-@media (max-width: 640px) {
-  .nav-links {
-    display: none;
+
+.kolom {
+  display: grid;
+  gap: 1.75rem;
+  margin-top: 2rem;
+}
+@media (min-width: 900px) {
+  .kolom {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
   }
-  .hamburger {
-    display: block;
-  }
-  .header-inner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .share-box {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+}
+.kepala-bagian {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.7rem;
+}
+.kepala-bagian h2 {
+  font-size: 1.2rem;
+}
+.lihat {
+  font-weight: 700;
+  color: var(--biru);
+}
+
+.daftar {
+  list-style: none;
+}
+.baris {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--garis-lembut);
+  color: var(--tinta);
+  text-decoration: none;
+}
+.daftar > li:last-child .baris,
+.daftar > li:last-child.baris {
+  border-bottom: 0;
+}
+.baris-tautan:hover {
+  background: var(--kuning-muda);
+}
+.baris-foto {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border: 2px solid var(--tinta);
+  border-radius: 6px;
+  background: var(--dinding);
+}
+.baris-teks {
+  flex: 1;
+  min-width: 0;
+}
+.baris-nama {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.baris-ket {
+  font-size: 0.9rem;
+  color: var(--tinta-3);
+}
+.baris-kanan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+.baris-harga {
+  font-weight: 700;
+}
+.stok {
+  flex-shrink: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--hijau-tua);
+}
+.stok.sedikit,
+.stok.habis {
+  color: var(--merah-tua);
+}
+
+.bagikan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+}
+.bagikan-teks {
+  min-width: 0;
+}
+.bagikan-url {
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 </style>

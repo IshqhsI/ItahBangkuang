@@ -1,241 +1,207 @@
 <template>
   <LayoutPenjual :statusToko="statusToko" :tokoId="toko?.id">
-    <div class="page-header">
-      <div class="container">
-        <h1 class="page-title">Order Masuk</h1>
-        <p class="page-sub">Kelola semua pesanan dari pembeli</p>
+    <section class="kepala">
+      <div class="wadah">
+        <h1 class="judul-halaman">Pesanan masuk</h1>
+        <p class="sub-halaman">Konfirmasi, hubungi pembeli, lalu tandai selesai kalau barang sudah sampai.</p>
       </div>
-    </div>
+    </section>
 
-    <div class="container main-content">
-      <!-- Filter tabs -->
-      <div class="filter-tabs">
+    <div class="wadah isi">
+      <div class="deret-chip" role="group" aria-label="Saring menurut status">
         <button
           v-for="f in filterList"
           :key="f.val"
-          class="filter-tab"
-          :class="{ active: filterAktif === f.val }"
+          type="button"
+          class="chip"
+          :aria-pressed="filterAktif === f.val"
           @click="filterAktif = f.val"
         >
           {{ f.label }}
-          <span class="tab-count" v-if="hitungFilter(f.val) > 0">{{
-            hitungFilter(f.val)
-          }}</span>
+          <span v-if="hitungFilter(f.val) > 0" class="hitung">{{ hitungFilter(f.val) }}</span>
         </button>
       </div>
 
-      <!-- Loading -->
-      <div v-if="loading" class="loading-wrap">
+      <div v-if="loading" class="memuat">
         <div class="spinner"></div>
+        <p>Mengambil pesanan…</p>
       </div>
 
-      <!-- Order list -->
-      <div v-else-if="orderFiltered.length" class="order-list">
-        <div v-for="o in orderFiltered" :key="o.id" class="order-card">
-          <div class="order-header">
-            <div class="order-header-left">
-              <span class="badge" :class="badgeClass(o.status)">{{
-                labelStatus(o.status)
-              }}</span>
-              <span class="order-date">{{ formatTanggal(o.created_at) }}</span>
+      <ul v-else-if="orderFiltered.length" class="daftar">
+        <li v-for="o in orderFiltered" :key="o.id" class="nota papan" :class="{ baru: o.status === 'MENUNGGU' }">
+          <div class="nota-kepala">
+            <div class="nota-status">
+              <span class="badge" :class="badgeClass(o.status)">{{ labelStatus(o.status) }}</span>
+              <time :datetime="o.created_at">{{ formatTanggal(o.created_at) }}</time>
             </div>
-            <span class="order-metode" :class="{ cod: o.metode === 'COD' }">
-              {{ o.metode === 'COD' ? '🤝 COD' : '🏦 Transfer' }}
+            <span class="plat" :class="o.metode === 'COD' ? 'plat-kuning' : 'plat-biru'">
+              {{ o.metode === 'COD' ? 'COD' : 'Transfer' }}
             </span>
           </div>
 
-          <div class="order-body">
-            <!-- Info produk -->
-            <div class="order-produk-info">
-              <img
-                :src="o.produk?.foto_url"
-                :alt="o.produk?.nama_produk"
-                class="order-foto"
-              />
-              <div>
-                <p class="order-produk-nama">{{ o.produk?.nama_produk }}</p>
-
-                <!-- FIX: Tampilkan varian jika ada -->
-                <p v-if="o.varian_terpilih" class="order-varian">
-                  Varian: {{ o.varian_terpilih }}
-                </p>
-
-                <!-- FIX: Harga satuan dari total_harga/jumlah agar sesuai varian -->
-                <p class="order-jumlah">
-                  {{ o.jumlah }} pcs ×
-                  {{ formatRupiah(o.total_harga / o.jumlah) }}
-                </p>
-              </div>
+          <div class="nota-produk">
+            <img :src="o.produk?.foto_url" :alt="o.produk?.nama_produk" class="nota-foto" />
+            <div class="nota-teks">
+              <p class="nota-nama">{{ o.produk?.nama_produk }}</p>
+              <p v-if="o.varian_terpilih" class="nota-varian">Varian: {{ o.varian_terpilih }}</p>
+              <p class="nota-jumlah">{{ o.jumlah }} × {{ formatRupiah(o.total_harga / o.jumlah) }}</p>
             </div>
-
-            <!-- Info pembeli -->
-            <div class="order-pembeli-info">
-              <div class="pembeli-row">
-                <span class="pembeli-icon">👤</span>
-                <div>
-                  <p class="pembeli-label">Nama Pemesan</p>
-                  <p class="pembeli-val">{{ o.nama_pemesan }}</p>
-                </div>
-              </div>
-              <div class="pembeli-row">
-                <span class="pembeli-icon">📍</span>
-                <div>
-                  <p class="pembeli-label">Alamat</p>
-                  <p class="pembeli-val">{{ o.alamat }}</p>
-                </div>
-              </div>
-              <div class="pembeli-row" v-if="o.catatan">
-                <span class="pembeli-icon">📝</span>
-                <div>
-                  <p class="pembeli-label">Catatan</p>
-                  <p class="pembeli-val">{{ o.catatan }}</p>
-                </div>
-              </div>
-            </div>
+            <p class="nota-total">{{ formatRupiah(o.total_harga) }}</p>
           </div>
 
-          <div class="order-footer">
-            <div class="order-total-wrap">
-              <span class="total-label">Total</span>
-              <span class="total-val">{{ formatRupiah(o.total_harga) }}</span>
+          <dl class="nota-pembeli">
+            <div>
+              <dt><User :size="16" :stroke-width="2.5" /> Pemesan</dt>
+              <dd>{{ o.nama_pemesan }}</dd>
             </div>
+            <div>
+              <dt><MapPin :size="16" :stroke-width="2.5" /> Antar ke</dt>
+              <dd>{{ o.alamat }}</dd>
+            </div>
+            <div v-if="o.catatan">
+              <dt><StickyNote :size="16" :stroke-width="2.5" /> Catatan</dt>
+              <dd>{{ o.catatan }}</dd>
+            </div>
+          </dl>
 
-            <div class="order-actions">
-              <!-- Tombol WA pembeli -->
-              <button class="btn-wa" @click="chatPembeli(o)">
-                💬 WA Pembeli
+          <div class="nota-aksi">
+            <button type="button" class="tombol tombol-hijau" @click="chatPembeli(o)">
+              <IkonWa :size="18" />
+              Chat pembeli
+            </button>
+            <template v-if="o.status === 'MENUNGGU'">
+              <button type="button" class="tombol tombol-biru" :disabled="prosesId === o.id" @click="updateStatus(o, 'DIKONFIRMASI')">
+                <Check :size="18" :stroke-width="3" />
+                {{ prosesId === o.id ? 'Menyimpan…' : 'Konfirmasi' }}
               </button>
-
-              <!-- Update status -->
-              <template v-if="o.status === 'MENUNGGU'">
-                <button
-                  class="btn-konfirmasi"
-                  @click="updateStatus(o, 'DIKONFIRMASI')"
-                  :disabled="prosesId === o.id"
-                >
-                  {{ prosesId === o.id ? '...' : '✅ Konfirmasi' }}
-                </button>
-                <button
-                  class="btn-batal"
-                  @click="updateStatus(o, 'DIBATALKAN')"
-                  :disabled="prosesId === o.id"
-                >
-                  Batalkan
-                </button>
-              </template>
-
-              <template v-if="o.status === 'DIKONFIRMASI'">
-                <button
-                  class="btn-selesai"
-                  @click="updateStatus(o, 'SELESAI')"
-                  :disabled="prosesId === o.id"
-                >
-                  {{ prosesId === o.id ? '...' : '🎉 Tandai Selesai' }}
-                </button>
-              </template>
-            </div>
+              <button type="button" class="tombol tombol-bahaya" :disabled="prosesId === o.id" @click="mintaBatal(o)">
+                Batalkan
+              </button>
+            </template>
+            <button
+              v-else-if="o.status === 'DIKONFIRMASI'"
+              type="button"
+              class="tombol tombol-merah"
+              :disabled="prosesId === o.id"
+              @click="updateStatus(o, 'SELESAI')"
+            >
+              <PackageCheck :size="18" :stroke-width="2.5" />
+              {{ prosesId === o.id ? 'Menyimpan…' : 'Tandai selesai' }}
+            </button>
           </div>
-        </div>
-      </div>
+        </li>
+      </ul>
 
-      <!-- Empty -->
-      <div v-else class="empty-state">
-        <span>📭</span>
-        <h3>
-          Belum ada order
-          {{
-            filterAktif !== 'semua'
-              ? labelStatus(filterAktif).toLowerCase()
-              : ''
-          }}
-        </h3>
-        <p>Share link toko kamu agar pembeli menemukanmu!</p>
+      <div v-else class="kosong">
+        <Inbox :size="44" :stroke-width="2" />
+        <h3>{{ filterAktif === 'semua' ? 'Belum ada pesanan' : `Tidak ada pesanan yang ${labelStatus(filterAktif).toLowerCase()}` }}</h3>
+        <p v-if="filterAktif === 'semua'">Bagikan tautan tokomu ke grup WA supaya tetangga tahu.</p>
+        <p v-else>Coba lihat status lainnya.</p>
+        <button v-if="filterAktif !== 'semua'" type="button" class="tombol" @click="filterAktif = 'semua'">Lihat semua pesanan</button>
       </div>
     </div>
+
+    <!-- Konfirmasi batal -->
+    <dialog ref="dialogBatal" class="dialog" @close="batalTarget = null">
+      <div class="dialog-isi">
+        <h2 class="huruf-papan">Batalkan pesanan ini?</h2>
+        <p>
+          Pesanan <strong>{{ batalTarget?.produk?.nama_produk }}</strong> dari
+          <strong>{{ batalTarget?.nama_pemesan }}</strong> akan dibatalkan dan tidak bisa dipulihkan.
+          Sebaiknya kabari pembelinya lewat WhatsApp.
+        </p>
+        <div class="dialog-aksi">
+          <button type="button" class="tombol" @click="dialogBatal.close()">Jangan batalkan</button>
+          <button type="button" class="tombol tombol-merah" @click="konfirmasiBatal">Ya, batalkan</button>
+        </div>
+      </div>
+    </dialog>
   </LayoutPenjual>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { User, MapPin, StickyNote, Check, PackageCheck, Inbox } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
+import { useToastStore } from '@/stores/toast';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
-import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
+import IkonWa from '@/components/IkonWa.vue';
+import { formatRupiah, formatTanggal, badgeOrderClass, tautanWa } from '@/lib/utils';
 
+const route = useRoute();
 const router = useRouter();
+const toast = useToastStore();
 const loading = ref(true);
 const orderList = ref([]);
 const filterAktif = ref('semua');
 const prosesId = ref(null);
 const statusToko = ref(null);
 const toko = ref(null);
+const dialogBatal = ref(null);
+const batalTarget = ref(null);
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
-  { val: 'MENUNGGU', label: '⏳ Menunggu' },
-  { val: 'DIKONFIRMASI', label: '✅ Dikonfirmasi' },
-  { val: 'SELESAI', label: '🎉 Selesai' },
-  { val: 'DIBATALKAN', label: '❌ Dibatalkan' },
+  { val: 'MENUNGGU', label: 'Menunggu' },
+  { val: 'DIKONFIRMASI', label: 'Dikonfirmasi' },
+  { val: 'SELESAI', label: 'Selesai' },
+  { val: 'DIBATALKAN', label: 'Dibatalkan' },
 ];
 
 const labelStatus = (s) =>
-  ({
-    MENUNGGU: 'Menunggu',
-    DIKONFIRMASI: 'Dikonfirmasi',
-    SELESAI: 'Selesai',
-    DIBATALKAN: 'Dibatalkan',
-  })[s] ?? s;
-
+  ({ MENUNGGU: 'Menunggu', DIKONFIRMASI: 'Dikonfirmasi', SELESAI: 'Selesai', DIBATALKAN: 'Dibatalkan' })[s] ?? s;
 const badgeClass = badgeOrderClass;
 
-const orderFiltered = computed(() => {
-  if (filterAktif.value === 'semua') return orderList.value;
-  return orderList.value.filter((o) => o.status === filterAktif.value);
-});
-
-const hitungFilter = (val) => {
-  if (val === 'semua') return orderList.value.length;
-  return orderList.value.filter((o) => o.status === val).length;
-};
+const orderFiltered = computed(() =>
+  filterAktif.value === 'semua'
+    ? orderList.value
+    : orderList.value.filter((o) => o.status === filterAktif.value),
+);
+const hitungFilter = (val) =>
+  val === 'semua' ? orderList.value.length : orderList.value.filter((o) => o.status === val).length;
 
 const updateStatus = async (order, statusBaru) => {
   prosesId.value = order.id;
-  await supabase
-    .from('orders')
-    .update({ status: statusBaru })
-    .eq('id', order.id);
-  order.status = statusBaru;
+  const { error } = await supabase.from('orders').update({ status: statusBaru }).eq('id', order.id);
+  if (error) {
+    toast.error('Statusnya belum berubah. Periksa koneksi internetmu, lalu coba lagi.');
+  } else {
+    order.status = statusBaru;
+    toast.success(
+      { DIKONFIRMASI: 'Pesanan dikonfirmasi. Lanjut atur pengantaran lewat WA.', SELESAI: 'Pesanan selesai.', DIBATALKAN: 'Pesanan dibatalkan.' }[statusBaru],
+    );
+  }
   prosesId.value = null;
 };
 
+const mintaBatal = (o) => {
+  batalTarget.value = o;
+  dialogBatal.value?.showModal();
+};
+const konfirmasiBatal = async () => {
+  const o = batalTarget.value;
+  dialogBatal.value?.close();
+  if (o) await updateStatus(o, 'DIBATALKAN');
+};
+
 const chatPembeli = (o) => {
-  // FIX: Normalisasi nomor WA — handle +62, 62, 0
-  const wa = (o.nomor_wa_pembeli ?? '').replace(/^(\+62|62|0)/, '');
-
-  // FIX: Sertakan varian di pesan jika ada
-  let detailProduk = `*${o.produk?.nama_produk}*`;
-  if (o.varian_terpilih) detailProduk += ` (Varian: ${o.varian_terpilih})`;
-
-  const pesan = `Halo ${o.nama_pemesan}, terkait pesanan ${detailProduk} (${o.jumlah} pcs). `;
-  window.open(
-    `https://wa.me/62${wa}?text=${encodeURIComponent(pesan)}`,
-    '_blank',
-  );
+  let detail = `*${o.produk?.nama_produk}*`;
+  if (o.varian_terpilih) detail += ` (varian ${o.varian_terpilih})`;
+  const pesan = `Halo ${o.nama_pemesan}, saya dari ${toko.value?.nama_toko ?? 'toko'} soal pesanan ${detail} sebanyak ${o.jumlah}. `;
+  window.open(tautanWa(o.nomor_wa_pembeli, pesan), '_blank');
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
-  // FIX: Ganti nama variabel lokal jadi tokoData agar tidak shadow ref toko
   const { data: tokoData } = await supabase
     .from('toko')
-    .select('id, status')
+    .select('id, nama_toko, status')
     .eq('user_id', session.user.id)
     .single();
 
@@ -243,373 +209,183 @@ onMounted(async () => {
     router.push('/toko/dashboard');
     return;
   }
-
   statusToko.value = tokoData.status;
-  toko.value = tokoData; // FIX: Sebelumnya toko.value = toko (assign ke dirinya sendiri)
+  toko.value = tokoData;
 
   const { data } = await supabase
     .from('orders')
-    .select(
-      // FIX: Tambah varian_terpilih ke query
-      '*, varian_terpilih, produk(nama_produk, foto_url, harga)',
-    )
+    .select('*, varian_terpilih, produk(nama_produk, foto_url, harga)')
     .eq('toko_id', tokoData.id)
     .order('created_at', { ascending: false });
 
   orderList.value = data ?? [];
+  // Yang paling perlu dikerjakan lebih dulu: kalau ada yang menunggu, tampilkan itu dulu
+  if (orderList.value.some((o) => o.status === 'MENUNGGU')) filterAktif.value = 'MENUNGGU';
   loading.value = false;
 });
 </script>
 
 <style scoped>
-.page-header {
-  background: linear-gradient(135deg, #2d5016, #3a6b1e);
-  padding: 2.5rem 0;
-}
-.container {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.25rem;
-}
-.page-sub {
-  color: #a8c97f;
-  font-size: 0.875rem;
-}
-.main-content {
-  padding: 2rem 2rem 4rem;
-}
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.75rem;
-  flex-wrap: wrap;
-}
-.filter-tab {
-  padding: 0.45rem 1rem;
-  border: 1.5px solid #e8e0d0;
-  border-radius: 999px;
-  background: #fff;
-  color: #6b7280;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.filter-tab:hover {
-  border-color: #a8c97f;
-  color: #2d5016;
-}
-.filter-tab.active {
-  border-color: #2d5016;
-  background: #2d5016;
-  color: #f5edd6;
-}
-.tab-count {
-  background: rgba(255, 255, 255, 0.25);
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-}
-.filter-tab:not(.active) .tab-count {
-  background: #fef9c3;
-  color: #92400e;
-}
-.loading-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 4rem;
-}
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.order-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.order-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  overflow: hidden;
-}
-.order-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1.25rem;
-  background: #fdfaf4;
-  border-bottom: 1px solid #f0ede6;
-}
-.order-header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.order-date {
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-.order-metode {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-}
-.order-metode.cod {
-  background: #eff6ff;
-  color: #1e40af;
-}
-.order-body {
-  padding: 1.25rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-.order-produk-info {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-.order-foto {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #f3f4f6;
-}
-.order-produk-nama {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #1a2e0a;
-  margin-bottom: 0.2rem;
-}
-/* Badge varian — konsisten dengan halaman pembeli */
-.order-varian {
-  display: inline-block;
-  background: #f0f7e8;
-  color: #2d5016;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #a8c97f;
-  margin-bottom: 0.25rem;
-}
-.order-jumlah {
-  font-size: 0.78rem;
-  color: #6b7280;
-}
-.order-pembeli-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-.pembeli-row {
-  display: flex;
-  gap: 0.6rem;
-  align-items: flex-start;
-}
-.pembeli-icon {
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-.pembeli-label {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  margin-bottom: 0.1rem;
-}
-.pembeli-val {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: #374151;
-  line-height: 1.4;
-}
-.order-footer {
-  padding: 0.85rem 1.25rem;
-  border-top: 1px solid #f0ede6;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.order-total-wrap {
-  display: flex;
-  flex-direction: column;
-}
-.total-label {
-  font-size: 0.72rem;
-  color: #9ca3af;
-}
-.total-val {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #2d5016;
-}
-.order-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.btn-wa {
-  background: #f0fff4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-  padding: 0.5rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-wa:hover {
-  background: #dcfce7;
-}
-.btn-konfirmasi {
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.5rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-konfirmasi:hover:not(:disabled) {
-  background: #3a6b1e;
-}
-.btn-konfirmasi:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-selesai {
-  background: #1e40af;
+.kepala {
+  background: var(--hijau);
   color: #fff;
-  border: none;
-  padding: 0.5rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.5rem 0 1.75rem;
 }
-.btn-selesai:hover:not(:disabled) {
-  background: #1e3a8a;
+.kepala .judul-halaman {
+  color: #fff;
 }
-.btn-selesai:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.kepala .sub-halaman {
+  color: #cfe8d7;
 }
-.btn-batal {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  padding: 0.5rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
+.isi {
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+  max-width: 900px;
 }
-.btn-batal:hover:not(:disabled) {
-  background: #fee2e2;
-}
-.btn-batal:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-.badge-menunggu {
-  background: #fef9c3;
-  color: #92400e;
-}
-.badge-konfirmasi {
-  background: #dbeafe;
-  color: #1e40af;
-}
-.badge-selesai {
-  background: #dcfce7;
-  color: #166534;
-}
-.badge-batal {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.empty-state {
-  text-align: center;
-  padding: 5rem 2rem;
+
+.daftar {
+  list-style: none;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+.nota {
+  padding: 1rem 1.1rem 1.1rem;
+}
+.nota.baru {
+  --papan-bg: var(--kuning-muda);
+}
+.nota-kepala {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px dashed var(--tinta-3);
 }
-.empty-state span {
-  font-size: 3rem;
+.nota-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.7rem;
 }
-.empty-state h3 {
-  font-family: 'Lora', serif;
-  font-size: 1.2rem;
-  color: #1a2e0a;
+.nota-status time {
+  font-size: 0.9rem;
+  color: var(--tinta-3);
 }
-.empty-state p {
-  color: #6b7280;
-  font-size: 0.875rem;
+
+.nota-produk {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.9rem;
 }
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
-  .order-body {
+.nota-foto {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 2.5px solid var(--tinta);
+  border-radius: var(--sudut);
+  background: var(--dinding);
+}
+.nota-teks {
+  flex: 1;
+  min-width: 0;
+}
+.nota-nama {
+  font-weight: 700;
+  line-height: 1.25;
+}
+.nota-varian {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0 0.45rem;
+  background: var(--kuning);
+  border: 2px solid var(--tinta);
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.nota-jumlah {
+  font-size: 0.92rem;
+  color: var(--tinta-2);
+}
+.nota-total {
+  font-family: var(--font-papan);
+  font-size: 1.15rem;
+  white-space: nowrap;
+}
+
+.nota-pembeli {
+  margin-top: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--papan);
+  border: 2px solid var(--garis-lembut);
+  border-radius: var(--sudut);
+}
+.nota-pembeli > div {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+}
+.nota-pembeli dt {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--tinta-3);
+  font-size: 0.92rem;
+}
+.nota-pembeli dd {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+  .nota-pembeli > div {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0;
   }
-  .order-footer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+}
+
+.nota-aksi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.dialog {
+  margin: auto;
+  width: min(460px, calc(100vw - 2rem));
+  padding: 0;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 3px solid var(--tinta);
+  border-radius: 10px;
+}
+.dialog::backdrop {
+  background: rgba(20, 20, 20, 0.55);
+}
+.dialog-isi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.5rem;
+}
+.dialog-isi h2 {
+  font-size: 1.25rem;
+}
+.dialog-isi p {
+  color: var(--tinta-2);
+}
+.dialog-aksi {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
 }
 </style>

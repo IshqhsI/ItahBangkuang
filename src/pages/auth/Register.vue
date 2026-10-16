@@ -1,233 +1,243 @@
 <template>
-  <div class="auth-wrap">
-    <div class="auth-left">
-      <div class="brand">
-        <span class="brand-icon">🛒</span>
-        <h1 class="brand-name">ItahBangkuang</h1>
-        <p class="brand-tagline">
-          Bergabung dan mulai belanja atau jualan produk lokal kecamatan.
-        </p>
-      </div>
-      <div class="deco-circles">
-        <div class="circle c1"></div>
-        <div class="circle c2"></div>
-        <div class="circle c3"></div>
-      </div>
-    </div>
+  <LayoutAuth>
+    <div class="papan formulir">
+      <h1 class="judul-halaman">{{ step === 1 ? 'Buat akun' : 'Info tokomu' }}</h1>
+      <p v-if="step === 1" class="sub-halaman">
+        Sudah punya akun?
+        <RouterLink :to="{ path: '/login', query: route.query }">Masuk di sini</RouterLink>
+      </p>
+      <p v-else class="sub-halaman">Ini yang nanti dilihat pembeli di papan tokomu.</p>
 
-    <div class="auth-right">
-      <div class="auth-card">
-        <h2 class="form-title">Buat Akun</h2>
-        <p class="form-sub">
-          Sudah punya akun? <RouterLink to="/login">Masuk di sini</RouterLink>
-        </p>
+      <!-- LANGKAH (khusus penjual) -->
+      <ol v-if="form.role === 'penjual'" class="langkah" aria-label="Langkah pendaftaran">
+        <li :class="{ aktif: step === 1, selesai: step > 1 }">
+          <span class="langkah-no">
+            <Check v-if="step > 1" :size="16" :stroke-width="3" />
+            <template v-else>1</template>
+          </span>
+          Akun
+        </li>
+        <li class="langkah-garis" aria-hidden="true"></li>
+        <li :class="{ aktif: step === 2 }">
+          <span class="langkah-no">2</span>
+          Toko
+        </li>
+      </ol>
 
-        <!-- STEP INDICATOR -->
-        <div class="steps" v-if="form.role === 'penjual'">
-          <div class="step" :class="{ active: step >= 1, done: step > 1 }">
-            <span>1</span><small>Akun</small>
+      <form class="isi-form" novalidate @submit.prevent="step === 1 ? nextStep() : handleSubmit()">
+        <!-- LANGKAH 1: AKUN -->
+        <template v-if="step === 1">
+          <fieldset class="peran">
+            <legend class="label">Kamu mau…</legend>
+            <div class="peran-pilihan">
+              <label class="peran-kartu" :class="{ dipilih: form.role === 'pembeli' }">
+                <input v-model="form.role" type="radio" value="pembeli" class="sr-only" />
+                <ShoppingBasket :size="28" :stroke-width="2.25" />
+                <span class="peran-nama">Belanja</span>
+                <span class="peran-ket">Cari dan pesan produk tetangga</span>
+              </label>
+              <label class="peran-kartu" :class="{ dipilih: form.role === 'penjual' }">
+                <input v-model="form.role" type="radio" value="penjual" class="sr-only" />
+                <Store :size="28" :stroke-width="2.25" />
+                <span class="peran-nama">Jualan</span>
+                <span class="peran-ket">Buka toko dan terima pesanan</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="isian">
+            <label for="nama">Nama lengkap</label>
+            <input id="nama" v-model="form.nama" type="text" autocomplete="name" :disabled="loading" />
           </div>
-          <div class="step-line" :class="{ active: step > 1 }"></div>
-          <div class="step" :class="{ active: step >= 2 }">
-            <span>2</span><small>Toko</small>
-          </div>
-        </div>
 
-        <form @submit.prevent="handleSubmit" class="form">
-          <!-- ===== STEP 1: DATA AKUN ===== -->
-          <template v-if="step === 1">
-            <div class="field">
-              <label>Nama Lengkap</label>
-              <input
-                v-model="form.nama"
-                type="text"
-                placeholder="Nama kamu"
-                required
-                :disabled="loading"
-              />
-            </div>
-
-            <div class="field">
-              <label>Email</label>
-              <input
-                v-model="form.email"
-                type="email"
-                placeholder="contoh@email.com"
-                required
-                :disabled="loading"
-              />
-            </div>
-
-            <div class="field">
-              <label>Password</label>
-              <div class="input-wrap">
-                <input
-                  v-model="form.password"
-                  :type="showPass ? 'text' : 'password'"
-                  placeholder="Minimal 8 karakter"
-                  required
-                  :disabled="loading"
-                />
-                <button
-                  type="button"
-                  class="toggle-pass"
-                  @click="showPass = !showPass"
-                >
-                  {{ showPass ? '🙈' : '👁️' }}
-                </button>
-              </div>
-            </div>
-
-            <div class="field">
-              <label>Saya ingin bergabung sebagai</label>
-              <div class="role-options">
-                <label
-                  class="role-card"
-                  :class="{ selected: form.role === 'pembeli' }"
-                >
-                  <input type="radio" v-model="form.role" value="pembeli" />
-                  <span class="role-icon">🛒</span>
-                  <span class="role-label">Pembeli</span>
-                  <span class="role-desc">Cari & beli produk lokal</span>
-                </label>
-                <label
-                  class="role-card"
-                  :class="{ selected: form.role === 'penjual' }"
-                >
-                  <input type="radio" v-model="form.role" value="penjual" />
-                  <span class="role-icon">🍱</span>
-                  <span class="role-label">Penjual</span>
-                  <span class="role-desc">Buka toko & jual produk</span>
-                </label>
-              </div>
-            </div>
-
-            <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
-
-            <button
-              type="button"
-              class="btn-primary"
-              @click="nextStep"
+          <div class="isian">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="nama@email.com"
               :disabled="loading"
-            >
-              {{
-                form.role === 'penjual' ? 'Lanjut → Isi Info Toko' : 'Buat Akun'
-              }}
-            </button>
-          </template>
+            />
+          </div>
 
-          <!-- ===== STEP 2: DATA TOKO (PENJUAL) ===== -->
-          <template v-if="step === 2">
-            <div class="info-box">
-              📋 Toko kamu akan <strong>diverifikasi admin</strong> sebelum bisa
-              mulai jualan.
-            </div>
-
-            <div class="field">
-              <label>Nama Toko</label>
+          <div class="isian">
+            <label for="sandi">Kata sandi</label>
+            <div class="sandi">
               <input
-                v-model="form.nama_toko"
-                type="text"
-                placeholder="Contoh: Kue Bunda Sari"
-                required
+                id="sandi"
+                v-model="form.password"
+                :type="showPass ? 'text' : 'password'"
+                autocomplete="new-password"
+                aria-describedby="sandi-bantuan"
                 :disabled="loading"
               />
-            </div>
-
-            <div class="field">
-              <label>Nomor WhatsApp</label>
-              <div class="input-prefix-wrap">
-                <span class="input-prefix">+62</span>
-                <input
-                  v-model="form.nomor_wa"
-                  type="tel"
-                  placeholder="81234567890"
-                  required
-                  :disabled="loading"
-                />
-              </div>
-            </div>
-
-            <div class="field">
-              <label>Alamat Lengkap</label>
-              <input
-                v-model="form.alamat"
-                type="text"
-                placeholder="Contoh: Jl. Raya Suka Maju No. 123"
-                required
-                :disabled="loading"
-              />
-            </div>
-
-            <div class="field">
-              <label
-                >Deskripsi Toko <span class="optional">(opsional)</span></label
-              >
-              <textarea
-                v-model="form.deskripsi"
-                placeholder="Ceritakan sedikit tentang toko kamu..."
-                rows="3"
-                :disabled="loading"
-              ></textarea>
-            </div>
-
-            <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
-
-            <div class="btn-row">
               <button
                 type="button"
-                class="btn-back"
-                @click="step = 1"
-                :disabled="loading"
+                class="sandi-lihat"
+                :aria-label="showPass ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
+                :aria-pressed="showPass"
+                @click="showPass = !showPass"
               >
-                ← Kembali
-              </button>
-              <button type="submit" class="btn-primary" :disabled="loading">
-                <span v-if="loading" class="spinner"></span>
-                <span v-else>Daftar Sekarang</span>
+                <EyeOff v-if="showPass" :size="22" :stroke-width="2.25" />
+                <Eye v-else :size="22" :stroke-width="2.25" />
               </button>
             </div>
-          </template>
-        </form>
+            <span id="sandi-bantuan" class="bantuan">Minimal 8 karakter.</span>
+          </div>
+        </template>
 
-      </div>
+        <!-- LANGKAH 2: TOKO -->
+        <template v-else>
+          <div class="pesan pesan-info">
+            <ShieldCheck :size="20" :stroke-width="2.5" />
+            <span>Admin akan memeriksa tokomu dulu. Setelah disetujui, produkmu langsung tampil.</span>
+          </div>
+
+          <div class="isian">
+            <label for="nama-toko">Nama toko</label>
+            <input
+              id="nama-toko"
+              v-model="form.nama_toko"
+              type="text"
+              placeholder="Contoh: Kue Bunda Sari"
+              :disabled="loading"
+            />
+          </div>
+
+          <div class="isian">
+            <label for="wa">Nomor WhatsApp</label>
+            <div class="awalan">
+              <span class="awalan-teks" aria-hidden="true">+62</span>
+              <input
+                id="wa"
+                v-model="form.nomor_wa"
+                type="tel"
+                inputmode="numeric"
+                autocomplete="tel-national"
+                placeholder="81234567890"
+                aria-describedby="wa-bantuan"
+                :disabled="loading"
+                @input="rapikanWa"
+              />
+            </div>
+            <span id="wa-bantuan" class="bantuan">Pesanan baru akan dikabarkan ke nomor ini.</span>
+          </div>
+
+          <div class="isian">
+            <label for="alamat">Alamat toko</label>
+            <input
+              id="alamat"
+              v-model="form.alamat"
+              type="text"
+              autocomplete="street-address"
+              placeholder="Contoh: Jl. Pahlawan RT 03, dekat masjid"
+              :disabled="loading"
+            />
+          </div>
+
+          <div class="isian">
+            <label for="deskripsi">Cerita singkat tokomu <span class="opsional">(boleh dikosongkan)</span></label>
+            <textarea
+              id="deskripsi"
+              v-model="form.deskripsi"
+              rows="3"
+              placeholder="Misalnya: Kue basah buatan rumah, pesan H-1 untuk acara."
+              :disabled="loading"
+            ></textarea>
+          </div>
+        </template>
+
+        <div v-if="errorMsg" class="pesan pesan-galat" role="alert">
+          <CircleAlert :size="20" :stroke-width="2.5" />
+          <span>{{ errorMsg }}</span>
+        </div>
+
+        <div class="aksi">
+          <button
+            v-if="step === 2"
+            type="button"
+            class="tombol tombol-besar"
+            :disabled="loading"
+            @click="step = 1"
+          >
+            <ArrowLeft :size="20" :stroke-width="2.5" />
+            Kembali
+          </button>
+          <button type="submit" class="tombol tombol-merah tombol-besar aksi-utama" :disabled="loading">
+            <span v-if="loading" class="spinner-sm"></span>
+            <template v-if="loading">Mendaftarkan…</template>
+            <template v-else-if="step === 1 && form.role === 'penjual'">
+              Lanjut isi info toko
+              <ArrowRight :size="20" :stroke-width="2.5" />
+            </template>
+            <template v-else-if="step === 1">Buat akun</template>
+            <template v-else>Daftarkan toko</template>
+          </button>
+        </div>
+      </form>
     </div>
-  </div>
+  </LayoutAuth>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  ShoppingBasket,
+  Store,
+  Eye,
+  EyeOff,
+  Check,
+  CircleAlert,
+  ShieldCheck,
+  ArrowLeft,
+  ArrowRight,
+} from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'vue-router';
 import { useToastStore } from '@/stores/toast';
+import LayoutAuth from '@/layouts/LayoutAuth.vue';
+import { tujuanAman } from '@/lib/utils';
 
+const route = useRoute();
 const router = useRouter();
+const toast = useToastStore();
 
 const step = ref(1);
 const loading = ref(false);
 const showPass = ref(false);
 const errorMsg = ref('');
-const toast = useToastStore();  
 
 const form = ref({
   nama: '',
   email: '',
   password: '',
-  role: 'pembeli',
+  role: route.query.peran === 'penjual' ? 'penjual' : 'pembeli',
   nama_toko: '',
   nomor_wa: '',
   alamat: '',
   deskripsi: '',
 });
 
+// Nomor WA: hanya angka, tanpa awalan 0 / 62
+const rapikanWa = () => {
+  form.value.nomor_wa = form.value.nomor_wa.replace(/\D/g, '').replace(/^(62|0)/, '');
+};
+
 const nextStep = () => {
   errorMsg.value = '';
-  if (!form.value.nama || !form.value.email || !form.value.password) {
-    errorMsg.value = 'Semua field wajib diisi.';
+  if (!form.value.nama.trim() || !form.value.email.trim() || !form.value.password) {
+    errorMsg.value = 'Nama, email, dan kata sandi wajib diisi.';
+    return;
+  }
+  if (!/^\S+@\S+\.\S+$/.test(form.value.email.trim())) {
+    errorMsg.value = 'Format email belum benar. Contoh: nama@email.com';
     return;
   }
   if (form.value.password.length < 8) {
-    errorMsg.value = 'Password minimal 8 karakter.';
+    errorMsg.value = 'Kata sandi minimal 8 karakter.';
     return;
   }
   if (form.value.role === 'penjual') {
@@ -238,493 +248,241 @@ const nextStep = () => {
 };
 
 const handleSubmit = async () => {
-  loading.value = true
-  errorMsg.value = ''
+  errorMsg.value = '';
+
+  if (form.value.role === 'penjual') {
+    if (!form.value.nama_toko.trim() || !form.value.nomor_wa || !form.value.alamat.trim()) {
+      errorMsg.value = 'Nama toko, nomor WA, dan alamat wajib diisi.';
+      return;
+    }
+    if (form.value.nomor_wa.length < 9 || form.value.nomor_wa.length > 13) {
+      errorMsg.value = 'Nomor WA sepertinya belum lengkap. Tulis tanpa 0 di depan, contoh: 81234567890.';
+      return;
+    }
+  }
+
+  loading.value = true;
 
   const { data, error } = await supabase.auth.signUp({
-    email: form.value.email,
+    email: form.value.email.trim(),
     password: form.value.password,
     options: {
       data: {
         role: form.value.role,
-        nama_lengkap: form.value.nama,
+        nama_lengkap: form.value.nama.trim(),
       },
     },
-  })
+  });
 
   if (error) {
-    if (error.message === 'User already registered') {
-      errorMsg.value = 'Email ini sudah terdaftar.';
-      toast.error('Email ini sudah terdaftar. Gunakan email lain.'); 
-    } else {
-      errorMsg.value = 'Terjadi kesalahan. Coba lagi.';
-      toast.error('Pendaftaran gagal. Coba lagi beberapa saat.'); 
-    }
+    errorMsg.value =
+      error.message === 'User already registered'
+        ? 'Email ini sudah terdaftar. Coba masuk, atau pakai email lain.'
+        : 'Pendaftaran belum berhasil. Periksa koneksi internetmu, lalu coba lagi.';
     loading.value = false;
     return;
   }
 
-  // Update nama di profiles
   await supabase
     .from('profiles')
-    .update({ nama_lengkap: form.value.nama })
-    .eq('id', data.user.id)
+    .update({ nama_lengkap: form.value.nama.trim() })
+    .eq('id', data.user.id);
 
-  // Jika penjual, buat data toko
   if (form.value.role === 'penjual') {
-    await supabase.from('toko').insert({
+    const { error: errToko } = await supabase.from('toko').insert({
       user_id: data.user.id,
-      nama_toko: form.value.nama_toko,
+      nama_toko: form.value.nama_toko.trim(),
       nomor_wa: form.value.nomor_wa,
-      alamat: form.value.alamat,
-      deskripsi: form.value.deskripsi,
+      alamat: form.value.alamat.trim(),
+      deskripsi: form.value.deskripsi.trim(),
       status: 'PENDING',
-    })
+    });
 
-    toast.success('Pendaftaran berhasil! Tokomu sedang diverifikasi admin.'); 
-    toast.info('Sambil menunggu, lengkapi profil tokomu ya.');
-
-    router.push('/toko/dashboard')   
+    if (errToko) {
+      toast.warning('Akunmu sudah jadi, tapi info toko belum tersimpan. Lengkapi lewat menu Buka Toko.');
+      router.push('/buka-toko');
+    } else {
+      toast.success('Tokomu terdaftar! Sekarang tunggu admin memeriksanya.');
+      router.push('/toko/dashboard');
+    }
   } else {
-    toast.success('Selamat datang! Akun kamu berhasil dibuat 🎉');
-    router.push('/')                
+    toast.success('Akunmu sudah jadi. Selamat belanja!');
+    router.push(tujuanAman(route.query.redirect) ?? '/');
   }
 
-  loading.value = false
-}
-
+  loading.value = false;
+};
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+.formulir {
+  padding: 1.75rem 1.4rem;
+}
+@media (min-width: 480px) {
+  .formulir {
+    padding: 2.25rem 2rem;
+  }
 }
 
-.auth-wrap {
+.langkah {
+  list-style: none;
   display: flex;
-  min-height: 100vh;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.auth-left {
-  width: 40%;
-  background: #2d5016;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  position: relative;
-  overflow: hidden;
-  padding: 3rem;
-}
-
-.brand {
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-.brand-icon {
-  font-size: 3.5rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-.brand-name {
-  font-family: 'Lora', serif;
-  font-size: 2.6rem;
-  color: #f5edd6;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  color: var(--tinta-3);
 }
-.brand-tagline {
-  color: #a8c97f;
-  font-size: 0.95rem;
-  line-height: 1.6;
+.langkah li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
-
-.deco-circles {
-  position: absolute;
-  inset: 0;
-}
-.circle {
-  position: absolute;
+.langkah-no {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid currentColor;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.c1 {
-  width: 320px;
-  height: 320px;
-  top: -80px;
-  right: -80px;
-}
-.c2 {
-  width: 200px;
-  height: 200px;
-  bottom: 40px;
-  left: -60px;
-  background: rgba(168, 201, 127, 0.08);
-}
-.c3 {
-  width: 100px;
-  height: 100px;
-  bottom: 160px;
-  right: 40px;
-  background: rgba(245, 237, 214, 0.05);
-}
-
-.auth-right {
-  flex: 1;
-  background: #fdfaf4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 460px;
-  padding: 0.5rem 0;
-}
-
-.form-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  color: #1a2e0a;
-  font-weight: 700;
-  margin-bottom: 0.4rem;
-}
-
-.form-sub {
-  color: #6b7280;
   font-size: 0.9rem;
-  margin-bottom: 1.5rem;
 }
-.form-sub a {
-  color: #2d5016;
-  font-weight: 600;
-  text-decoration: none;
+.langkah li.aktif {
+  color: var(--tinta);
 }
-.form-sub a:hover {
-  text-decoration: underline;
+.langkah li.aktif .langkah-no {
+  background: var(--merah);
+  border-color: var(--tinta);
+  color: #fff;
 }
-
-/* STEPS */
-.steps {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin-bottom: 1.75rem;
+.langkah li.selesai {
+  color: var(--hijau);
 }
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
+.langkah li.selesai .langkah-no {
+  background: var(--hijau);
+  border-color: var(--tinta);
+  color: #fff;
 }
-
-.step span {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #d1d5db;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #9ca3af;
-  transition: all 0.3s;
-}
-
-.step small {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  transition: color 0.3s;
-}
-
-.step.active span {
-  border-color: #2d5016;
-  background: #2d5016;
-  color: white;
-}
-.step.active small {
-  color: #2d5016;
-}
-.step.done span {
-  border-color: #2d5016;
-  background: #f0f7e8;
-  color: #2d5016;
-}
-
-.step-line {
+.langkah-garis {
   flex: 1;
   height: 2px;
-  background: #e5e7eb;
-  margin: 0 0.5rem;
-  margin-bottom: 1rem;
-  transition: background 0.3s;
-}
-.step-line.active {
-  background: #2d5016;
+  background: var(--garis-lembut);
 }
 
-/* FORM */
-.form {
+.isi-form {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+.isi-form > .pesan {
+  margin-bottom: 1.1rem;
+}
+.isi-form > .pesan-galat {
+  margin: 1.25rem 0 0;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.peran {
+  border: 0;
+  margin-bottom: 1.25rem;
 }
-
-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.optional {
-  font-weight: 400;
-  color: #9ca3af;
-}
-
-input,
-textarea {
-  padding: 0.75rem 1rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #fff;
-  color: #111827;
-  transition: border-color 0.2s;
-  width: 100%;
-}
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: #2d5016;
-}
-input:disabled,
-textarea:disabled {
-  background: #f3f4f6;
-  cursor: not-allowed;
-}
-textarea {
-  resize: vertical;
-}
-
-.input-wrap {
-  position: relative;
-}
-.input-wrap input {
-  padding-right: 3rem;
-}
-.toggle-pass {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-}
-
-.input-prefix-wrap {
-  display: flex;
-}
-.input-prefix {
-  background: #f3f4f6;
-  border: 1.5px solid #d1d5db;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
-  padding: 0.75rem 0.75rem;
-  font-size: 0.9rem;
-  color: #6b7280;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.input-prefix-wrap input {
-  border-radius: 0 10px 10px 0;
-}
-
-/* ROLE CARDS */
-.role-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.role-card {
-  border: 1.5px solid #d1d5db;
-  border-radius: 12px;
-  padding: 1rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: #fff;
-}
-.role-card input[type='radio'] {
-  display: none;
-}
-.role-card:hover {
-  border-color: #a8c97f;
-  background: #f7fbf0;
-}
-.role-card.selected {
-  border-color: #2d5016;
-  background: #f0f7e8;
-}
-
-.role-icon {
-  font-size: 1.75rem;
-}
-.role-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #1a2e0a;
-}
-.role-desc {
-  font-size: 0.75rem;
-  color: #6b7280;
-  text-align: center;
-}
-
-/* MISC */
-.info-box {
-  background: #fff8e7;
-  border: 1px solid #fde68a;
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: #92400e;
-}
-
-.alert-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-}
-
-.btn-primary {
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.85rem;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    transform 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex: 1;
-}
-.btn-primary:hover:not(:disabled) {
-  background: #3a6b1e;
-}
-.btn-primary:active:not(:disabled) {
-  transform: scale(0.98);
-}
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-back {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1.5px solid #d1d5db;
-  padding: 0.85rem 1.25rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-back:hover {
-  background: #e5e7eb;
-}
-.btn-back:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-row {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(245, 237, 214, 0.3);
-  border-top-color: #f5edd6;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* SUCCESS */
-.success-box {
-  text-align: center;
-  padding: 2rem;
-  background: #f0f7e8;
-  border-radius: 16px;
-  border: 1.5px solid #a8c97f;
-  margin-top: 1rem;
-}
-.success-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-.success-box h3 {
-  font-family: 'Lora', serif;
-  font-size: 1.4rem;
-  color: #1a2e0a;
+.peran legend {
   margin-bottom: 0.5rem;
 }
-.success-box p {
-  color: #4b5563;
-  font-size: 0.9rem;
-  line-height: 1.6;
+.peran-pilihan {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+.peran-kartu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 0.9rem 1rem;
+  background: var(--papan);
+  border: 2.5px solid var(--tinta);
+  border-radius: var(--sudut);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.peran-kartu:hover {
+  background: var(--kuning-muda);
+}
+.peran-kartu.dipilih {
+  background: var(--kuning);
+  box-shadow:
+    inset 0 0 0 3px var(--kuning),
+    inset 0 0 0 5px var(--tinta);
+}
+.peran-kartu:has(input:focus-visible) {
+  outline: 3px solid var(--biru);
+  outline-offset: 3px;
+}
+.peran-nama {
+  font-family: var(--font-papan);
+  font-size: 1.1rem;
+  margin-top: 0.2rem;
+}
+.peran-ket {
+  font-size: 0.88rem;
+  color: var(--tinta-2);
+  line-height: 1.35;
 }
 
-@media (max-width: 768px) {
-  .auth-left {
-    display: none;
-  }
-  .role-options {
-    grid-template-columns: 1fr 1fr;
-  }
+.opsional {
+  font-weight: 400;
+  color: var(--tinta-3);
+}
+
+.sandi {
+  position: relative;
+}
+.sandi input {
+  padding-right: 3.25rem !important;
+}
+.sandi-lihat {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--tinta-2);
+}
+.sandi-lihat:hover {
+  background: var(--dinding);
+  color: var(--tinta);
+}
+
+.awalan {
+  display: flex;
+  align-items: stretch;
+}
+.awalan-teks {
+  display: grid;
+  place-items: center;
+  padding: 0 0.8rem;
+  background: var(--kuning);
+  border: 2px solid var(--tinta);
+  border-right: 0;
+  border-radius: var(--sudut-kecil) 0 0 var(--sudut-kecil);
+  font-weight: 700;
+}
+.awalan input {
+  border-radius: 0 var(--sudut-kecil) var(--sudut-kecil) 0 !important;
+}
+
+.aksi {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+.aksi-utama {
+  flex: 1;
 }
 </style>

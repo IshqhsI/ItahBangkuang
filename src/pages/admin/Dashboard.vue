@@ -1,867 +1,470 @@
 <template>
   <LayoutAdmin>
-    <!-- HEADER -->
-    <div class="dashboard-header">
-      <div class="container">
-        <p class="header-greeting">Panel Admin 👑</p>
-        <h1 class="header-title">Dashboard ItahBangkuang</h1>
+    <section class="kepala">
+      <div class="wadah">
+        <p class="kepala-sapa">Panel admin</p>
+        <h1 class="judul-halaman">Ringkasan ItahBangkuang</h1>
       </div>
-    </div>
+    </section>
 
-    <div class="container dashboard-body">
-      <!-- STAT CARDS -->
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-icon">🏪</div>
-          <div>
-            <p class="stat-num">{{ stats.tokoAktif }}</p>
-            <p class="stat-label">Toko Aktif</p>
-          </div>
+    <div class="wadah isi">
+      <dl class="ringkasan papan">
+        <div>
+          <dt>Toko aktif</dt>
+          <dd>{{ stats.tokoAktif }}</dd>
         </div>
-        <div class="stat-card highlight-yellow">
-          <div class="stat-icon">⏳</div>
-          <div>
-            <p class="stat-num">{{ stats.tokoPending }}</p>
-            <p class="stat-label">Menunggu Verifikasi</p>
-          </div>
+        <div :class="{ perlu: stats.tokoPending > 0 }">
+          <dt>Menunggu diperiksa</dt>
+          <dd>{{ stats.tokoPending }}</dd>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">📦</div>
-          <div>
-            <p class="stat-num">{{ stats.totalProduk }}</p>
-            <p class="stat-label">Total Produk</p>
-          </div>
+        <div>
+          <dt>Produk tampil</dt>
+          <dd>{{ stats.totalProduk }}</dd>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">🛒</div>
-          <div>
-            <p class="stat-num">{{ stats.totalOrder }}</p>
-            <p class="stat-label">Total Order</p>
-          </div>
+        <div>
+          <dt>Total pesanan</dt>
+          <dd>{{ stats.totalOrder }}</dd>
         </div>
-      </div>
+      </dl>
 
-      <div class="dashboard-cols">
-        <!-- TOKO PENDING — VERIFIKASI -->
-        <div class="dash-section">
-          <div class="section-head">
-            <h2 class="section-title">Toko Menunggu Verifikasi</h2>
-            <RouterLink to="/admin/toko" class="lihat-semua"
-              >Lihat Semua →</RouterLink
-            >
+      <div class="kolom">
+        <!-- Toko menunggu -->
+        <section aria-labelledby="h-toko">
+          <div class="kepala-bagian">
+            <h2 id="h-toko" class="huruf-papan">Toko menunggu diperiksa</h2>
+            <RouterLink to="/admin/toko" class="lihat">Semua toko</RouterLink>
           </div>
 
-          <div v-if="loadingToko" class="loading-mini">
-            <div class="spinner-sm"></div>
-          </div>
+          <div v-if="loadingToko" class="memuat kecil"><div class="spinner"></div></div>
 
-          <div v-else-if="tokoPending.length" class="toko-list">
-            <div v-for="t in tokoPending" :key="t.id" class="toko-item">
-              <div class="toko-info">
-                <p class="toko-nama">{{ t.nama_toko }}</p>
-                <p class="toko-meta">📍 {{ t.alamat }} • 📞 {{ t.nomor_wa }}</p>
-                <p class="toko-date">
-                  Daftar: {{ formatTanggal(t.created_at) }}
-                </p>
+          <ul v-else-if="tokoPending.length" class="daftar papan">
+            <li v-for="t in tokoPending" :key="t.id" class="baris baris-toko">
+              <div class="baris-teks">
+                <p class="baris-nama">{{ t.nama_toko }}</p>
+                <p class="baris-ket"><MapPin :size="14" :stroke-width="2.5" /> {{ t.alamat }}</p>
+                <p class="baris-ket"><Phone :size="14" :stroke-width="2.5" /> +62{{ t.nomor_wa }}</p>
+                <p class="baris-ket">Daftar {{ formatTanggal(t.created_at) }}</p>
               </div>
-              <div class="toko-actions">
-                <button
-                  class="btn-acc"
-                  @click="accToko(t.id)"
-                  :disabled="prosesId === t.id"
-                >
-                  {{ prosesId === t.id ? '...' : '✅ ACC' }}
+              <div class="baris-aksi">
+                <button type="button" class="tombol tombol-kecil tombol-hijau" :disabled="prosesId === t.id" @click="accToko(t.id)">
+                  <Check :size="16" :stroke-width="3" />
+                  {{ prosesId === t.id ? 'Menyimpan…' : 'Setujui' }}
                 </button>
-                <button
-                  class="btn-tolak"
-                  @click="bukaTolakModal(t)"
-                  :disabled="prosesId === t.id"
-                >
-                  ❌ Tolak
+                <button type="button" class="tombol tombol-kecil tombol-bahaya" :disabled="prosesId === t.id" @click="bukaTolak(t)">
+                  Tolak
                 </button>
               </div>
-            </div>
+            </li>
+          </ul>
+
+          <p v-else class="tenang"><CircleCheck :size="20" :stroke-width="2.5" /> Tidak ada toko yang menunggu.</p>
+        </section>
+
+        <!-- Pesanan terbaru -->
+        <section aria-labelledby="h-order">
+          <div class="kepala-bagian">
+            <h2 id="h-order" class="huruf-papan">Pesanan terbaru</h2>
           </div>
 
-          <div v-else class="empty-mini">
-            <p>✅ Tidak ada toko yang menunggu verifikasi</p>
-          </div>
-        </div>
+          <div v-if="loadingOrder" class="memuat kecil"><div class="spinner"></div></div>
 
-        <!-- ORDER TERBARU -->
-        <div class="dash-section">
-          <div class="section-head">
-            <h2 class="section-title">Order Terbaru</h2>
-          </div>
-
-          <div v-if="loadingOrder" class="loading-mini">
-            <div class="spinner-sm"></div>
-          </div>
-
-          <div v-else-if="orderTerbaru.length" class="order-list">
-            <div v-for="o in orderTerbaru" :key="o.id" class="order-item">
-              <div class="order-info">
-                <p class="order-nama">{{ o.nama_pemesan }}</p>
-                <p class="order-detail">
-                  {{ o.produk?.nama_produk }} • {{ o.toko?.nama_toko }}
-                </p>
-                <p class="order-date">{{ formatTanggal(o.created_at) }}</p>
+          <ul v-else-if="orderTerbaru.length" class="daftar papan">
+            <li v-for="o in orderTerbaru" :key="o.id" class="baris">
+              <div class="baris-teks">
+                <p class="baris-nama">{{ o.nama_pemesan }}</p>
+                <p class="baris-ket">{{ o.produk?.nama_produk }} · {{ o.toko?.nama_toko }}</p>
+                <p class="baris-ket">{{ formatTanggal(o.created_at) }}</p>
               </div>
-              <div class="order-right">
-                <p class="order-total">{{ formatRupiah(o.total_harga) }}</p>
-                <span class="badge" :class="badgeClass(o.status)">{{
-                  o.status
-                }}</span>
+              <div class="baris-kanan">
+                <p class="baris-harga">{{ formatRupiah(o.total_harga) }}</p>
+                <span class="badge" :class="badgeClass(o.status)">{{ labelStatus(o.status) }}</span>
               </div>
-            </div>
-          </div>
+            </li>
+          </ul>
 
-          <div v-else class="empty-mini">
-            <p>📭 Belum ada order</p>
-          </div>
-        </div>
+          <p v-else class="tenang"><Inbox :size="20" :stroke-width="2.5" /> Belum ada pesanan.</p>
+        </section>
       </div>
 
-      <!-- FEEDBACK SECTION -->
-      <div class="dash-section feedback-section">
-        <div class="section-head">
-          <h2 class="section-title">
-            Feedback Pengguna
-            <span v-if="feedbackBaru.length" class="feedback-badge">{{
-              feedbackBaru.length
-            }}</span>
+      <!-- Saran & keluhan -->
+      <section class="masukan" aria-labelledby="h-masukan">
+        <div class="kepala-bagian">
+          <h2 id="h-masukan" class="huruf-papan">
+            Saran &amp; keluhan baru
+            <span v-if="feedbackBaru.length" class="plat plat-merah">{{ feedbackBaru.length }}</span>
           </h2>
-          <button
-            v-if="feedbackBaru.length"
-            class="btn-tandai-semua"
-            @click="tandaiSemuaDibaca"
-          >
-            Tandai Semua Dibaca
+          <button v-if="feedbackBaru.length" type="button" class="tombol tombol-kecil" @click="tandaiSemuaDibaca">
+            Tandai semua sudah dibaca
           </button>
         </div>
 
-        <div v-if="loadingFeedback" class="loading-mini">
-          <div class="spinner-sm"></div>
-        </div>
+        <div v-if="loadingFeedback" class="memuat kecil"><div class="spinner"></div></div>
 
-        <div v-else-if="feedbackBaru.length" class="feedback-list">
-          <div v-for="f in feedbackBaru" :key="f.id" class="feedback-item">
-            <div class="feedback-left">
-              <span class="feedback-kat" :class="`kat-${f.kategori}`">
-                {{ ikonKategori(f.kategori) }} {{ labelKategori(f.kategori) }}
-              </span>
-              <p class="feedback-isi">{{ f.isi }}</p>
-              <p class="feedback-meta">
-                {{ f.profiles?.nama_lengkap ?? 'Pengguna' }} •
-                {{ formatTanggal(f.created_at) }}
-              </p>
+        <ul v-else-if="feedbackBaru.length" class="daftar papan">
+          <li v-for="f in feedbackBaru" :key="f.id" class="baris baris-masukan">
+            <div class="baris-teks">
+              <span class="plat" :class="platMasukan[f.kategori] ?? ''">{{ labelMasukan(f.kategori) }}</span>
+              <p class="masukan-isi">{{ f.isi }}</p>
+              <p class="baris-ket">{{ f.profiles?.nama_lengkap ?? 'Pengguna' }} · {{ formatTanggal(f.created_at) }}</p>
             </div>
-            <button
-              class="btn-dibaca"
-              @click="tandaiDibaca(f.id)"
-              :disabled="prosesFeedbackId === f.id"
-            >
-              {{ prosesFeedbackId === f.id ? '...' : '✓ Dibaca' }}
+            <button type="button" class="tombol tombol-kecil" :disabled="prosesFeedbackId === f.id" @click="tandaiDibaca(f.id)">
+              <Check :size="16" :stroke-width="3" />
+              Sudah dibaca
             </button>
-          </div>
-        </div>
+          </li>
+        </ul>
 
-        <div v-else class="empty-mini">
-          <p>✅ Tidak ada feedback baru</p>
-        </div>
-      </div>
+        <p v-else class="tenang"><CircleCheck :size="20" :stroke-width="2.5" /> Tidak ada masukan baru.</p>
+      </section>
     </div>
 
-    <!-- MODAL TOLAK -->
-    <div
-      class="modal-overlay"
-      v-if="showTolakModal"
-      @click.self="showTolakModal = false"
-    >
-      <div class="modal">
-        <h3 class="modal-title">Tolak Toko</h3>
-        <p class="modal-sub">
-          Toko: <strong>{{ tolakTarget?.nama_toko }}</strong>
-        </p>
-        <div class="field">
-          <label>Alasan Penolakan <span style="color: #dc2626">*</span></label>
+    <!-- Tolak toko -->
+    <dialog ref="dialogTolak" class="dialog" @close="tolakTarget = null">
+      <div class="dialog-isi">
+        <h2 class="huruf-papan">Tolak {{ tolakTarget?.nama_toko }}?</h2>
+        <div class="isian">
+          <label for="alasan">Alasan penolakan</label>
           <textarea
+            id="alasan"
             v-model="alasanTolak"
             rows="3"
-            placeholder="Jelaskan alasan penolakan agar penjual bisa memperbaiki..."
+            aria-describedby="alasan-bantuan"
+            placeholder="Contoh: Nomor WhatsApp tidak aktif. Mohon perbaiki lalu hubungi admin."
           ></textarea>
+          <span id="alasan-bantuan" class="bantuan">Penjual akan membaca alasan ini, jadi tulis supaya mereka tahu apa yang perlu diperbaiki.</span>
         </div>
-        <div class="modal-actions">
-          <button class="btn-cancel" @click="showTolakModal = false">
-            Batal
-          </button>
-          <button
-            class="btn-tolak-confirm"
-            @click="konfirmasiTolak"
-            :disabled="!alasanTolak.trim() || prosesId"
-          >
-            Tolak Toko
+        <div class="dialog-aksi">
+          <button type="button" class="tombol" @click="dialogTolak.close()">Batal</button>
+          <button type="button" class="tombol tombol-merah" :disabled="!alasanTolak.trim() || !!prosesId" @click="konfirmasiTolak">
+            Tolak toko
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   </LayoutAdmin>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { MapPin, Phone, Check, CircleCheck, Inbox } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
+import { useToastStore } from '@/stores/toast';
 import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
 import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
 
+const route = useRoute();
 const router = useRouter();
-const menuOpen = ref(false);
+const toast = useToastStore();
+
 const loadingToko = ref(true);
 const loadingOrder = ref(true);
+const loadingFeedback = ref(true);
 const tokoPending = ref([]);
 const orderTerbaru = ref([]);
+const feedbackBaru = ref([]);
 const prosesId = ref(null);
-const showTolakModal = ref(false);
+const prosesFeedbackId = ref(null);
+const dialogTolak = ref(null);
 const tolakTarget = ref(null);
 const alasanTolak = ref('');
-const stats = ref({
-  tokoAktif: 0,
-  tokoPending: 0,
-  totalProduk: 0,
-  totalOrder: 0,
-});
+const stats = ref({ tokoAktif: 0, tokoPending: 0, totalProduk: 0, totalOrder: 0 });
 
-const feedbackBaru = ref([]);
-const loadingFeedback = ref(true);
-const prosesFeedbackId = ref(null);
+const badgeClass = badgeOrderClass;
+const labelStatus = (s) =>
+  ({ MENUNGGU: 'Menunggu', DIKONFIRMASI: 'Dikonfirmasi', SELESAI: 'Selesai', DIBATALKAN: 'Dibatalkan' })[s] ?? s;
 
-const ikonKategori = (kat) =>
-  ({ saran: '💡', keluhan: '⚠️', fitur: '🛠️' })[kat] ?? '📝';
-const labelKategori = (kat) =>
-  ({
-    saran: 'Saran & Ide',
-    keluhan: 'Keluhan & Laporan',
-    fitur: 'Request Fitur',
-  })[kat] ?? kat;
+const labelMasukan = (kat) => ({ saran: 'Saran', keluhan: 'Keluhan', fitur: 'Minta fitur' })[kat] ?? kat;
+const platMasukan = { saran: 'plat-kuning', keluhan: 'plat-merah', fitur: 'plat-biru' };
 
 const tandaiDibaca = async (id) => {
   prosesFeedbackId.value = id;
-  await supabase.from('feedback').update({ status: 'DIBACA' }).eq('id', id);
-  feedbackBaru.value = feedbackBaru.value.filter((f) => f.id !== id);
+  const { error } = await supabase.from('feedback').update({ status: 'DIBACA' }).eq('id', id);
+  if (error) {
+    toast.error('Belum berhasil ditandai. Coba lagi.');
+  } else {
+    feedbackBaru.value = feedbackBaru.value.filter((f) => f.id !== id);
+  }
   prosesFeedbackId.value = null;
 };
 
 const tandaiSemuaDibaca = async () => {
   const ids = feedbackBaru.value.map((f) => f.id);
-  await supabase.from('feedback').update({ status: 'DIBACA' }).in('id', ids);
+  const { error } = await supabase.from('feedback').update({ status: 'DIBACA' }).in('id', ids);
+  if (error) {
+    toast.error('Belum berhasil ditandai. Coba lagi.');
+    return;
+  }
   feedbackBaru.value = [];
 };
 
-const badgeClass = badgeOrderClass;
-
 const accToko = async (id) => {
   prosesId.value = id;
-  await supabase.from('toko').update({ status: 'AKTIF' }).eq('id', id);
-  tokoPending.value = tokoPending.value.filter((t) => t.id !== id);
-  stats.value.tokoPending--;
-  stats.value.tokoAktif++;
+  const { error } = await supabase.from('toko').update({ status: 'AKTIF' }).eq('id', id);
+  if (error) {
+    toast.error('Toko belum berhasil disetujui. Coba lagi.');
+  } else {
+    const t = tokoPending.value.find((x) => x.id === id);
+    tokoPending.value = tokoPending.value.filter((x) => x.id !== id);
+    stats.value.tokoPending--;
+    stats.value.tokoAktif++;
+    toast.success(`${t?.nama_toko ?? 'Toko'} disetujui.`);
+  }
   prosesId.value = null;
 };
 
-const bukaTolakModal = (toko) => {
+const bukaTolak = (toko) => {
   tolakTarget.value = toko;
   alasanTolak.value = '';
-  showTolakModal.value = true;
+  dialogTolak.value?.showModal();
 };
 
 const konfirmasiTolak = async () => {
-  if (!alasanTolak.value.trim()) return;
-  prosesId.value = tolakTarget.value.id;
-  await supabase
+  const target = tolakTarget.value;
+  if (!target || !alasanTolak.value.trim()) return;
+  prosesId.value = target.id;
+  const { error } = await supabase
     .from('toko')
-    .update({ status: 'DITOLAK', alasan_tolak: alasanTolak.value })
-    .eq('id', tolakTarget.value.id);
-  tokoPending.value = tokoPending.value.filter(
-    (t) => t.id !== tolakTarget.value.id,
-  );
-  stats.value.tokoPending--;
-  showTolakModal.value = false;
+    .update({ status: 'DITOLAK', alasan_tolak: alasanTolak.value.trim() })
+    .eq('id', target.id);
+  if (error) {
+    toast.error('Toko belum berhasil ditolak. Coba lagi.');
+  } else {
+    tokoPending.value = tokoPending.value.filter((t) => t.id !== target.id);
+    stats.value.tokoPending--;
+    toast.success(`${target.nama_toko} ditolak.`);
+    dialogTolak.value?.close();
+  }
   prosesId.value = null;
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
-  // Cek role admin
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', session.user.id)
     .single();
+
   if (profile?.role !== 'admin') {
     router.push('/');
     return;
   }
 
-  // Fetch paralel
-  const [tokoPendingRes, orderRes, statsRes] = await Promise.all([
-    supabase
-      .from('toko')
-      .select('*')
-      .eq('status', 'PENDING')
-      .order('created_at', { ascending: true })
-      .limit(10)
-      .throwOnError(),
-    supabase
-      .from('orders')
-      .select('*, produk(nama_produk), toko(nama_toko)')
-      .order('created_at', { ascending: false })
-      .limit(8),
-    Promise.all([
-      supabase
-        .from('toko')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'AKTIF'),
-      supabase
-        .from('toko')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'PENDING'),
-      supabase
-        .from('produk')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'AKTIF'),
-      supabase.from('orders').select('*', { count: 'exact', head: true }),
-    ]),
+  const hitung = (tabel, status) => {
+    let q = supabase.from(tabel).select('*', { count: 'exact', head: true });
+    return status ? q.eq('status', status) : q;
+  };
+
+  const [tokoRes, orderRes, a, b, c, d, feedbackRes] = await Promise.all([
+    supabase.from('toko').select('*').eq('status', 'PENDING').order('created_at', { ascending: true }).limit(10),
+    supabase.from('orders').select('*, produk(nama_produk), toko(nama_toko)').order('created_at', { ascending: false }).limit(8),
+    hitung('toko', 'AKTIF'),
+    hitung('toko', 'PENDING'),
+    hitung('produk', 'AKTIF'),
+    hitung('orders'),
+    supabase.from('feedback').select('*, profiles(nama_lengkap)').eq('status', 'BARU').order('created_at', { ascending: false }).limit(20),
   ]);
 
-  console.log(tokoPendingRes.error, orderRes, statsRes);
-
-  tokoPending.value = tokoPendingRes.data ?? [];
+  tokoPending.value = tokoRes.data ?? [];
   orderTerbaru.value = orderRes.data ?? [];
-  loadingToko.value = false;
-  loadingOrder.value = false;
-
-  // Fetch feedback baru
-  const { data: feedbackData } = await supabase
-    .from('feedback')
-    .select('*, profiles(nama_lengkap)')
-    // .eq('status', 'BARU')
-    .order('created_at', { ascending: false })
-    .limit(20);
-  feedbackBaru.value = feedbackData ?? [];
-  loadingFeedback.value = false;
-
-  const [a, b, c, d] = statsRes;
+  feedbackBaru.value = feedbackRes.data ?? [];
   stats.value = {
     tokoAktif: a.count ?? 0,
     tokoPending: b.count ?? 0,
     totalProduk: c.count ?? 0,
     totalOrder: d.count ?? 0,
   };
+  loadingToko.value = false;
+  loadingOrder.value = false;
+  loadingFeedback.value = false;
 });
 </script>
 
 <style scoped>
-.dashboard-header {
-  background: linear-gradient(135deg, #1a2e0a, #2d5016);
-  padding: 2.5rem 0;
+.kepala {
+  background: var(--biru);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.5rem 0 1.75rem;
 }
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala .judul-halaman {
+  color: #fff;
 }
-.header-greeting {
-  font-size: 0.85rem;
-  color: #a8c97f;
-  margin-bottom: 0.25rem;
-}
-.header-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
+.kepala-sapa {
+  color: #c9d8f2;
   font-weight: 700;
-  color: #f5edd6;
-}
-
-.dashboard-body {
-  padding: 2rem 2rem 4rem;
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.stat-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.stat-card.highlight-yellow {
-  border-color: #fde68a;
-  background: #fffbeb;
-}
-.stat-icon {
-  font-size: 1.75rem;
-  flex-shrink: 0;
-}
-.stat-num {
-  font-family: 'Lora', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a2e0a;
-}
-.stat-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.1rem;
-}
-
-.dashboard-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-.dash-section {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.5rem;
-}
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-.section-title {
-  font-family: 'Lora', serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a2e0a;
-}
-.lihat-semua {
-  font-size: 0.8rem;
-  color: #2d5016;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.loading-mini {
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-}
-.spinner-sm {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* TOKO LIST */
-.toko-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.toko-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 12px;
-}
-.toko-nama {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #1a2e0a;
   margin-bottom: 0.2rem;
 }
-.toko-meta {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-bottom: 0.15rem;
-}
-.toko-date {
-  font-size: 0.7rem;
-  color: #9ca3af;
-}
-.toko-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-.btn-acc {
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.45rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-acc:hover:not(:disabled) {
-  background: #3a6b1e;
-}
-.btn-acc:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-tolak {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  padding: 0.45rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-tolak:hover:not(:disabled) {
-  background: #fee2e2;
-}
-.btn-tolak:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.isi {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
 }
 
-/* ORDER LIST */
-.order-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+.ringkasan {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
 }
-.order-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 0.85rem;
-  background: #fdfaf4;
-  border-radius: 10px;
-  border: 1px solid #f0ede6;
+@media (min-width: 720px) {
+  .ringkasan {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
-.order-nama {
+.ringkasan > div {
+  padding: 0.9rem 1.1rem;
+  border-right: 1px solid var(--garis-lembut);
+  border-bottom: 1px solid var(--garis-lembut);
+}
+.ringkasan > div.perlu {
+  background: var(--kuning);
+}
+.ringkasan dt {
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #1a2e0a;
-  margin-bottom: 0.15rem;
-}
-.order-detail {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-bottom: 0.1rem;
-}
-.order-date {
-  font-size: 0.7rem;
-  color: #9ca3af;
-}
-.order-right {
-  text-align: right;
-  flex-shrink: 0;
-}
-.order-total {
-  font-size: 0.875rem;
   font-weight: 700;
-  color: #2d5016;
-  margin-bottom: 0.3rem;
+  color: var(--tinta-3);
+}
+.ringkasan .perlu dt {
+  color: var(--tinta);
+}
+.ringkasan dd {
+  font-family: var(--font-papan);
+  font-size: 1.7rem;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.68rem;
-  font-weight: 600;
+.kolom {
+  display: grid;
+  gap: 1.75rem;
+  margin-top: 2rem;
 }
-.badge-menunggu {
-  background: #fef9c3;
-  color: #92400e;
+@media (min-width: 960px) {
+  .kolom {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
 }
-.badge-konfirmasi {
-  background: #dbeafe;
-  color: #1e40af;
+.masukan {
+  margin-top: 2rem;
 }
-.badge-selesai {
-  background: #dcfce7;
-  color: #166534;
-}
-.badge-batal {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.empty-mini {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-.empty-mini p {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-/* MODAL */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+.kepala-bagian {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 999;
-  padding: 2rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
 }
-.modal {
-  background: #fff;
-  border-radius: 20px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+.kepala-bagian h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.2rem;
 }
-.modal-title {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
+.lihat {
   font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 0.3rem;
 }
-.modal-sub {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1.25rem;
+
+.memuat.kecil {
+  padding: 2rem 0;
 }
-.field {
+.tenang {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 0;
+  font-weight: 700;
+  color: var(--tinta-2);
+}
+
+.daftar {
+  list-style: none;
+}
+.baris {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--garis-lembut);
+}
+.daftar > li:last-child {
+  border-bottom: 0;
+}
+.baris-teks {
+  flex: 1;
+  min-width: 0;
+}
+.baris-nama {
+  font-weight: 700;
+}
+.baris-ket {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--tinta-3);
+  overflow-wrap: anywhere;
+}
+.baris-aksi {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-bottom: 1.25rem;
 }
-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #374151;
-}
-textarea {
-  padding: 0.75rem 1rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  resize: vertical;
-  transition: border-color 0.2s;
-}
-textarea:focus {
-  outline: none;
-  border-color: #2d5016;
-}
-.modal-actions {
+.baris-kanan {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
 }
-.btn-cancel {
-  flex: 1;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1.5px solid #d1d5db;
-  padding: 0.75rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
+.baris-harga {
+  font-weight: 700;
 }
-.btn-cancel:hover {
-  background: #e5e7eb;
-}
-.btn-tolak-confirm {
-  flex: 1;
-  background: #dc2626;
-  color: #fff;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-tolak-confirm:hover:not(:disabled) {
-  background: #b91c1c;
-}
-.btn-tolak-confirm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@media (max-width: 900px) {
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .dashboard-cols {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 640px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .toko-item {
+@media (max-width: 480px) {
+  .baris-toko {
     flex-direction: column;
   }
-  .toko-actions {
+  .baris-aksi {
     flex-direction: row;
   }
 }
-
-.feedback-section {
-  margin-top: 1.5rem;
+.masukan-isi {
+  margin: 0.35rem 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-width: 70ch;
 }
 
-.feedback-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #dc2626;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 99px;
-  padding: 0 6px;
-  margin-left: 0.5rem;
-}
-
-.btn-tandai-semua {
-  background: none;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
-  padding: 0.35rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-tandai-semua:hover {
-  border-color: #2d5016;
-  color: #2d5016;
-}
-
-.feedback-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.feedback-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  background: #fdfaf4;
+.dialog {
+  margin: auto;
+  width: min(480px, calc(100vw - 2rem));
+  padding: 0;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 3px solid var(--tinta);
   border-radius: 10px;
-  border: 1px solid #f0ede6;
 }
-
-.feedback-left {
+.dialog::backdrop {
+  background: rgba(20, 20, 20, 0.55);
+}
+.dialog-isi {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  flex: 1;
+  gap: 0.9rem;
+  padding: 1.5rem;
 }
-
-.feedback-kat {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  width: fit-content;
+.dialog-isi h2 {
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
 }
-.kat-saran {
-  background: #fef9c3;
-  color: #854d0e;
-}
-.kat-keluhan {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.kat-fitur {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.feedback-isi {
-  font-size: 0.875rem;
-  color: #374151;
-  line-height: 1.5;
-}
-
-.feedback-meta {
-  font-size: 0.72rem;
-  color: #9ca3af;
-}
-
-.btn-dibaca {
-  background: #f0f7e8;
-  color: #2d5016;
-  border: 1.5px solid #a8c97f;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.btn-dibaca:hover {
-  background: #e0f0cc;
-}
-.btn-dibaca:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.dialog-aksi {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 </style>

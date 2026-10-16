@@ -1,17 +1,13 @@
 <template>
-  <div class="">
+  <div class="tata-letak">
     <NavBar />
-
-    <main class="main-content">
+    <main class="isi-utama">
       <slot />
     </main>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
 import NavBar from '@/components/NavBar.vue';
 
 defineProps({
@@ -24,21 +20,20 @@ defineProps({
     default: null,
   },
 });
-
-const router = useRouter();
-const authStore = useAuthStore();
-const menuOpen = ref(false);
-
 </script>
 
 <style scoped>
-
-.page {
+.tata-letak {
   min-height: 100vh;
+  background: var(--dinding);
 }
-
-.main-content {
-  padding-top: 64px; /* Harus sama dengan tinggi navbar */
-  min-height: 100vh;
+.isi-utama {
+  padding-top: var(--nav-h);
+  padding-bottom: 3rem;
+}
+@media (max-width: 900px) {
+  .isi-utama {
+    padding-bottom: calc(62px + 2rem + env(safe-area-inset-bottom));
+  }
 }
 </style>

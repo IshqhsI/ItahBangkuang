@@ -1,324 +1,250 @@
 <template>
- <LayoutAdmin>
-
-    <!-- Semua konten halaman tetap sama, tidak ada yang berubah di sini -->
-    <div v-if="loading" class="loading-wrap">
-      <div class="spinner"></div>
-      <p>Memuat dashboard...</p>
-    </div>
-
-    <template v-else>
-      <div class="page-header">
-      <div class="container">
-        <h1 class="page-title">Kelola Toko</h1>
-        <p class="page-sub">Verifikasi dan kelola semua toko</p>
+  <LayoutAdmin>
+    <section class="kepala">
+      <div class="wadah">
+        <h1 class="judul-halaman">Kelola toko</h1>
+        <p class="sub-halaman">Periksa toko baru, tolak yang tidak sesuai, dan blokir yang melanggar.</p>
       </div>
-    </div>
+    </section>
 
-    <div class="container main-content">
-      <!-- Filter tabs -->
-      <div class="filter-tabs">
+    <div class="wadah isi">
+      <div class="deret-chip" role="group" aria-label="Saring menurut status">
         <button
           v-for="f in filterList"
           :key="f.val"
-          class="filter-tab"
-          :class="{ active: filterAktif === f.val }"
-          @click="setFilter(f.val)"
+          type="button"
+          class="chip"
+          :aria-pressed="filterAktif === f.val"
+          @click="filterAktif = f.val"
         >
           {{ f.label }}
-          <span class="tab-count" v-if="hitungFilter(f.val) > 0">{{
-            hitungFilter(f.val)
-          }}</span>
+          <span v-if="hitungFilter(f.val) > 0" class="hitung">{{ hitungFilter(f.val) }}</span>
         </button>
       </div>
 
-      <!-- Search -->
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input
-          v-model="keyword"
-          type="text"
-          placeholder="Cari nama toko atau alamat..."
-          class="search-input"
-        />
-        <button v-if="keyword" class="search-clear" @click="keyword = ''">
-          ✕
+      <form class="cari" role="search" @submit.prevent>
+        <Search class="cari-ikon" :size="20" :stroke-width="2.5" aria-hidden="true" />
+        <label for="cari-toko" class="sr-only">Cari toko</label>
+        <input id="cari-toko" v-model="keyword" type="search" placeholder="Cari nama toko atau alamat…" class="cari-input" />
+        <button v-if="keyword" type="button" class="cari-hapus" aria-label="Hapus pencarian" @click="keyword = ''">
+          <X :size="18" :stroke-width="2.5" />
         </button>
-      </div>
+      </form>
 
-      <!-- Loading -->
-      <div v-if="loading" class="loading-wrap">
+      <div v-if="loading" class="memuat">
         <div class="spinner"></div>
+        <p>Mengambil data toko…</p>
       </div>
 
-      <!-- Toko list -->
-      <div v-else-if="tokoFiltered.length" class="toko-list">
-        <div v-for="t in tokoFiltered" :key="t.id" class="toko-card">
-          <div class="toko-header">
-            <div class="toko-foto-wrap">
-              <img
-                v-if="t.foto_toko"
-                :src="t.foto_toko"
-                :alt="t.nama_toko"
-                class="toko-foto"
-              />
-              <div v-else class="toko-foto-placeholder">🏪</div>
-            </div>
-            <div class="toko-info">
-              <div class="toko-nama-row">
-                <h3 class="toko-nama">{{ t.nama_toko }}</h3>
-                <span class="badge" :class="badgeClass(t.status)">{{
-                  labelStatus(t.status)
-                }}</span>
+      <ul v-else-if="tokoFiltered.length" class="daftar">
+        <li v-for="t in tokoFiltered" :key="t.id" class="kartu papan">
+          <div class="kartu-atas">
+            <span class="foto">
+              <img v-if="t.foto_toko" :src="t.foto_toko" :alt="`Foto ${t.nama_toko}`" />
+              <Store v-else :size="28" :stroke-width="2.25" />
+            </span>
+            <div class="info">
+              <div class="info-nama">
+                <h2>{{ t.nama_toko }}</h2>
+                <span class="badge" :class="badgeClass(t.status)">{{ labelStatus(t.status) }}</span>
               </div>
-              <p class="toko-meta">📍 {{ t.alamat }}</p>
-              <p class="toko-meta">📞 +62{{ t.nomor_wa }}</p>
-              <p class="toko-meta">
-                👤 {{ t.profiles?.nama_lengkap || 'Tidak ada nama' }} ·
-                {{ t.profiles?.email }}
-              </p>
-              <p class="toko-date">Daftar: {{ formatTanggal(t.created_at) }}</p>
+              <p class="info-ket"><MapPin :size="14" :stroke-width="2.5" /> {{ t.alamat }}</p>
+              <p class="info-ket"><Phone :size="14" :stroke-width="2.5" /> +62{{ t.nomor_wa }}</p>
+              <p class="info-ket">Daftar {{ formatTanggal(t.created_at) }}</p>
             </div>
           </div>
 
-          <div class="toko-desc" v-if="t.deskripsi">
-            <p>{{ t.deskripsi }}</p>
-          </div>
+          <p v-if="t.deskripsi" class="deskripsi">{{ t.deskripsi }}</p>
+          <p v-if="t.alasan_tolak" class="pesan pesan-awas alasan">
+            <TriangleAlert :size="18" :stroke-width="2.5" />
+            <span>Alasan penolakan: “{{ t.alasan_tolak }}”</span>
+          </p>
 
-          <div v-if="t.alasan_tolak" class="alasan-box">
-            <span class="alasan-label">Alasan penolakan sebelumnya:</span>
-            <span class="alasan-text">"{{ t.alasan_tolak }}"</span>
-          </div>
-
-          <div class="toko-actions">
-            <!-- Toko PENDING -->
+          <div class="aksi">
             <template v-if="t.status === 'PENDING'">
-              <button
-                class="btn-acc"
-                @click="accToko(t)"
-                :disabled="prosesId === t.id"
-              >
-                {{ prosesId === t.id ? '...' : '✅ ACC' }}
+              <button type="button" class="tombol tombol-kecil tombol-hijau" :disabled="prosesId === t.id" @click="accToko(t)">
+                <Check :size="16" :stroke-width="3" />
+                {{ prosesId === t.id ? 'Menyimpan…' : 'Setujui' }}
               </button>
-              <button
-                class="btn-tolak"
-                @click="bukaTolakModal(t)"
-                :disabled="prosesId === t.id"
-              >
-                ❌ Tolak
-              </button>
+              <button type="button" class="tombol tombol-kecil tombol-bahaya" :disabled="prosesId === t.id" @click="bukaTolak(t)">Tolak</button>
             </template>
-
-            <!-- Toko AKTIF -->
-            <template v-else-if="t.status === 'AKTIF'">
-              <button
-                class="btn-blokir"
-                @click="updateStatus(t, 'DIBLOKIR')"
-                :disabled="prosesId === t.id"
-              >
-                🚫 Blokir
-              </button>
-            </template>
-
-            <!-- Toko DITOLAK -->
-            <template v-else-if="t.status === 'DITOLAK'">
-              <button
-                class="btn-acc"
-                @click="accToko(t)"
-                :disabled="prosesId === t.id"
-              >
-                ✅ ACC Ulang
-              </button>
-            </template>
-
-            <!-- Toko DIBLOKIR -->
-            <template v-else-if="t.status === 'DIBLOKIR'">
-              <button
-                class="btn-aktifkan"
-                @click="updateStatus(t, 'AKTIF')"
-                :disabled="prosesId === t.id"
-              >
-                ✅ Aktifkan
-              </button>
-            </template>
-
-            <RouterLink :to="`/toko/${t.id}`" class="btn-lihat" target="_blank">
-              👁️ Lihat Toko
+            <button
+              v-else-if="t.status === 'AKTIF'"
+              type="button"
+              class="tombol tombol-kecil tombol-bahaya"
+              :disabled="prosesId === t.id"
+              @click="mintaBlokir(t)"
+            >
+              <Ban :size="16" :stroke-width="2.5" />
+              Blokir
+            </button>
+            <button
+              v-else-if="t.status === 'DITOLAK'"
+              type="button"
+              class="tombol tombol-kecil tombol-hijau"
+              :disabled="prosesId === t.id"
+              @click="accToko(t)"
+            >
+              <Check :size="16" :stroke-width="3" />
+              Setujui sekarang
+            </button>
+            <button
+              v-else-if="t.status === 'DIBLOKIR'"
+              type="button"
+              class="tombol tombol-kecil tombol-hijau"
+              :disabled="prosesId === t.id"
+              @click="updateStatus(t, 'AKTIF')"
+            >
+              <Check :size="16" :stroke-width="3" />
+              Aktifkan lagi
+            </button>
+            <RouterLink :to="`/toko/${t.id}`" target="_blank" class="tombol tombol-kecil">
+              <ExternalLink :size="16" :stroke-width="2.5" />
+              Lihat toko
             </RouterLink>
           </div>
-        </div>
-      </div>
+        </li>
+      </ul>
 
-      <!-- Empty -->
-      <div v-else class="empty-state">
-        <span>🏪</span>
-        <h3>
-          Tidak ada toko
-          {{
-            filterAktif !== 'semua'
-              ? labelStatus(filterAktif).toLowerCase()
-              : ''
-          }}
-        </h3>
-        <p v-if="keyword">Coba hapus kata kunci pencarian.</p>
+      <div v-else class="kosong">
+        <Store :size="44" :stroke-width="2" />
+        <h3>{{ keyword ? 'Tidak ada toko yang cocok' : filterAktif === 'semua' ? 'Belum ada toko' : `Tidak ada toko yang ${labelStatus(filterAktif).toLowerCase()}` }}</h3>
+        <p v-if="keyword">Coba kata kunci lain.</p>
+        <button v-if="keyword" type="button" class="tombol" @click="keyword = ''">Hapus pencarian</button>
       </div>
     </div>
 
-    <!-- Modal Tolak -->
-    <div
-      class="modal-overlay"
-      v-if="showTolakModal"
-      @click.self="showTolakModal = false"
-    >
-      <div class="modal">
-        <h3 class="modal-title">Tolak Toko</h3>
-        <p class="modal-sub">
-          Toko: <strong>{{ tolakTarget?.nama_toko }}</strong>
-        </p>
-        <div class="field">
-          <label>Alasan Penolakan <span class="required">*</span></label>
+    <!-- Tolak -->
+    <dialog ref="dialogTolak" class="dialog" @close="tolakTarget = null">
+      <div class="dialog-isi">
+        <h2 class="huruf-papan">Tolak {{ tolakTarget?.nama_toko }}?</h2>
+        <div class="isian">
+          <label for="alasan">Alasan penolakan</label>
           <textarea
+            id="alasan"
             v-model="alasanTolak"
             rows="3"
-            placeholder="Jelaskan alasan penolakan agar penjual bisa memperbaiki..."
-            autofocus
+            aria-describedby="alasan-bantuan"
+            placeholder="Contoh: Nomor WhatsApp tidak aktif. Mohon perbaiki lalu hubungi admin."
           ></textarea>
+          <span id="alasan-bantuan" class="bantuan">Penjual akan membaca alasan ini, jadi tulis supaya mereka tahu apa yang perlu diperbaiki.</span>
         </div>
-        <div class="modal-actions">
-          <button class="btn-cancel" @click="showTolakModal = false">
-            Batal
-          </button>
-          <button
-            class="btn-tolak-confirm"
-            @click="konfirmasiTolak"
-            :disabled="!alasanTolak.trim() || prosesId"
-          >
-            Tolak Toko
-          </button>
+        <div class="dialog-aksi">
+          <button type="button" class="tombol" @click="dialogTolak.close()">Batal</button>
+          <button type="button" class="tombol tombol-merah" :disabled="!alasanTolak.trim() || !!prosesId" @click="konfirmasiTolak">Tolak toko</button>
         </div>
       </div>
-    </div>
-    </template>
+    </dialog>
 
+    <!-- Blokir -->
+    <dialog ref="dialogBlokir" class="dialog" @close="blokirTarget = null">
+      <div class="dialog-isi">
+        <h2 class="huruf-papan">Blokir {{ blokirTarget?.nama_toko }}?</h2>
+        <p>Toko ini dan semua produknya tidak akan tampil lagi, dan penjualnya tidak bisa menerima pesanan. Kamu bisa mengaktifkannya lagi nanti.</p>
+        <div class="dialog-aksi">
+          <button type="button" class="tombol" @click="dialogBlokir.close()">Batal</button>
+          <button type="button" class="tombol tombol-merah" @click="konfirmasiBlokir">Blokir toko</button>
+        </div>
+      </div>
+    </dialog>
   </LayoutAdmin>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { Search, X, Store, MapPin, Phone, Check, Ban, ExternalLink, TriangleAlert } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import LayoutAdmin from '../../layouts/LayoutAdmin.vue';
-import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils'
-import { useAuthStore } from '@/stores/auth'
+import { useToastStore } from '@/stores/toast';
+import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
+import { formatTanggal } from '@/lib/utils';
 
-const authStore = useAuthStore()  
+const route = useRoute();
 const router = useRouter();
-const menuOpen = ref(false);
+const toast = useToastStore();
+
 const loading = ref(true);
 const tokoList = ref([]);
 const filterAktif = ref('semua');
 const keyword = ref('');
 const prosesId = ref(null);
-const showTolakModal = ref(false);
+const dialogTolak = ref(null);
+const dialogBlokir = ref(null);
 const tolakTarget = ref(null);
+const blokirTarget = ref(null);
 const alasanTolak = ref('');
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
-  { val: 'PENDING', label: '⏳ Pending' },
-  { val: 'AKTIF', label: '✅ Aktif' },
-  { val: 'DITOLAK', label: '❌ Ditolak' },
-  { val: 'DIBLOKIR', label: '🚫 Diblokir' },
+  { val: 'PENDING', label: 'Menunggu' },
+  { val: 'AKTIF', label: 'Aktif' },
+  { val: 'DITOLAK', label: 'Ditolak' },
+  { val: 'DIBLOKIR', label: 'Diblokir' },
 ];
 
 const labelStatus = (s) =>
-  ({
-    PENDING: 'Pending',
-    AKTIF: 'Aktif',
-    DITOLAK: 'Ditolak',
-    DIBLOKIR: 'Diblokir',
-  })[s] ?? s;
-
-const badgeClass = (s) => ({
-  'badge-pending': s === 'PENDING',
-  'badge-aktif': s === 'AKTIF',
-  'badge-tolak': s === 'DITOLAK',
-  'badge-blokir': s === 'DIBLOKIR',
-});
+  ({ PENDING: 'Menunggu', AKTIF: 'Aktif', DITOLAK: 'Ditolak', DIBLOKIR: 'Diblokir' })[s] ?? s;
+const badgeClass = (s) => `badge-${(s ?? '').toLowerCase()}`;
 
 const tokoFiltered = computed(() => {
   let list =
     filterAktif.value === 'semua'
       ? tokoList.value
       : tokoList.value.filter((t) => t.status === filterAktif.value);
-  if (keyword.value.trim()) {
-    const kw = keyword.value.toLowerCase();
+  const kw = keyword.value.trim().toLowerCase();
+  if (kw) {
     list = list.filter(
-      (t) =>
-        t.nama_toko.toLowerCase().includes(kw) ||
-        t.alamat?.toLowerCase().includes(kw),
+      (t) => t.nama_toko.toLowerCase().includes(kw) || t.alamat?.toLowerCase().includes(kw),
     );
   }
   return list;
 });
 
-const hitungFilter = (val) => {
-  if (val === 'semua') return tokoList.value.length;
-  return tokoList.value.filter((t) => t.status === val).length;
-};
+const hitungFilter = (val) =>
+  val === 'semua' ? tokoList.value.length : tokoList.value.filter((t) => t.status === val).length;
 
-const setFilter = (val) => {
-  filterAktif.value = val;
-};
-
-const accToko = async (t) => {
+const ubah = async (t, perubahan, pesanSukses) => {
   prosesId.value = t.id;
-  await supabase
-    .from('toko')
-    .update({ status: 'AKTIF', alasan_tolak: null })
-    .eq('id', t.id);
-  t.status = 'AKTIF';
-  t.alasan_tolak = null;
+  const { error } = await supabase.from('toko').update(perubahan).eq('id', t.id);
   prosesId.value = null;
+  if (error) {
+    toast.error('Perubahannya belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.');
+    return false;
+  }
+  Object.assign(t, perubahan);
+  toast.success(pesanSukses);
+  return true;
 };
 
-const updateStatus = async (t, statusBaru) => {
-  prosesId.value = t.id;
-  await supabase.from('toko').update({ status: statusBaru }).eq('id', t.id);
-  t.status = statusBaru;
-  prosesId.value = null;
-};
+const accToko = (t) => ubah(t, { status: 'AKTIF', alasan_tolak: null }, `${t.nama_toko} disetujui.`);
+const updateStatus = (t, status) => ubah(t, { status }, `${t.nama_toko} ${status === 'AKTIF' ? 'diaktifkan lagi' : 'diperbarui'}.`);
 
-const bukaTolakModal = (t) => {
+const bukaTolak = (t) => {
   tolakTarget.value = t;
   alasanTolak.value = '';
-  showTolakModal.value = true;
+  dialogTolak.value?.showModal();
 };
-
 const konfirmasiTolak = async () => {
-  if (!alasanTolak.value.trim()) return;
-  prosesId.value = tolakTarget.value.id;
-  await supabase
-    .from('toko')
-    .update({ status: 'DITOLAK', alasan_tolak: alasanTolak.value.trim() })
-    .eq('id', tolakTarget.value.id);
-  tolakTarget.value.status = 'DITOLAK';
-  tolakTarget.value.alasan_tolak = alasanTolak.value.trim();
-  showTolakModal.value = false;
-  prosesId.value = null;
+  const t = tolakTarget.value;
+  if (!t || !alasanTolak.value.trim()) return;
+  const ok = await ubah(t, { status: 'DITOLAK', alasan_tolak: alasanTolak.value.trim() }, `${t.nama_toko} ditolak.`);
+  if (ok) dialogTolak.value?.close();
 };
 
-const logout = async () => {
-  await supabase.auth.signOut();
-  router.push('/');
+const mintaBlokir = (t) => {
+  blokirTarget.value = t;
+  dialogBlokir.value?.showModal();
+};
+const konfirmasiBlokir = async () => {
+  const t = blokirTarget.value;
+  dialogBlokir.value?.close();
+  if (t) await ubah(t, { status: 'DIBLOKIR' }, `${t.nama_toko} diblokir.`);
 };
 
 onMounted(async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
@@ -327,505 +253,191 @@ onMounted(async () => {
     .select('role')
     .eq('id', session.user.id)
     .single();
+
   if (profile?.role !== 'admin') {
     router.push('/');
     return;
   }
 
-  const { data } = await supabase
-    .from('toko')
-    .select('*')
-    .order('created_at', { ascending: false });
-
+  const { data } = await supabase.from('toko').select('*').order('created_at', { ascending: false });
   tokoList.value = data ?? [];
+  if (tokoList.value.some((t) => t.status === 'PENDING')) filterAktif.value = 'PENDING';
   loading.value = false;
 });
 </script>
 
 <style scoped>
-
-.page-header {
-  background: linear-gradient(135deg, #1a2e0a, #2d5016);
-  padding: 2.5rem 0;
+.kepala {
+  background: var(--biru);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.5rem 0 1.75rem;
 }
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala .judul-halaman {
+  color: #fff;
 }
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.25rem;
+.kepala .sub-halaman {
+  color: #c9d8f2;
 }
-.page-sub {
-  color: #a8c97f;
-  font-size: 0.875rem;
+.isi {
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+  max-width: 980px;
 }
 
-.main-content {
-  padding: 2rem 2rem 4rem;
-}
-
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-.filter-tab {
-  padding: 0.45rem 1rem;
-  border: 1.5px solid #e8e0d0;
-  border-radius: 999px;
-  background: #fff;
-  color: #6b7280;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.filter-tab:hover {
-  border-color: #a8c97f;
-  color: #2d5016;
-}
-.filter-tab.active {
-  border-color: #2d5016;
-  background: #2d5016;
-  color: #f5edd6;
-}
-.tab-count {
-  background: rgba(255, 255, 255, 0.25);
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-}
-.filter-tab:not(.active) .tab-count {
-  background: #fef9c3;
-  color: #92400e;
-}
-
-.search-wrap {
+.cari {
   position: relative;
-  margin-bottom: 1.75rem;
+  margin-top: 0.5rem;
+  max-width: 480px;
 }
-.search-icon {
+.cari-ikon {
   position: absolute;
-  left: 0.85rem;
+  left: 0.9rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.9rem;
+  pointer-events: none;
 }
-.search-input {
+.cari-input {
   width: 100%;
-  padding: 0.7rem 2.5rem 0.7rem 2.4rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  background: #fff;
-  color: #111827;
-  transition: border-color 0.2s;
+  min-height: 48px;
+  padding: 0 2.9rem;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  border-radius: var(--sudut-kecil);
+  font-family: var(--font-teks);
+  font-size: 1rem;
+  -webkit-appearance: none;
+  appearance: none;
 }
-.search-input:focus {
+.cari-input::-webkit-search-cancel-button {
+  display: none;
+}
+.cari-input:focus {
   outline: none;
-  border-color: #2d5016;
+  border-color: var(--biru);
+  box-shadow: 0 0 0 3px var(--biru-muda);
 }
-.search-clear {
+.cari-hapus {
   position: absolute;
-  right: 0.85rem;
+  right: 0.35rem;
   top: 50%;
   transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
   background: none;
-  border: none;
+  border: 0;
+  border-radius: 6px;
   cursor: pointer;
-  color: #9ca3af;
-  font-size: 0.85rem;
+}
+.cari-hapus:hover {
+  background: var(--dinding);
 }
 
-.loading-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 4rem;
-}
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.toko-list {
+.daftar {
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.9rem;
+  margin-top: 1.1rem;
 }
-
-.toko-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
+.kartu {
+  padding: 1rem 1.1rem 1.1rem;
+}
+.kartu-atas {
+  display: flex;
+  gap: 0.9rem;
+}
+.foto {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  background: var(--hijau);
+  color: #fff;
+  border: 2.5px solid var(--tinta);
+  border-radius: 50%;
   overflow: hidden;
 }
-
-.toko-header {
-  display: flex;
-  gap: 1rem;
-  padding: 1.25rem;
-  align-items: flex-start;
-}
-.toko-foto-wrap {
-  flex-shrink: 0;
-}
-.toko-foto {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+.foto img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
-.toko-foto-placeholder {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  background: #f0f7e8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.75rem;
-  border: 1px solid #e8e0d0;
-}
-.toko-info {
+.info {
   flex: 1;
+  min-width: 0;
 }
-.toko-nama-row {
+.info-nama {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.3rem;
   flex-wrap: wrap;
+  gap: 0.3rem 0.7rem;
 }
-.toko-nama {
-  font-family: 'Lora', serif;
-  font-size: 1rem;
+.info-nama h2 {
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #1a2e0a;
+  overflow-wrap: anywhere;
 }
-.toko-meta {
-  font-size: 0.78rem;
-  color: #6b7280;
-  margin-bottom: 0.15rem;
-}
-.toko-date {
-  font-size: 0.72rem;
-  color: #9ca3af;
-  margin-top: 0.25rem;
-}
-
-.toko-desc {
-  padding: 0 1.25rem 1rem;
-  border-top: 1px solid #f0ede6;
-  padding-top: 0.85rem;
-}
-.toko-desc p {
-  font-size: 0.82rem;
-  color: #4b5563;
-  line-height: 1.6;
-}
-
-.alasan-box {
-  margin: 0 1.25rem 0.85rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  padding: 0.65rem 0.85rem;
-  font-size: 0.78rem;
-}
-.alasan-label {
-  color: #9ca3af;
-  font-weight: 500;
-  margin-right: 0.3rem;
-}
-.alasan-text {
-  color: #dc2626;
-  font-style: italic;
-}
-
-.toko-actions {
+.info-ket {
   display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.92rem;
+  color: var(--tinta-2);
+  overflow-wrap: anywhere;
+}
+.deskripsi {
+  margin-top: 0.8rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--dinding);
+  border-radius: var(--sudut-kecil);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.alasan {
+  margin-top: 0.7rem;
+  font-weight: 400;
+}
+.aksi {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.85rem 1.25rem;
-  border-top: 1px solid #f0ede6;
+  margin-top: 0.9rem;
+}
+
+.dialog {
+  margin: auto;
+  width: min(480px, calc(100vw - 2rem));
+  padding: 0;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 3px solid var(--tinta);
+  border-radius: 10px;
+}
+.dialog::backdrop {
+  background: rgba(20, 20, 20, 0.55);
+}
+.dialog-isi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.5rem;
+}
+.dialog-isi h2 {
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+.dialog-isi p {
+  color: var(--tinta-2);
+}
+.dialog-aksi {
+  display: flex;
+  justify-content: flex-end;
   flex-wrap: wrap;
-}
-
-.btn-acc {
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-acc:hover:not(:disabled) {
-  background: #3a6b1e;
-}
-.btn-acc:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-tolak {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-tolak:hover:not(:disabled) {
-  background: #fee2e2;
-}
-.btn-tolak:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-blokir {
-  background: #fff7ed;
-  color: #d97706;
-  border: 1px solid #fde68a;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-blokir:hover:not(:disabled) {
-  background: #fef3c7;
-}
-.btn-blokir:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-aktifkan {
-  background: #f0f7e8;
-  color: #2d5016;
-  border: 1px solid #a8c97f;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.btn-aktifkan:hover:not(:disabled) {
-  background: #e0f0cc;
-}
-.btn-aktifkan:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-lihat {
-  background: #f9fafb;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-}
-.btn-lihat:hover {
-  background: #f3f4f6;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-.badge-pending {
-  background: #fef9c3;
-  color: #92400e;
-}
-.badge-aktif {
-  background: #dcfce7;
-  color: #166534;
-}
-.badge-tolak {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.badge-blokir {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-.empty-state span {
-  font-size: 3rem;
-}
-.empty-state h3 {
-  font-family: 'Lora', serif;
-  font-size: 1.2rem;
-  color: #1a2e0a;
-}
-.empty-state p {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  padding: 2rem;
-}
-.modal {
-  background: #fff;
-  border-radius: 20px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-.modal-title {
-  font-family: 'Lora', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 0.3rem;
-}
-.modal-sub {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1.25rem;
-}
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.25rem;
-}
-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #374151;
-}
-.required {
-  color: #dc2626;
-}
-textarea {
-  padding: 0.75rem 1rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-family: inherit;
-  resize: vertical;
-  transition: border-color 0.2s;
-  width: 100%;
-}
-textarea:focus {
-  outline: none;
-  border-color: #2d5016;
-}
-.modal-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-.btn-cancel {
-  flex: 1;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1.5px solid #d1d5db;
-  padding: 0.75rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-}
-.btn-cancel:hover {
-  background: #e5e7eb;
-}
-.btn-tolak-confirm {
-  flex: 1;
-  background: #dc2626;
-  color: #fff;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-tolak-confirm:hover:not(:disabled) {
-  background: #b91c1c;
-}
-.btn-tolak-confirm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
-  .toko-header {
-    flex-direction: column;
-  }
+  gap: 0.5rem;
 }
 </style>

@@ -43,3 +43,26 @@ export const formatHargaProduk = (p) => {
   const max = Math.max(...hargaList)
   return min === max ? formatRupiah(min) : `${formatRupiah(min)} – ${formatRupiah(max)}`
 }
+
+// ---------- WhatsApp ----------
+
+// Normalisasi nomor WA ke format internasional tanpa '+': 08xx / 628xx / +62 8xx → 628xx
+export const nomorWa = (nomor) => {
+  const angka = String(nomor ?? '').replace(/\D/g, '').replace(/^(62|0)/, '')
+  return angka ? `62${angka}` : ''
+}
+
+// Tautan wa.me lengkap dengan pesan
+export const tautanWa = (nomor, pesan = '') => {
+  const n = nomorWa(nomor)
+  const teks = pesan ? `?text=${encodeURIComponent(pesan)}` : ''
+  return `https://wa.me/${n}${teks}`
+}
+
+// ---------- Navigasi ----------
+
+// Hanya izinkan redirect ke path internal (cegah open redirect ke situs lain)
+export const tujuanAman = (tujuan) =>
+  typeof tujuan === 'string' && tujuan.startsWith('/') && !tujuan.startsWith('//')
+    ? tujuan
+    : null

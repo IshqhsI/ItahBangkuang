@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="toast-wrap">
+    <div class="toast-wrap" role="status" aria-live="polite">
       <TransitionGroup name="toast">
         <div
           v-for="t in toastStore.toasts"
@@ -9,10 +9,14 @@
           :class="`toast-${t.type}`"
           @click="toastStore.remove(t.id)"
         >
-          <span class="toast-icon">{{ icon(t.type) }}</span>
+          <component :is="ikon(t.type)" class="toast-icon" :size="22" :stroke-width="2.5" />
           <span class="toast-msg">{{ t.message }}</span>
-          <button class="toast-close" @click.stop="toastStore.remove(t.id)">
-            ✕
+          <button
+            class="toast-close"
+            aria-label="Tutup pemberitahuan"
+            @click.stop="toastStore.remove(t.id)"
+          >
+            <X :size="18" :stroke-width="2.5" />
           </button>
         </div>
       </TransitionGroup>
@@ -21,108 +25,112 @@
 </template>
 
 <script setup>
+import { CircleCheck, CircleX, Info, TriangleAlert, X } from 'lucide-vue-next';
 import { useToastStore } from '@/stores/toast';
 
 const toastStore = useToastStore();
 
-const icon = (type) =>
+const ikon = (type) =>
   ({
-    success: '✅',
-    error: '❌',
-    info: 'ℹ️',
-    warning: '⚠️',
-  })[type] ?? 'ℹ️';
+    success: CircleCheck,
+    error: CircleX,
+    info: Info,
+    warning: TriangleAlert,
+  })[type] ?? Info;
 </script>
 
 <style scoped>
 .toast-wrap {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
   z-index: 9999;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-width: 360px;
-  width: calc(100vw - 3rem);
+  width: min(420px, calc(100vw - 2rem));
 }
 
 .toast {
+  --t-bg: var(--papan);
+  --t-list: var(--tinta);
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.5;
+  gap: 0.7rem;
+  padding: 0.85rem 0.9rem;
+  background: var(--t-bg);
+  border: 2.5px solid var(--tinta);
+  border-radius: var(--sudut);
+  box-shadow:
+    inset 0 0 0 4px var(--t-bg),
+    inset 0 0 0 6px var(--t-list),
+    0 10px 28px rgba(20, 20, 20, 0.22);
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.45;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
-
 .toast-success {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #166534;
+  --t-bg: var(--hijau);
+  --t-list: var(--kuning);
+  color: #fff;
 }
 .toast-error {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #991b1b;
+  --t-bg: var(--merah);
+  --t-list: var(--kuning);
+  color: #fff;
 }
 .toast-info {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1e40af;
+  --t-bg: var(--biru);
+  --t-list: #fff;
+  color: #fff;
 }
 .toast-warning {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #92400e;
+  --t-bg: var(--kuning);
+  --t-list: var(--tinta);
+  color: var(--tinta);
 }
 
 .toast-icon {
-  font-size: 1rem;
   flex-shrink: 0;
-  margin-top: 0.05rem;
 }
 .toast-msg {
   flex: 1;
 }
-
 .toast-close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -2px -2px 0 0;
   background: none;
   border: none;
-  cursor: pointer;
-  font-size: 0.75rem;
-  opacity: 0.5;
-  padding: 0;
-  flex-shrink: 0;
+  border-radius: 4px;
   color: inherit;
-  transition: opacity 0.2s;
+  cursor: pointer;
 }
 .toast-close:hover {
-  opacity: 1;
+  background: rgba(0, 0, 0, 0.15);
 }
 
-/* Animasi masuk & keluar */
 .toast-enter-active {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    transform 0.4s var(--ease-out),
+    opacity 0.25s ease;
 }
 .toast-leave-active {
-  transition: all 0.25s ease-in;
+  transition:
+    transform 0.2s ease-in,
+    opacity 0.2s ease-in;
 }
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(60px) scale(0.9);
+  transform: translateY(16px) rotate(-2deg);
 }
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(60px);
-}
-.toast-move {
-  transition: transform 0.3s ease;
+  transform: translateY(8px);
 }
 </style>

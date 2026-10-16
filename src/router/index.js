@@ -148,7 +148,7 @@ router.beforeEach(async (to) => {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!session) return '/login';
+    if (!session) return { path: '/login', query: { redirect: to.fullPath } };
 
     
     if (to.meta.role) {

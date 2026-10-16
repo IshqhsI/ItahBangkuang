@@ -1,297 +1,252 @@
 <template>
   <LayoutPublic>
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-inner container">
-        <div class="hero-text">
-          <div class="hero-badge">
-            <span class="badge-dot"></span>
-            Uluh Itah Kia
+    <!-- PAPAN DEPAN -->
+    <section class="depan">
+      <div class="wadah depan-dalam">
+        <div class="depan-teks">
+          <div class="gantung gantung-kecil ayun">
+            <svg class="tali" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M14 26 L50 3 L86 26" />
+              <circle cx="50" cy="3" r="3" />
+            </svg>
+            <span class="papan-sapa">Uluh Itah Kia</span>
           </div>
-          <h1 class="hero-title">
-            Bapapili mangat,<br />
-            <em>Bajualan mangat kia.</em>
-          </h1>
-          <p class="hero-sub">
-            Belanja mudah, berjualan juga mudah — khusus untuk warga
-            <strong>Kelurahan Bangkuang</strong>. Produk rumahan langsung dari
-            tetangga kita, tanpa perantara.
-          </p>
-          <div class="hero-cta-grid">
-            <RouterLink to="/produk" class="cta-card cta-beli">
-              <span class="cta-icon">🛒</span>
-              <div>
-                <p class="cta-label">Saya mau belanja</p>
-                <p class="cta-desc">Cari kue, makanan & jajanan lokal</p>
-              </div>
-              <span class="cta-arrow">→</span>
-            </RouterLink>
-            <RouterLink :to="bukaTokoDest" class="cta-card cta-jual">
-              <span class="cta-icon">🍱</span>
-              <div>
-                <p class="cta-label">Saya mau jualan</p>
-                <p class="cta-desc">Buka toko gratis & dapatkan pembeli</p>
-              </div>
-              <span class="cta-arrow">→</span>
-            </RouterLink>
-          </div>
-          <div class="hero-stats">
-            <div class="stat-item">
-              <span class="stat-num">{{ stats.produk }}</span>
-              <span class="stat-label">Produk</span>
-            </div>
-            <div class="stat-sep"></div>
-            <div class="stat-item">
-              <span class="stat-num">{{ stats.toko }}</span>
-              <span class="stat-label">Toko Aktif</span>
-            </div>
-            <div class="stat-sep"></div>
-            <div class="stat-item">
-              <span class="stat-num">{{ stats.alamat }}</span>
-              <span class="stat-label">Lokasi</span>
-            </div>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="visual-main">
-            <div class="visual-ring ring-1"></div>
-            <div class="visual-ring ring-2"></div>
-            <div class="visual-center">🛒</div>
-          </div>
-          <div class="float-card fc1">
-            <span>🍰</span>
-            <div>
-              <p class="fc-name">Kue Lapis Pandan</p>
-              <p class="fc-price">Rp 25.000</p>
-            </div>
-          </div>
-          <div class="float-card fc2">
-            <span>🥮</span>
-            <div>
-              <p class="fc-name">Klepon Isi Gula</p>
-              <p class="fc-price">Rp 15.000</p>
-            </div>
-          </div>
-          <div class="float-card fc3">
-            <span>🍜</span>
-            <div>
-              <p class="fc-name">Lontong Sayur</p>
-              <p class="fc-price">Rp 12.000</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- CARA KERJA -->
-    <section class="section">
-      <div class="container">
-        <div class="section-label">Sesimple ini</div>
-        <h2 class="section-title">Gimana caranya?</h2>
-        <div class="cara-grid">
-          <div class="cara-col">
-            <p class="cara-role">Untuk Pembeli 🛒</p>
-            <div class="cara-steps">
-              <div class="cara-step">
-                <div class="step-num">1</div>
-                <div>
-                  <p class="step-title">Buka & cari produk</p>
-                  <p class="step-desc">
-                    Browse semua produk lokal dari warga sekitar
-                  </p>
-                </div>
-              </div>
-              <div class="cara-step">
-                <div class="step-num">2</div>
-                <div>
-                  <p class="step-title">Pilih & pesan</p>
-                  <p class="step-desc">
-                    Isi nama, alamat, dan metode bayar (COD atau transfer)
-                  </p>
-                </div>
-              </div>
-              <div class="cara-step">
-                <div class="step-num">3</div>
-                <div>
-                  <p class="step-title">Koordinasi via WA</p>
-                  <p class="step-desc">
-                    Penjual konfirmasi dan atur pengiriman langsung via WhatsApp
-                  </p>
-                </div>
-              </div>
-            </div>
+          <h1 class="depan-judul huruf-papan">
+            <span class="baris-1 berbayang">Bapapili mangat,</span>
+            <span class="baris-2 berbayang">Bajualan mangat kia.</span>
+          </h1>
+
+          <p class="depan-sub">
+            Jajanan, lauk, jahitan, sampai jasa tukang — semuanya dari tetangga
+            sendiri di <strong>Kelurahan Bangkuang</strong>. Pesan di sini,
+            lanjut ngobrol dengan penjualnya lewat WhatsApp.
+          </p>
+
+          <div class="depan-pintu">
+            <RouterLink to="/produk" class="pintu papan papan-kuning papan-bingkai">
+              <ShoppingBasket class="pintu-ikon" :size="30" :stroke-width="2.25" />
+              <span class="pintu-teks">
+                <span class="pintu-judul">Mau belanja</span>
+                <span class="pintu-ket">Lihat yang dijual tetangga hari ini</span>
+              </span>
+              <ArrowRight class="pintu-panah" :size="24" :stroke-width="2.5" />
+            </RouterLink>
+            <RouterLink :to="bukaTokoDest" class="pintu papan papan-bingkai">
+              <Store class="pintu-ikon" :size="30" :stroke-width="2.25" />
+              <span class="pintu-teks">
+                <span class="pintu-judul">Mau jualan</span>
+                <span class="pintu-ket">Buka toko gratis, pajang daganganmu</span>
+              </span>
+              <ArrowRight class="pintu-panah" :size="24" :stroke-width="2.5" />
+            </RouterLink>
           </div>
-          <div class="cara-divider"></div>
-          <div class="cara-col">
-            <p class="cara-role">Untuk Penjual 🍱</p>
-            <div class="cara-steps">
-              <div class="cara-step">
-                <div class="step-num">1</div>
-                <div>
-                  <p class="step-title">Daftar & buka toko</p>
-                  <p class="step-desc">
-                    Daftar gratis, isi info toko, tunggu verifikasi admin
-                  </p>
-                </div>
+
+          <p v-if="statsSiap" class="depan-hitung">
+            Sekarang ada <strong>{{ stats.produk }}</strong> produk dari
+            <strong>{{ stats.toko }}</strong> toko tetangga.
+          </p>
+        </div>
+
+        <!-- Etalase: produk asli terbaru -->
+        <div v-if="loadingProduk || etalase.length" class="etalase" aria-label="Baru dipajang">
+          <p class="etalase-judul">Baru dipajang</p>
+          <div class="etalase-deret">
+            <template v-if="loadingProduk">
+              <div v-for="n in 3" :key="n" class="etalase-papan kerangka-papan">
+                <div class="kerangka etalase-foto"></div>
+                <div class="kerangka" style="height: 1rem; width: 70%"></div>
               </div>
-              <div class="cara-step">
-                <div class="step-num">2</div>
-                <div>
-                  <p class="step-title">Upload produk</p>
-                  <p class="step-desc">
-                    Foto, nama, harga, stok — mudah dan cepat
-                  </p>
-                </div>
-              </div>
-              <div class="cara-step">
-                <div class="step-num">3</div>
-                <div>
-                  <p class="step-title">Terima order</p>
-                  <p class="step-desc">
-                    Notifikasi masuk, konfirmasi, atur pengiriman lewat WA
-                  </p>
-                </div>
-              </div>
-            </div>
+            </template>
+            <RouterLink
+              v-for="(p, i) in etalase"
+              v-else
+              :key="p.id"
+              :to="`/produk/${p.id}`"
+              class="etalase-papan"
+              :style="{ '--miring': ['-2deg', '1.5deg', '-1deg'][i] }"
+            >
+              <img :src="p.foto_url" :alt="p.nama_produk" class="etalase-foto" />
+              <span class="etalase-nama">{{ p.nama_produk }}</span>
+              <span class="plat-harga">{{ formatHargaProduk(p) }}</span>
+            </RouterLink>
           </div>
         </div>
       </div>
     </section>
 
     <!-- KATEGORI -->
-    <section class="section section-alt">
-      <div class="container">
-        <div class="section-label">Ada apa aja?</div>
-        <h2 class="section-title">Cari Berdasarkan Kategori</h2>
+    <section class="bagian">
+      <div class="wadah">
+        <h2 class="judul-bagian huruf-papan">Mau cari apa?</h2>
+        <p class="sub-bagian">Pilih papannya, langsung kelihatan produknya.</p>
         <div class="kategori-grid">
           <RouterLink
             v-for="kat in kategori"
             :key="kat.slug"
             :to="`/produk?kategori=${kat.slug}`"
-            class="kat-card"
+            class="papan-kategori papan papan-bingkai"
+            :class="`papan-${kat.warna}`"
           >
-            <span class="kat-icon">{{ kat.icon }}</span>
-            <span class="kat-name">{{ kat.label }}</span>
-            <span class="kat-arrow">→</span>
+            <span class="kat-ikon"><component :is="kat.icon" :size="26" :stroke-width="2.25" /></span>
+            <span class="kat-nama">{{ kat.label }}</span>
           </RouterLink>
         </div>
       </div>
     </section>
 
     <!-- PRODUK TERBARU -->
-    <section class="section">
-      <div class="container">
-        <div class="section-header">
+    <section class="bagian bagian-dinding">
+      <div class="wadah">
+        <div class="kepala-bagian">
           <div>
-            <div class="section-label">Baru masuk</div>
-            <h2 class="section-title" style="margin-bottom: 0">
-              Produk Terbaru
-            </h2>
+            <h2 class="judul-bagian huruf-papan">Baru dipajang</h2>
+            <p class="sub-bagian">Produk yang paling baru dipasang tetangga.</p>
           </div>
-          <RouterLink to="/produk" class="lihat-semua"
-            >Lihat Semua →</RouterLink
-          >
-        </div>
-        <div v-if="loadingProduk" class="produk-grid">
-          <div v-for="n in 8" :key="n" class="produk-skeleton"></div>
-        </div>
-        <div v-else-if="produkTerbaru.length" class="produk-grid">
-          <RouterLink
-            v-for="p in produkTerbaru"
-            :key="p.id"
-            :to="`/produk/${p.id}`"
-            class="produk-card"
-          >
-            <div class="produk-foto-wrap">
-              <img
-                :src="p.foto_url"
-                :alt="p.nama_produk"
-                class="produk-foto"
-                loading="lazy"
-              />
-              <span class="produk-kat-badge">{{
-                labelKategori(p.kategori)
-              }}</span>
-            </div>
-            <div class="produk-info">
-              <p class="produk-toko">🏪 {{ p.toko?.nama_toko }}</p>
-              <h3 class="produk-nama">{{ p.nama_produk }}</h3>
-              <div class="produk-footer">
-                <span class="produk-harga">{{ formatRupiah(p.harga) }}</span>
-                <span class="produk-lokasi">📍 {{ p.toko?.alamat }}</span>
-              </div>
-            </div>
+          <RouterLink to="/produk" class="tombol">
+            Lihat semua produk
+            <ArrowRight :size="20" :stroke-width="2.5" />
           </RouterLink>
         </div>
-        <div v-else class="empty-state">
-          <span>🍽️</span>
-          <p>Belum ada produk. Jadilah yang pertama jualan!</p>
-          <RouterLink
-            :to="bukaTokoDest"
-            class="btn-primary"
-            style="margin-top: 1rem; display: inline-block"
-            >Buka Toko Sekarang</RouterLink
-          >
+
+        <div v-if="loadingProduk" class="grid-produk">
+          <div v-for="n in 8" :key="n" class="kerangka" style="aspect-ratio: 3 / 4"></div>
+        </div>
+        <div v-else-if="produkTerbaru.length" class="grid-produk">
+          <KartuProduk v-for="p in produkTerbaru" :key="p.id" :produk="p" />
+        </div>
+        <div v-else class="kosong">
+          <Store :size="40" :stroke-width="2" />
+          <h3>Etalase masih kosong</h3>
+          <p>Belum ada tetangga yang jualan. Mau jadi yang pertama?</p>
+          <RouterLink :to="bukaTokoDest" class="tombol tombol-merah">Buka toko gratis</RouterLink>
         </div>
       </div>
     </section>
 
-    <!-- CTA PENJUAL -->
-    <section class="cta-section">
-      <div class="container">
-        <div class="cta-wrap">
-          <div class="cta-kiri">
-            <p class="cta-badge">Gratis, selamanya 🎉</p>
-            <h2 class="cta-title">Punya kue atau makanan andalan?</h2>
-            <p class="cta-desc">
-              Warga Bangkuang yang biasa jualan lewat WA atau Facebook —
-              sekarang bisa punya toko sendiri yang rapi. Gratis, tanpa biaya
-              apapun.
-            </p>
-            <ul class="cta-list">
-              <li>✅ Upload produk tidak terbatas</li>
-              <li>✅ Pembeli bisa langsung ketemu kamu</li>
-              <li>✅ Bayar COD atau transfer, atur sendiri</li>
-              <li>✅ Tidak perlu keahlian teknis</li>
-            </ul>
-            <RouterLink :to="bukaTokoDest" class="btn-cta"
-              >Buka Toko Sekarang →</RouterLink
-            >
+    <!-- CARA KERJA -->
+    <section class="bagian bagian-kuning">
+      <div class="wadah">
+        <h2 class="judul-bagian huruf-papan">Belanja dan jualan, sama gampangnya</h2>
+        <p class="sub-bagian">Tiga langkah, cukup pakai HP.</p>
+        <div class="cara-grid">
+          <div v-for="c in caraKerja" :key="c.peran" class="papan cara-papan">
+            <h3 class="cara-peran">
+              <component :is="c.icon" :size="24" :stroke-width="2.25" />
+              {{ c.peran }}
+            </h3>
+            <ol class="cara-langkah">
+              <li v-for="(l, i) in c.langkah" :key="l.judul">
+                <span class="langkah-no huruf-papan">{{ i + 1 }}</span>
+                <span>
+                  <span class="langkah-judul">{{ l.judul }}</span>
+                  <span class="langkah-ket">{{ l.ket }}</span>
+                </span>
+              </li>
+            </ol>
           </div>
-          <div class="cta-kanan">
-            <div class="cta-bubbles">
-              <div class="bubble b1">Kue Basah 🍰</div>
-              <div class="bubble b2">Makanan 🍜</div>
-              <div class="bubble b3">Minuman 🥤</div>
-              <div class="bubble b4">Kue Kering 🍪</div>
-              <div class="cta-icon-big">🍱</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AJAKAN PENJUAL -->
+    <section class="bagian bagian-hijau">
+      <div class="wadah ajakan">
+        <div class="ajakan-teks">
+          <h2 class="judul-bagian huruf-papan ajakan-judul berbayang">
+            Punya dagangan andalan?
+          </h2>
+          <p class="ajakan-ket">
+            Biasa jualan lewat status WA atau grup Facebook? Pajang juga di
+            sini, biar tetangga gampang menemukan dan memesan. Gratis, tanpa
+            biaya apa pun.
+          </p>
+          <ul class="ajakan-daftar">
+            <li v-for="u in untung" :key="u">
+              <Check :size="22" :stroke-width="3" />
+              {{ u }}
+            </li>
+          </ul>
+          <RouterLink :to="bukaTokoDest" class="tombol tombol-kuning tombol-besar">
+            Buka toko gratis
+            <ArrowRight :size="22" :stroke-width="2.5" />
+          </RouterLink>
+        </div>
+
+        <div class="ajakan-papan" aria-hidden="true">
+          <div class="gantung ayun ayun-lambat">
+            <svg class="tali" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <path d="M12 40 L50 4 L88 40" />
+              <circle cx="50" cy="4" r="3.5" />
+            </svg>
+            <div class="papan-buka">
+              <span class="buka-kata huruf-papan">BUKA</span>
+              <span class="buka-ket">Silakan mampir</span>
             </div>
           </div>
         </div>
       </div>
     </section>
-
   </LayoutPublic>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import {
+  ShoppingBasket,
+  Store,
+  ArrowRight,
+  Check,
+} from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import { formatRupiah } from '@/lib/utils';
+import { formatHargaProduk } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { KATEGORI, labelKategori } from '@/lib/kategori';
+import KartuProduk from '@/components/KartuProduk.vue';
+import { KATEGORI } from '@/lib/kategori';
 
 const authStore = useAuthStore();
 const loadingProduk = ref(true);
 const produkTerbaru = ref([]);
 const stats = ref({ produk: 0, toko: 0, alamat: 0 });
+const statsSiap = ref(false);
 const kategori = KATEGORI;
+
+// Tiga produk terbaru yang punya foto, untuk etalase di papan depan
+const etalase = computed(() => produkTerbaru.value.filter((p) => p.foto_url).slice(0, 3));
+
+const caraKerja = [
+  {
+    peran: 'Kalau mau belanja',
+    icon: ShoppingBasket,
+    langkah: [
+      { judul: 'Cari yang kamu mau', ket: 'Pilih kategori atau ketik nama produknya.' },
+      { judul: 'Isi pesanan', ket: 'Tulis nama dan alamat, lalu pilih bayar COD atau transfer.' },
+      { judul: 'Lanjut di WhatsApp', ket: 'Penjual mengonfirmasi pesananmu dan mengatur pengantarannya lewat WA.' },
+    ],
+  },
+  {
+    peran: 'Kalau mau jualan',
+    icon: Store,
+    langkah: [
+      { judul: 'Daftarkan tokomu', ket: 'Gratis. Admin memeriksa dulu sebelum tokomu tampil.' },
+      { judul: 'Pajang produk', ket: 'Foto, nama, harga, dan stok. Ukuran atau rasa berbeda bisa pakai varian.' },
+      { judul: 'Terima pesanan', ket: 'Pesanan baru dikabarkan lewat WA. Konfirmasi, lalu atur pengantarannya.' },
+    ],
+  },
+];
+
+const untung = [
+  'Pajang produk sebanyak yang kamu mau',
+  'Pembeli langsung menghubungi kamu lewat WA',
+  'COD atau transfer, kamu yang atur',
+  'Cukup bisa pakai HP',
+];
 
 const bukaTokoDest = computed(() => {
   if (authStore.role === 'penjual') return '/toko/dashboard';
   if (authStore.user) return '/buka-toko';
-  return '/register';
+  return '/register?peran=penjual';
 });
 
 onMounted(async () => {
@@ -321,808 +276,496 @@ onMounted(async () => {
   stats.value = {
     produk: jProduk ?? 0,
     toko: jToko ?? 0,
-    alamat: new Set(alamatData?.map((t) => t.alamat)).size,
+    alamat: new Set(alamatData?.map((t) => t.alamat).filter(Boolean)).size,
   };
+  statsSiap.value = true;
 });
 </script>
 
 <style scoped>
-.hero {
-  background: linear-gradient(155deg, #1a2e0a 0%, #2d5016 55%, #3a6b1e 100%);
-  padding: 5rem 0 4rem;
-  overflow: hidden;
+/* ── Papan gantung (tanda tangan visual) ───────────────────── */
+.gantung {
   position: relative;
-  min-height: calc(100vh - 64px);
-  display: flex;
-  align-items: center;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: rgba(168, 201, 127, 0.07);
-  top: -150px;
-  right: -100px;
-  pointer-events: none;
-}
-.hero-inner {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 4rem;
-  align-items: center;
-  width: 100%;
-}
-.hero-badge {
   display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(168, 201, 127, 0.15);
-  border: 1px solid rgba(168, 201, 127, 0.35);
-  color: #a8c97f;
-  padding: 0.4rem 0.9rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-}
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #a8c97f;
-  animation: blink 2s ease-in-out infinite;
-}
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-.hero-title {
-  font-family: 'Lora', serif;
-  font-size: clamp(1.9rem, 3.2vw, 2.8rem);
-  font-weight: 700;
-  color: #f5edd6;
-  line-height: 1.3;
-  margin-bottom: 1.25rem;
-}
-.hero-title em {
-  font-style: italic;
-  color: #a8c97f;
-}
-.hero-sub {
-  color: rgba(245, 237, 214, 0.72);
-  font-size: 0.975rem;
-  line-height: 1.75;
-  margin-bottom: 2.25rem;
-  max-width: 480px;
-}
-.hero-sub strong {
-  color: #f5edd6;
-}
-.hero-cta-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
-  margin-bottom: 2.5rem;
-}
-.cta-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-radius: 14px;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-.cta-beli {
-  background: #f5edd6;
-  color: #1a2e0a;
-}
-.cta-beli:hover {
-  background: #e7dec3;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-.cta-jual {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1.5px solid rgba(245, 237, 214, 0.2);
-  color: #f5edd6;
-}
-.cta-jual:hover {
-  background: rgba(255, 255, 255, 0.13);
-  transform: translateY(-2px);
-}
-.cta-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-.cta-label {
-  font-weight: 700;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-}
-.cta-desc {
-  font-size: 0.7rem;
-  opacity: 0.85;
-  line-height: 1.4;
-}
-
-.cta-beli .cta-label {
-  color: #050b01;
-}
-
-.cta-jual .cta-label {
-  color: #f5edd6;
-}
-
-.cta-beli .cta-desc {
-  color: #050a00;
-}
-
-.cta-jual .cta-desc {
-  color: #f5edd6
-}
-
-.cta-arrow {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 1rem;
-  opacity: 0.45;
-  transition: transform 0.2s;
-}
-.cta-card:hover .cta-arrow {
-  transform: translateX(3px);
-  opacity: 1;
-}
-.hero-stats {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-.stat-item {
-  display: flex;
-  flex-direction: column;
-}
-.stat-num {
-  font-family: 'Lora', serif;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #f5edd6;
-}
-.stat-label {
-  font-size: 0.7rem;
-  color: rgba(245, 237, 214, 0.55);
-  margin-top: 0.1rem;
-}
-.stat-sep {
-  width: 1px;
-  height: 30px;
-  background: rgba(245, 237, 214, 0.18);
-}
-.hero-visual {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 360px;
-}
-.visual-main {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.visual-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(168, 201, 127, 0.18);
-  animation: ringpulse 4s ease-in-out infinite;
-}
-.ring-1 {
-  width: 200px;
-  height: 200px;
-}
-.ring-2 {
-  width: 300px;
-  height: 300px;
-  animation-delay: 1s;
-  opacity: 0.5;
-}
-@keyframes ringpulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-}
-.visual-center {
-  width: 90px;
-  height: 90px;
-  border-radius: 24px;
-  background: rgba(245, 237, 214, 0.08);
-  border: 1.5px solid rgba(245, 237, 214, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2rem;
-  position: relative;
-  z-index: 2;
-}
-.float-card {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(245, 237, 214, 0.14);
-  border-radius: 12px;
-  padding: 0.6rem 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  animation: floatY 4s ease-in-out infinite alternate;
-}
-.fc1 {
-  top: 8%;
-  left: 0;
-  animation-delay: 0s;
-}
-.fc2 {
-  top: 40%;
-  right: 0;
-  animation-delay: 0.7s;
-}
-.fc3 {
-  bottom: 8%;
-  left: 5%;
-  animation-delay: 1.3s;
-}
-@keyframes floatY {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-10px);
-  }
-}
-.float-card span {
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-.fc-name {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #f5edd6;
-}
-.fc-price {
-  font-size: 0.65rem;
-  color: #a8c97f;
-  margin-top: 0.1rem;
-}
-.section {
-  padding: 5rem 0;
-}
-.section-alt {
-  background: #fff;
-}
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-.section-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #2d5016;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.4rem;
-}
-.section-title {
-  font-family: 'Lora', serif;
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 2.5rem;
-}
-.section-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-.lihat-semua {
-  color: #2d5016;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.875rem;
-  margin-bottom: 0.2rem;
-}
-.lihat-semua:hover {
-  opacity: 0.7;
-}
-.cara-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 3rem;
-  align-items: start;
-}
-.cara-role {
-  font-weight: 700;
-  font-size: 1rem;
-  color: #2d5016;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e8e0d0;
-}
-.cara-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.cara-step {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-.step-num {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #2d5016;
-  color: #f5edd6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.step-title {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #1a2e0a;
-  margin-bottom: 0.2rem;
-}
-.step-desc {
-  font-size: 0.78rem;
-  color: #6b7280;
-  line-height: 1.5;
-}
-.cara-divider {
-  width: 1px;
-  background: #e8e0d0;
-  align-self: stretch;
-  margin-top: 2.5rem;
-}
-.kategori-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-.kat-card {
-  background: #fdfaf4;
-  border: 1.5px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.5rem 1rem;
-  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  transition: all 0.2s;
-  position: relative;
+  transform-origin: 50% 0;
 }
-.kat-card:hover {
-  border-color: #2d5016;
-  background: #f0f7e8;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(45, 80, 22, 0.1);
-}
-.kat-icon {
-  font-size: 2.25rem;
-}
-.kat-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-}
-.kat-arrow {
-  position: absolute;
-  right: 0.9rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #d1d5db;
-  font-size: 0.85rem;
-  transition: all 0.2s;
-}
-.kat-card:hover .kat-arrow {
-  color: #2d5016;
-}
-
-/* ========================================= */
-/* BAGIAN PRODUK YANG SUDAH DI-REDESIGN     */
-/* ========================================= */
-
-.produk-grid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr); /* Default HP: 2 Kolom */
-  gap: 1rem;
-}
-
-.produk-skeleton {
-  background: linear-gradient(90deg, #f3f4f6 25%, #e9eaeb 50%, #f3f4f6 75%);
-  background-size: 200% 100%;
-  border-radius: 16px;
-  height: 290px;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.produk-card {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  transition: all 0.3s ease;
-}
-.produk-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-  border-color: #a8c97f;
-}
-
-/* Wrapper foto dibuat presisi 1:1 */
-.produk-foto-wrap {
-  position: relative;
+.tali {
   width: 100%;
-  aspect-ratio: 1 / 1; 
+  height: 26px;
+  overflow: visible;
+}
+.tali path {
+  fill: none;
+  stroke: var(--tinta);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+.tali circle {
+  fill: var(--tinta);
+}
+.ayun {
+  animation: ayun 2.2s var(--ease-out) 0.25s both;
+}
+.ayun-lambat {
+  animation-duration: 3s;
+}
+.gantung:hover {
+  animation: ayun-kecil 1.4s var(--ease-out);
+}
+@keyframes ayun {
+  0% { transform: rotate(9deg); }
+  22% { transform: rotate(-6deg); }
+  44% { transform: rotate(3.5deg); }
+  64% { transform: rotate(-1.8deg); }
+  82% { transform: rotate(0.8deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes ayun-kecil {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(4deg); }
+  55% { transform: rotate(-2.5deg); }
+  80% { transform: rotate(1deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* ── Papan depan ───────────────────────────────────────────── */
+.depan {
+  background: var(--merah);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.5rem 0 3.25rem;
   overflow: hidden;
 }
-
-.produk-foto {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  background: #f3f4f6;
-  transition: transform 0.5s ease;
+.depan-dalam {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+@media (min-width: 980px) {
+  .depan {
+    padding: 2rem 0 4.5rem;
+  }
+  .depan-dalam {
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 3rem;
+  }
 }
 
-/* Efek zoom saat kartu di-hover */
-.produk-card:hover .produk-foto {
-  transform: scale(1.08); 
+.gantung-kecil .tali {
+  width: 120px;
 }
-
-.produk-kat-badge {
-  position: absolute;
-  top: 0.6rem;
-  left: 0.6rem;
-  background: rgba(45, 80, 22, 0.88);
-  color: #f5edd6;
-  padding: 0.2rem 0.55rem;
+.papan-sapa {
+  display: inline-block;
+  padding: 0.45rem 0.85rem 0.4rem;
+  background: var(--kuning);
+  color: var(--tinta);
+  border: 2.5px solid var(--tinta);
   border-radius: 6px;
-  font-size: 0.67rem;
-  font-weight: 600;
-  z-index: 2; /* Memastikan badge di atas foto saat di-zoom */
+  font-family: var(--font-papan);
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
-.produk-info {
-  padding: 0.85rem;
+.depan-judul {
+  margin-top: 1.25rem;
+  font-size: clamp(2.35rem, 8.4vw, 5rem);
+  line-height: 1.02;
+}
+.depan-judul span {
+  display: block;
+}
+.baris-1 {
+  color: #fff;
+}
+.baris-2 {
+  color: var(--kuning);
+}
+.depan-sub {
+  margin-top: 1.4rem;
+  font-size: 1.12rem;
+  line-height: 1.6;
+  max-width: 50ch;
+  color: #fff;
 }
 
-.produk-toko {
-  font-size: 0.72rem;
-  color: #6b7280;
-  margin-bottom: 0.2rem;
+.depan-pintu {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1.9rem;
+  max-width: 640px;
 }
-
-.produk-nama {
-  font-weight: 600;
+@media (min-width: 620px) {
+  .depan-pintu {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.pintu {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.05rem 1.1rem;
+  color: var(--tinta);
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-out);
+}
+.pintu:hover {
+  transform: translateY(-3px) rotate(-0.6deg);
+}
+.pintu-ikon {
+  flex-shrink: 0;
+}
+.pintu-teks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+.pintu-judul {
+  font-family: var(--font-papan);
+  font-size: 1.08rem;
+  line-height: 1.1;
+}
+.pintu-ket {
   font-size: 0.9rem;
-  color: #1a2e0a;
-  margin-bottom: 0.6rem;
-  /* Line Clamping agar seragam tingginya */
+  color: var(--tinta-2);
+  line-height: 1.35;
+}
+.papan-kuning .pintu-ket {
+  color: #3a2f00;
+}
+.pintu-panah {
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease-out);
+}
+.pintu:hover .pintu-panah {
+  transform: translateX(4px);
+}
+
+.depan-hitung {
+  margin-top: 1.4rem;
+  font-size: 1rem;
+  color: #ffe9ea;
+}
+.depan-hitung strong {
+  color: #fff;
+  font-size: 1.08rem;
+}
+
+/* Etalase */
+.etalase-judul {
+  font-family: var(--font-papan);
+  font-size: 1rem;
+  color: var(--kuning);
+  margin-bottom: 0.9rem;
+}
+.etalase-deret {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+@media (min-width: 980px) {
+  .etalase-deret {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .etalase-papan:first-child {
+    grid-column: 1 / -1;
+  }
+}
+.etalase-papan {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.75rem;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 2.5px solid var(--tinta);
+  border-radius: var(--sudut);
+  text-decoration: none;
+  transform: rotate(var(--miring, 0deg));
+  transition: transform 0.35s var(--ease-out);
+}
+.etalase-papan:hover {
+  transform: rotate(0deg) translateY(-4px);
+}
+.etalase-foto {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 2px solid var(--tinta);
+  border-radius: 4px;
+  background: var(--dinding);
+}
+.etalase-papan:first-child .etalase-foto {
+  aspect-ratio: 16 / 10;
+}
+.etalase-nama {
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.25;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 2.8em; 
-  line-height: 1.4;
+}
+.etalase-papan .plat-harga {
+  align-self: flex-start;
+  font-size: 0.85rem;
+}
+@media (max-width: 560px) {
+  .etalase-papan {
+    padding: 0.35rem 0.35rem 0.55rem;
+  }
+  .etalase-nama {
+    font-size: 0.8rem;
+  }
+  .etalase-papan .plat-harga {
+    font-size: 0.72rem;
+  }
+}
+.kerangka-papan {
+  transform: none;
 }
 
-.produk-footer {
+/* ── Bagian umum ───────────────────────────────────────────── */
+.bagian {
+  padding: 3.5rem 0;
+  background: var(--papan);
+}
+@media (min-width: 768px) {
+  .bagian {
+    padding: 5rem 0;
+  }
+}
+.bagian-dinding {
+  background: var(--dinding);
+  border-top: 3px solid var(--tinta);
+}
+.bagian-kuning {
+  background: var(--kuning);
+  border-top: 3px solid var(--tinta);
+}
+.bagian-hijau {
+  background: var(--hijau);
+  color: #fff;
+  border-top: 3px solid var(--tinta);
+}
+.judul-bagian {
+  font-size: clamp(1.6rem, 4.6vw, 2.5rem);
+}
+.sub-bagian {
+  margin-top: 0.45rem;
+  color: var(--tinta-2);
+  font-size: 1.05rem;
+}
+.bagian-kuning .sub-bagian {
+  color: #3a2f00;
+}
+.kepala-bagian {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+/* Kategori */
+.kategori-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.75rem;
+}
+@media (min-width: 720px) {
+  .kategori-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+.papan-kategori {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 128px;
+  padding: 1.1rem 1rem 1rem;
+  text-decoration: none;
+  transform-origin: 50% 0;
+  transition: transform 0.4s var(--ease-out);
+}
+.papan-kategori:nth-child(odd) {
+  transform: rotate(-0.8deg);
+}
+.papan-kategori:nth-child(even) {
+  transform: rotate(0.6deg);
+}
+.papan-kategori:hover {
+  transform: rotate(0deg) translateY(-3px);
+}
+.kat-ikon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  background: var(--papan);
+  color: var(--tinta);
+  border: 2.5px solid var(--tinta);
+  border-radius: 50%;
+}
+.kat-nama {
+  font-family: var(--font-papan);
+  font-size: 1rem;
+  line-height: 1.15;
+  margin-top: auto;
+}
+
+/* Cara kerja */
+.cara-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+@media (min-width: 820px) {
+  .cara-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+.cara-papan {
+  padding: 1.5rem 1.4rem;
+}
+.cara-peran {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px; /* Adds a safe breathing room between price and location */
+  gap: 0.6rem;
+  font-family: var(--font-papan);
+  font-weight: 400;
+  font-size: 1.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2.5px solid var(--tinta);
 }
-
-.produk-harga {
-  font-weight: 700;
-  color: #2d5016;
-  font-size: 0.9rem;
-  /* Magic trick 1: Never let the price wrap to a new line */
-  white-space: nowrap; 
-  /* Magic trick 2: Never let the price shrink, it dictates its own width */
-  flex-shrink: 0; 
-}
-
-.produk-lokasi {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  text-align: right;
-  
-  /* Magic trick 3: The Ellipsis combo for long addresses */
-  white-space: nowrap;       /* Keeps address on one line */
-  overflow: hidden;          /* Hides the excess text */
-  text-overflow: ellipsis;   /* Adds the "..." at the end */
-  
-  /* CRITICAL: This allows truncation to work inside a flexbox container */
-  min-width: 0; 
-}
-
-/* ========================================= */
-/* SELESAI BAGIAN PRODUK                     */
-/* ========================================= */
-
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #6b7280;
-}
-.empty-state span {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-.btn-primary {
-  background: #2d5016;
-  color: #f5edd6;
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: background 0.2s;
-}
-.btn-primary:hover {
-  background: #3a6b1e;
-}
-.cta-section {
-  padding: 3rem 0;
-}
-.cta-wrap {
-  background: linear-gradient(135deg, #1a2e0a 0%, #2d5016 100%);
-  border-radius: 24px;
-  padding: 3.5rem;
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 3rem;
-  align-items: center;
-  overflow: hidden;
-  position: relative;
-}
-.cta-wrap::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at 80% 50%,
-    rgba(168, 201, 127, 0.1),
-    transparent 60%
-  );
-  pointer-events: none;
-}
-.cta-badge {
-  display: inline-block;
-  background: rgba(168, 201, 127, 0.15);
-  border: 1px solid rgba(168, 201, 127, 0.3);
-  color: #a8c97f;
-  padding: 0.3rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-.cta-title {
-  font-family: 'Lora', serif;
-  font-size: 1.6rem;
-  color: #f5edd6;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  line-height: 1.35;
-}
-.cta-desc {
-  color: rgba(245, 237, 214, 0.7);
-  font-size: 0.875rem;
-  line-height: 1.75;
-}
-.cta-list {
+.cara-langkah {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin: 2rem 0rem;
 }
-.cta-list li {
-  font-size: 0.875rem;
-  color: rgba(245, 237, 214, 0.82);
+.cara-langkah li {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--garis-lembut);
 }
-.btn-cta {
-  display: inline-block;
-  background: #f5edd6;
-  color: #1a2e0a;
-  padding: 0.9rem 1.75rem;
-  border-radius: 12px;
-  text-decoration: none;
+.cara-langkah li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.langkah-no {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: var(--merah);
+  color: #fff;
+  border: 2.5px solid var(--tinta);
+  border-radius: 50%;
+  font-size: 1.05rem;
+}
+.langkah-judul {
+  display: block;
   font-weight: 700;
-  font-size: 0.95rem;
-  transition: all 0.2s;
+  font-size: 1.05rem;
 }
-.btn-cta:hover {
-  background: #fff;
-  transform: translateY(-1px);
+.langkah-ket {
+  display: block;
+  color: var(--tinta-2);
+  margin-top: 0.1rem;
 }
-.cta-kanan {
-  position: relative;
-  z-index: 1;
+
+/* Ajakan penjual */
+.ajakan {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
 }
-.cta-bubbles {
-  position: relative;
-  height: 220px;
+@media (min-width: 900px) {
+  .ajakan {
+    grid-template-columns: 1.3fr 0.7fr;
+  }
+}
+.ajakan-judul {
+  color: #fff;
+  max-width: 16ch;
+}
+.ajakan-ket {
+  margin-top: 1rem;
+  font-size: 1.08rem;
+  max-width: 52ch;
+  color: #e6f4ea;
+}
+.ajakan-daftar {
+  list-style: none;
+  margin: 1.5rem 0 2rem;
+  display: grid;
+  gap: 0.65rem;
+}
+.ajakan-daftar li {
   display: flex;
   align-items: center;
+  gap: 0.65rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.ajakan-daftar svg {
+  flex-shrink: 0;
+  color: var(--kuning);
+}
+
+.ajakan-papan {
+  display: flex;
   justify-content: center;
 }
-.cta-icon-big {
-  font-size: 5rem;
-  opacity: 0.15;
+.ajakan-papan .gantung {
+  width: min(300px, 80vw);
 }
-.bubble {
-  position: absolute;
-  background: rgba(245, 237, 214, 0.07);
-  border: 1px solid rgba(245, 237, 214, 0.14);
-  border-radius: 999px;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #f5edd6;
-  white-space: nowrap;
-  animation: floatY 4s ease-in-out infinite alternate;
+.ajakan-papan .tali {
+  height: 44px;
+  width: 70%;
 }
-.b1 {
-  top: 10%;
-  left: 5%;
-  animation-delay: 0s;
-}
-.b2 {
-  top: 30%;
-  right: 0;
-  animation-delay: 0.6s;
-}
-.b3 {
-  bottom: 25%;
-  left: 15%;
-  animation-delay: 1.2s;
-}
-.b4 {
-  bottom: 8%;
-  right: 10%;
-  animation-delay: 0.3s;
-}
-.footer {
-  background: #1a2e0a;
-  padding: 3rem 0;
+.papan-buka {
+  width: 100%;
+  padding: 1.5rem 1rem 1.25rem;
+  background: var(--papan);
+  color: var(--merah);
+  border: 3px solid var(--tinta);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 0 6px var(--papan),
+    inset 0 0 0 9px var(--merah),
+    0 18px 30px rgba(0, 0, 0, 0.25);
   text-align: center;
 }
-.footer-brand {
-  font-family: 'Lora', serif;
-  font-size: 1.4rem;
-  color: #f5edd6;
+.buka-kata {
+  display: block;
+  font-size: clamp(3.2rem, 9vw, 4.6rem);
+  line-height: 1;
+}
+.buka-ket {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--tinta);
   font-weight: 700;
-  margin-bottom: 0.4rem;
+  font-size: 1rem;
 }
-.footer-tagline {
-  color: #a8c97f;
-  font-size: 0.875rem;
-  font-style: italic;
-  margin-bottom: 0.35rem;
-}
-.footer-loc {
-  color: rgba(245, 237, 214, 0.35);
-  font-size: 0.78rem;
-}
-.footer-sep {
-  width: 60px;
-  height: 1px;
-  background: rgba(245, 237, 214, 0.1);
-  margin: 1.5rem auto;
-}
-.footer-copy {
-  color: rgba(245, 237, 214, 0.25);
-  font-size: 0.75rem;
-}
-
-/* ========================================= */
-/* MEDIA QUERIES (RESPONSIVITAS UTAMA)       */
-/* ========================================= */
-
-/* Desktop & Tablet Grid Produk */
-@media (min-width: 768px) {
-  .produk-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+@media (max-width: 899px) {
+  .ajakan-papan {
+    order: -1;
   }
-}
-
-@media (min-width: 1024px) {
-  .produk-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .hero {
-    min-height: auto;
-    padding: 3.5rem 0 3rem;
-  }
-  .hero-inner {
-    grid-template-columns: 1fr;
-  }
-  .hero-visual {
-    display: none;
-  }
-  .cara-grid {
-    grid-template-columns: 1fr;
-  }
-  .cara-divider {
-    display: none;
-  }
-  .kategori-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .cta-wrap {
-    grid-template-columns: 1fr;
-  }
-  .cta-kanan {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .hero-cta-grid {
-    grid-template-columns: 1fr;
-  }
-  .hero-title {
-    font-size: 1.85rem;
-  }
-  .cta-wrap {
-    padding: 2rem;
-  }
-}
-
-/* HP Layar Sangat Kecil */
-@media (max-width: 380px) {
-  .produk-grid {
-    grid-template-columns: 1fr; /* Jadi 1 baris penuh agar tidak terlalu sempit */
+  .ajakan-papan .gantung {
+    width: 220px;
   }
 }
 </style>

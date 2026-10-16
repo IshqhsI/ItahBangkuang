@@ -1,194 +1,143 @@
 <template>
   <LayoutPenjual :statusToko="statusToko" :tokoId="tokoId">
-    <div class="page-header">
-      <div class="container">
-        <h1 class="page-title">Profil Toko</h1>
-        <p class="page-sub">
-          {{
-            mode === 'edit'
-              ? 'Edit informasi toko kamu'
-              : 'Informasi toko yang dilihat pembeli'
-          }}
+    <section class="kepala">
+      <div class="wadah sempit">
+        <h1 class="judul-halaman">Profil toko</h1>
+        <p class="sub-halaman">
+          {{ mode === 'edit' ? 'Ubah info tokomu, lalu simpan.' : 'Beginilah tokomu terlihat oleh pembeli.' }}
         </p>
       </div>
+    </section>
+
+    <div v-if="loadingData" class="memuat">
+      <div class="spinner"></div>
+      <p>Mengambil data toko…</p>
     </div>
 
-    <div class="container main-content">
-      <div v-if="loadingData" class="loading-wrap">
-        <div class="spinner"></div>
-        <p>Memuat data toko...</p>
+    <div v-else class="wadah sempit isi">
+      <!-- Status toko (hanya dibaca) -->
+      <div class="status papan" :class="`status-${toko.status.toLowerCase()}`">
+        <component :is="statusInfo.icon" :size="28" :stroke-width="2.25" />
+        <div>
+          <p class="status-judul">{{ statusInfo.teks }}</p>
+          <p v-if="toko.alasan_tolak" class="status-alasan">Alasan dari admin: “{{ toko.alasan_tolak }}”</p>
+        </div>
       </div>
 
-      <div v-else class="form-layout">
-        <!-- STATUS BANNER — read only, tidak bisa diubah penjual -->
-        <div class="status-banner" :class="statusClass">
-          <span class="status-icon-sm">{{ statusIcon }}</span>
-          <div>
-            <p class="status-label">Status Toko</p>
-            <p class="status-val">{{ statusText }}</p>
-            <p v-if="toko.alasan_tolak" class="status-alasan">
-              Alasan: "{{ toko.alasan_tolak }}"
-            </p>
+      <div v-if="errorMsg" class="pesan pesan-galat" role="alert">
+        <CircleAlert :size="20" :stroke-width="2.5" />
+        <span>{{ errorMsg }}</span>
+      </div>
+      <div v-if="successMsg" class="pesan pesan-sukses" role="status">
+        <CircleCheck :size="20" :stroke-width="2.5" />
+        <span>{{ successMsg }}</span>
+      </div>
+
+      <!-- FOTO -->
+      <section class="bagian papan" aria-labelledby="h-foto">
+        <h2 id="h-foto" class="bagian-judul">Foto toko</h2>
+        <div class="foto-baris">
+          <div class="foto-bulat">
+            <img v-if="previewUrl" :src="previewUrl" alt="Foto toko" />
+            <Store v-else :size="40" :stroke-width="2" />
+          </div>
+          <div class="foto-teks">
+            <p>Logo atau foto produk andalan bikin pembeli lebih percaya.</p>
+            <button v-if="mode === 'edit'" type="button" class="tombol tombol-kecil" @click="triggerUpload">
+              <ImagePlus :size="16" :stroke-width="2.5" />
+              {{ previewUrl ? 'Ganti foto' : 'Pilih foto' }}
+            </button>
+            <input ref="fileInput" type="file" accept="image/*" class="sr-only" tabindex="-1" @change="onFileChange" />
           </div>
         </div>
+      </section>
 
-        <div v-if="errorMsg" class="alert-error">⚠️ {{ errorMsg }}</div>
-        <div v-if="successMsg" class="alert-success">✅ {{ successMsg }}</div>
+      <!-- INFO -->
+      <section class="bagian papan" aria-labelledby="h-info">
+        <h2 id="h-info" class="bagian-judul">Info toko</h2>
 
-        <!-- FOTO TOKO -->
-        <div class="form-section">
-          <h2 class="section-title">Foto Toko</h2>
-          <div class="foto-layout">
-            <div
-              class="foto-preview-wrap"
-              @click="mode === 'edit' ? triggerUpload() : null"
-              :style="mode === 'edit' ? 'cursor:pointer' : 'cursor:default'"
-            >
-              <img
-                v-if="previewUrl"
-                :src="previewUrl"
-                class="foto-preview"
-                alt="foto toko"
-              />
-              <div v-else class="foto-placeholder">🏪</div>
-              <div v-if="mode === 'edit'" class="foto-overlay">📷 Ganti</div>
-            </div>
-            <div class="foto-info">
-              <p class="foto-hint">
-                Foto toko membuat pembeli lebih percaya. Gunakan logo atau foto
-                produk unggulan.
-              </p>
-              <button
-                v-if="mode === 'edit'"
-                type="button"
-                class="btn-upload-foto"
-                @click="triggerUpload"
-              >
-                Upload Foto Toko
-              </button>
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/*"
-                @change="onFileChange"
-                class="hidden"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- INFO TOKO -->
-        <div class="form-section">
-          <h2 class="section-title">Informasi Toko</h2>
-
-          <div class="field">
-            <label>Nama Toko</label>
-            <input
-              v-if="mode === 'edit'"
-              v-model="form.nama_toko"
-              type="text"
-              placeholder="Nama tokomu"
-              maxlength="60"
-              :disabled="loading"
-            />
-            <p v-else class="view-value">{{ form.nama_toko || '-' }}</p>
+        <template v-if="mode === 'edit'">
+          <div class="isian">
+            <label for="nama">Nama toko</label>
+            <input id="nama" v-model="form.nama_toko" type="text" maxlength="60" :disabled="loading" />
           </div>
 
-          <div class="field">
-            <label>Nomor WhatsApp</label>
-            <div v-if="mode === 'edit'" class="input-prefix-wrap">
-              <span class="prefix">+62</span>
+          <div class="isian">
+            <label for="wa">Nomor WhatsApp</label>
+            <div class="awalan">
+              <span class="awalan-teks" aria-hidden="true">+62</span>
               <input
+                id="wa"
                 v-model="form.nomor_wa"
                 type="tel"
-                placeholder="081234567890"
+                inputmode="numeric"
+                autocomplete="tel-national"
+                aria-describedby="wa-bantuan"
                 :disabled="loading"
+                @input="rapikanWa"
               />
             </div>
-            <p v-else class="view-value">+62{{ form.nomor_wa || '-' }}</p>
-            <span v-if="mode === 'edit'" class="field-hint"
-              >Nomor ini digunakan pembeli untuk menghubungi kamu</span
-            >
+            <span id="wa-bantuan" class="bantuan">Pembeli dan notifikasi pesanan masuk lewat nomor ini. Tulis tanpa 0 di depan.</span>
           </div>
 
-          <div class="field">
-            <label>Alamat</label>
-            <input
-              v-if="mode === 'edit'"
-              v-model="form.alamat"
-              type="text"
-              placeholder="Jl. contoh No. 5, RT 02, Desa ..."
-              :disabled="loading"
-            />
-            <p v-else class="view-value">{{ form.alamat || '-' }}</p>
+          <div class="isian">
+            <label for="alamat">Alamat</label>
+            <input id="alamat" v-model="form.alamat" type="text" autocomplete="street-address" placeholder="Contoh: Jl. Pahlawan RT 03, dekat masjid" :disabled="loading" />
           </div>
 
-          <div class="field">
-            <label>Deskripsi <span class="optional">(opsional)</span></label>
-            <textarea
-              v-if="mode === 'edit'"
-              v-model="form.deskripsi"
-              rows="4"
-              placeholder="Ceritakan tentang toko kamu..."
-              maxlength="300"
-              :disabled="loading"
-            ></textarea>
-            <p v-else class="view-value multiline">
-              {{ form.deskripsi || 'Tidak ada deskripsi' }}
-            </p>
-            <span v-if="mode === 'edit'" class="field-hint"
-              >{{ form.deskripsi.length }}/300 karakter</span
-            >
+          <div class="isian">
+            <label for="deskripsi">Cerita singkat tokomu <span class="opsional">(boleh dikosongkan)</span></label>
+            <textarea id="deskripsi" v-model="form.deskripsi" rows="4" maxlength="300" aria-describedby="desk-hitung" :disabled="loading"></textarea>
+            <span id="desk-hitung" class="bantuan">{{ form.deskripsi.length }} dari 300 karakter</span>
           </div>
-        </div>
+        </template>
 
-        <!-- ACTIONS -->
-        <div class="form-actions">
-          <RouterLink to="/toko/dashboard" class="btn-cancel"
-            >Kembali</RouterLink
-          >
+        <dl v-else class="data">
+          <div><dt>Nama toko</dt><dd>{{ form.nama_toko || '–' }}</dd></div>
+          <div><dt>WhatsApp</dt><dd>{{ form.nomor_wa ? `+62${form.nomor_wa}` : '–' }}</dd></div>
+          <div><dt>Alamat</dt><dd>{{ form.alamat || '–' }}</dd></div>
+          <div><dt>Cerita</dt><dd class="cerita">{{ form.deskripsi || 'Belum ada cerita.' }}</dd></div>
+        </dl>
+      </section>
 
-          <!-- Mode VIEW -->
-          <button
-            v-if="mode === 'view'"
-            class="btn-submit"
-            @click="mode = 'edit'"
-          >
-            ✏️ Edit Profil
+      <!-- AKSI -->
+      <div class="aksi">
+        <template v-if="mode === 'view'">
+          <RouterLink to="/toko/dashboard" class="tombol tombol-besar">Kembali</RouterLink>
+          <button type="button" class="tombol tombol-merah tombol-besar aksi-utama" @click="mode = 'edit'">
+            <Pencil :size="20" :stroke-width="2.5" />
+            Ubah profil
           </button>
-
-          <!-- Mode EDIT -->
-          <template v-else>
-            <button
-              type="button"
-              class="btn-cancel"
-              @click="cancelEdit"
-              :disabled="loading"
-            >
-              Batal
-            </button>
-            <button
-              type="button"
-              class="btn-submit"
-              @click="handleSubmit"
-              :disabled="loading || uploading"
-            >
-              <span v-if="loading || uploading" class="spinner-sm"></span>
-              <span v-else>💾 Simpan</span>
-            </button>
-          </template>
-        </div>
+        </template>
+        <template v-else>
+          <button type="button" class="tombol tombol-besar" :disabled="loading" @click="cancelEdit">Batal</button>
+          <button type="button" class="tombol tombol-merah tombol-besar aksi-utama" :disabled="loading || uploading" @click="handleSubmit">
+            <span v-if="loading || uploading" class="spinner-sm"></span>
+            {{ loading || uploading ? 'Menyimpan…' : 'Simpan' }}
+          </button>
+        </template>
       </div>
     </div>
   </LayoutPenjual>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, markRaw } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  Store,
+  ImagePlus,
+  Pencil,
+  CircleAlert,
+  CircleCheck,
+  Hourglass,
+  CircleX,
+  Ban,
+} from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 
+const route = useRoute();
 const router = useRouter();
 const mode = ref('view');
 const loadingData = ref(true);
@@ -202,44 +151,26 @@ const fotoFile = ref(null);
 const tokoId = ref(null);
 const statusToko = ref('');
 
-// Pisahkan: data read-only (tidak boleh diedit penjual)
+// Data yang tidak boleh diubah penjual
 const toko = ref({ status: '', alasan_tolak: '' });
 
-// Data yang boleh diedit penjual
-const form = ref({
-  nama_toko: '',
-  nomor_wa: '',
-  alamat: '',
-  deskripsi: '',
-  foto_toko: '',
-});
+// Data yang boleh diubah penjual
+const form = ref({ nama_toko: '', nomor_wa: '', alamat: '', deskripsi: '', foto_toko: '' });
 
-// Snapshot untuk fungsi batal
 let snapshot = null;
 
-const statusClass = computed(() => ({
-  'status-aktif': toko.value.status === 'AKTIF',
-  'status-pending': toko.value.status === 'PENDING',
-  'status-tolak': toko.value.status === 'DITOLAK',
-  'status-blokir': toko.value.status === 'DIBLOKIR',
-}));
+const INFO_STATUS = {
+  AKTIF: { icon: markRaw(CircleCheck), teks: 'Tokomu aktif dan bisa menerima pesanan.' },
+  PENDING: { icon: markRaw(Hourglass), teks: 'Tokomu sedang diperiksa admin.' },
+  DITOLAK: { icon: markRaw(CircleX), teks: 'Pendaftaran tokomu belum disetujui.' },
+  DIBLOKIR: { icon: markRaw(Ban), teks: 'Tokomu diblokir admin.' },
+};
+const statusInfo = computed(() => INFO_STATUS[toko.value.status] ?? INFO_STATUS.PENDING);
 
-const statusIcon = computed(
-  () =>
-    ({ AKTIF: '✅', PENDING: '⏳', DITOLAK: '❌', DIBLOKIR: '🚫' })[
-      toko.value.status
-    ] ?? '❓',
-);
-
-const statusText = computed(
-  () =>
-    ({
-      AKTIF: 'Toko aktif dan bisa menerima order',
-      PENDING: 'Menunggu verifikasi admin',
-      DITOLAK: 'Pendaftaran ditolak admin',
-      DIBLOKIR: 'Toko diblokir oleh admin',
-    })[toko.value.status] ?? '-',
-);
+// Nomor WA: hanya angka, tanpa awalan 0 / 62
+const rapikanWa = () => {
+  form.value.nomor_wa = form.value.nomor_wa.replace(/\D/g, '').replace(/^(62|0)/, '');
+};
 
 const triggerUpload = () => fileInput.value?.click();
 
@@ -247,11 +178,10 @@ const onFileChange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
   if (file.size > 2 * 1024 * 1024) {
-    errorMsg.value = 'Ukuran foto maksimal 2MB.';
+    errorMsg.value = 'Fotonya terlalu besar. Pilih foto yang ukurannya di bawah 2 MB.';
     return;
   }
-  if (previewUrl.value?.startsWith('blob:'))
-    URL.revokeObjectURL(previewUrl.value);
+  if (previewUrl.value?.startsWith('blob:')) URL.revokeObjectURL(previewUrl.value);
   fotoFile.value = file;
   previewUrl.value = URL.createObjectURL(file);
   errorMsg.value = '';
@@ -261,70 +191,61 @@ const uploadFoto = async () => {
   uploading.value = true;
   const ext = fotoFile.value.name.split('.').pop();
   const nama = `toko-${tokoId.value}-${Date.now()}.${ext}`;
+
   const { error } = await supabase.storage
     .from('foto-toko')
     .upload(nama, fotoFile.value, { upsert: true });
+
   if (error) {
     uploading.value = false;
     return null;
   }
+
   const { data } = supabase.storage.from('foto-toko').getPublicUrl(nama);
   uploading.value = false;
   return data.publicUrl;
 };
 
 const handleSubmit = async () => {
-  // Validasi manual — tidak pakai <form> agar tidak bentrok dengan toggle mode view/edit
   errorMsg.value = '';
+  successMsg.value = '';
+
   if (!form.value.nama_toko.trim()) {
-    errorMsg.value = 'Nama toko wajib diisi.';
+    errorMsg.value = 'Isi nama tokomu dulu.';
     return;
   }
-  if (!form.value.nomor_wa.trim()) {
-    errorMsg.value = 'Nomor WhatsApp wajib diisi.';
+  if (!form.value.nomor_wa) {
+    errorMsg.value = 'Isi nomor WhatsApp-mu dulu.';
     return;
   }
-  // Validasi Format Nomor WA (Hanya angka & minimal panjang)
-  const waRegex = /^[0-9]+$/;
-  if (!waRegex.test(form.value.nomor_wa.trim())) {
-    errorMsg.value = 'Nomor WhatsApp hanya boleh berisi angka.';
-    return;
-  }
-  if (form.value.nomor_wa.trim().length < 10) {
-    errorMsg.value = 'Nomor WhatsApp minimal 10 digit.';
+  if (form.value.nomor_wa.length < 9 || form.value.nomor_wa.length > 13) {
+    errorMsg.value = 'Nomor WA sepertinya belum lengkap. Tulis tanpa 0 di depan, contoh: 81234567890.';
     return;
   }
   if (!form.value.alamat.trim()) {
-    errorMsg.value = 'Alamat wajib diisi.';
+    errorMsg.value = 'Isi alamat tokomu dulu.';
     return;
   }
 
   loading.value = true;
-  successMsg.value = '';
 
   let fotoUrl = previewUrl.value?.startsWith('blob:') ? null : previewUrl.value;
 
   if (fotoFile.value) {
     fotoUrl = await uploadFoto();
     if (!fotoUrl) {
-      errorMsg.value = 'Gagal upload foto. Coba lagi.';
+      errorMsg.value = 'Fotonya belum terunggah. Periksa koneksi internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
   }
 
-  let nomorWaClean = form.value.nomor_wa.trim();
-  if (nomorWaClean.startsWith('0')) {
-    nomorWaClean = nomorWaClean.substring(1);
-  }
-
-  // HANYA update kolom yang boleh diubah penjual
-  // status, alasan_tolak, user_id TIDAK ikut diupdate
+  // Hanya kolom yang boleh diubah penjual; status, alasan_tolak, user_id tidak ikut
   const { error } = await supabase
     .from('toko')
     .update({
       nama_toko: form.value.nama_toko.trim(),
-      nomor_wa: nomorWaClean,
+      nomor_wa: form.value.nomor_wa,
       alamat: form.value.alamat.trim(),
       deskripsi: form.value.deskripsi.trim(),
       ...(fotoUrl ? { foto_toko: fotoUrl } : {}),
@@ -332,16 +253,15 @@ const handleSubmit = async () => {
     .eq('id', tokoId.value);
 
   if (error) {
-    errorMsg.value = 'Gagal menyimpan. Coba lagi.';
+    errorMsg.value = 'Perubahan belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
     loading.value = false;
     return;
   }
 
-  successMsg.value = 'Profil toko berhasil diperbarui!';
-  snapshot = { ...form.value }; // perbarui snapshot dengan data terbaru
+  successMsg.value = 'Profil tokomu tersimpan.';
   fotoFile.value = null;
   mode.value = 'view';
-  await updateViewData(); // refresh data dari server untuk memastikan sinkronisasi dengan database
+  await muatData();
   loading.value = false;
 };
 
@@ -353,12 +273,10 @@ const cancelEdit = () => {
   mode.value = 'view';
 };
 
-const updateViewData = async () => {
-   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+const muatData = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    router.push('/login');
+    router.replace({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
 
@@ -367,6 +285,7 @@ const updateViewData = async () => {
     .select('*')
     .eq('user_id', session.user.id)
     .single();
+
   if (!data) {
     router.push('/');
     return;
@@ -374,369 +293,168 @@ const updateViewData = async () => {
 
   statusToko.value = data.status;
   tokoId.value = data.id;
-
-  // Pisahkan data read-only dan editable
-  toko.value = {
-    status: data.status ?? '',
-    alasan_tolak: data.alasan_tolak ?? '',
-  };
-
+  toko.value = { status: data.status ?? '', alasan_tolak: data.alasan_tolak ?? '' };
   form.value = {
     nama_toko: data.nama_toko ?? '',
-    nomor_wa: data.nomor_wa ?? '',
+    nomor_wa: (data.nomor_wa ?? '').replace(/^(\+62|62|0)/, ''),
     alamat: data.alamat ?? '',
     deskripsi: data.deskripsi ?? '',
     foto_toko: data.foto_toko ?? '',
   };
-
   snapshot = { ...form.value };
   previewUrl.value = data.foto_toko ?? '';
 };
 
 onMounted(async () => {
-  await updateViewData();
+  await muatData();
   loadingData.value = false;
 });
 </script>
 
 <style scoped>
-.page-header {
-  background: linear-gradient(135deg, #2d5016, #3a6b1e);
-  padding: 2.5rem 0;
+.sempit {
+  max-width: 720px;
 }
-.container {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.kepala {
+  background: var(--hijau);
+  color: #fff;
+  border-bottom: 3px solid var(--tinta);
+  padding: 1.5rem 0 1.75rem;
 }
-.page-title {
-  font-family: 'Lora', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f5edd6;
-  margin-bottom: 0.25rem;
+.kepala .judul-halaman {
+  color: #fff;
 }
-.page-sub {
-  color: #a8c97f;
-  font-size: 0.875rem;
+.kepala .sub-halaman {
+  color: #cfe8d7;
 }
-.main-content {
-  padding: 2rem 2rem 4rem;
-}
-.loading-wrap {
+.isi {
   display: flex;
   flex-direction: column;
+  gap: 1.1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.status {
+  display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 4rem;
-  color: #6b7280;
-}
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e8e0d0;
-  border-top-color: #2d5016;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-.spinner-sm {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(245, 237, 214, 0.3);
-  border-top-color: #f5edd6;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.form-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.status-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  border: 1.5px solid;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
 }
 .status-aktif {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  --papan-bg: var(--hijau-muda);
 }
 .status-pending {
-  background: #fffbeb;
-  border-color: #fde68a;
+  --papan-bg: var(--kuning-muda);
 }
-.status-tolak {
-  background: #fef2f2;
-  border-color: #fecaca;
+.status-ditolak {
+  --papan-bg: var(--merah-muda);
 }
-.status-blokir {
-  background: #f9fafb;
-  border-color: #d1d5db;
+.status-diblokir {
+  --papan-bg: #e8e8e8;
 }
-.status-icon-sm {
-  font-size: 1.25rem;
-  flex-shrink: 0;
-}
-.status-label {
-  font-size: 0.7rem;
-  color: #9ca3af;
-  margin-bottom: 0.15rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.status-val {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
+.status-judul {
+  font-weight: 700;
 }
 .status-alasan {
-  font-size: 0.78rem;
-  color: #dc2626;
-  margin-top: 0.25rem;
-  font-style: italic;
+  margin-top: 0.15rem;
+  color: var(--tinta-2);
 }
-.form-section {
-  background: #fff;
-  border: 1px solid #e8e0d0;
-  border-radius: 16px;
-  padding: 1.5rem;
+
+.bagian {
+  padding: 1.25rem 1.2rem 1.4rem;
 }
-.section-title {
-  font-family: 'Lora', serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a2e0a;
-  margin-bottom: 1.25rem;
-}
-.optional {
-  font-size: 0.78rem;
-  color: #9ca3af;
+.bagian-judul {
+  font-family: var(--font-papan);
   font-weight: 400;
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
 }
-.foto-layout {
+.opsional {
+  font-weight: 400;
+  color: var(--tinta-3);
+}
+
+.foto-baris {
   display: flex;
-  gap: 1.25rem;
-  align-items: flex-start;
+  align-items: center;
+  gap: 1.1rem;
 }
-.foto-preview-wrap {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 14px;
-  overflow: hidden;
+.foto-bulat {
   flex-shrink: 0;
-  border: 2px solid #e8e0d0;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  background: var(--kuning);
+  border: 2.5px solid var(--tinta);
+  border-radius: 50%;
+  overflow: hidden;
 }
-.foto-preview-wrap:hover .foto-overlay {
-  opacity: 1;
-}
-.foto-preview {
+.foto-bulat img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.foto-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #f0f7e8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-}
-.foto-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.foto-info {
-  flex: 1;
-}
-.foto-hint {
-  font-size: 0.8rem;
-  color: #6b7280;
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
-}
-.btn-upload-foto {
-  background: #f0f7e8;
-  color: #2d5016;
-  border: 1.5px solid #a8c97f;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-upload-foto:hover {
-  background: #e0f0cc;
-}
-.hidden {
-  display: none;
-}
-.field {
+.foto-teks {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.1rem;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--tinta-2);
 }
-.field:last-child {
-  margin-bottom: 0;
-}
-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #374151;
-}
-.field-hint {
-  font-size: 0.72rem;
-  color: #9ca3af;
-}
-input,
-textarea {
-  padding: 0.75rem 1rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-family: inherit;
-  background: #fff;
-  color: #111827;
-  transition: border-color 0.2s;
-  width: 100%;
-}
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: #2d5016;
-}
-input:disabled,
-textarea:disabled {
-  background: #f9fafb;
-  cursor: not-allowed;
-}
-textarea {
-  resize: vertical;
-}
-.input-prefix-wrap {
+
+.awalan {
   display: flex;
+  align-items: stretch;
 }
-.prefix {
-  background: #f3f4f6;
-  border: 1.5px solid #d1d5db;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
-  padding: 0.75rem 0.75rem;
-  font-size: 0.85rem;
-  color: #6b7280;
-  font-weight: 600;
-  white-space: nowrap;
+.awalan-teks {
+  display: grid;
+  place-items: center;
+  padding: 0 0.8rem;
+  background: var(--kuning);
+  border: 2px solid var(--tinta);
+  border-right: 0;
+  border-radius: var(--sudut-kecil) 0 0 var(--sudut-kecil);
+  font-weight: 700;
 }
-.input-prefix-wrap input {
-  border-radius: 0 10px 10px 0;
+.awalan input {
+  border-radius: 0 var(--sudut-kecil) var(--sudut-kecil) 0 !important;
 }
-.view-value {
-  padding: 0.75rem 1rem;
-  background: #f9fafb;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  color: #111827;
-  line-height: 1.5;
+
+.data > div {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.75rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--garis-lembut);
 }
-.multiline {
+.data > div:last-child {
+  border-bottom: 0;
+}
+.data dt {
+  color: var(--tinta-3);
+}
+.data dd {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.data dd.cerita {
+  font-weight: 400;
   white-space: pre-line;
 }
-.alert-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+@media (max-width: 520px) {
+  .data > div {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
 }
-.alert-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-}
-.form-actions {
+
+.aksi {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
-.btn-cancel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1.5px solid #d1d5db;
-  padding: 0.85rem 1.5rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-.btn-cancel:hover:not(:disabled) {
-  background: #e5e7eb;
-}
-.btn-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-submit {
+.aksi-utama {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: #2d5016;
-  color: #f5edd6;
-  border: none;
-  padding: 0.85rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-submit:hover:not(:disabled) {
-  background: #3a6b1e;
-}
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: block;
-  }
 }
 </style>
