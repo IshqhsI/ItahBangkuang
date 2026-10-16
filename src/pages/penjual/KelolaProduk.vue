@@ -47,7 +47,7 @@
             <h3 class="produk-nama">{{ p.nama_produk }}</h3>
 
             <!-- Harga: range kalau ada varian, single kalau tidak -->
-            <p class="produk-harga">{{ tampilHarga(p) }}</p>
+            <p class="produk-harga">{{ formatHargaProduk(p) }}</p>
 
             <div class="produk-meta-row">
               <!-- Varian ada: tampil jumlah varian + total stok -->
@@ -56,14 +56,14 @@
                 <span
                   class="stok-badge"
                   :class="{
-                    habis: totalStokVarian(p) === 0,
-                    low: totalStokVarian(p) <= 5 && totalStokVarian(p) > 0,
+                    habis: totalStok(p) === 0,
+                    low: totalStok(p) <= 5 && totalStok(p) > 0,
                   }"
                 >
                   {{
-                    totalStokVarian(p) === 0
+                    totalStok(p) === 0
                       ? 'Semua Habis'
-                      : `Stok: ${totalStokVarian(p)}`
+                      : `Stok: ${totalStok(p)}`
                   }}
                 </span>
               </template>
@@ -177,7 +177,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
-import { formatRupiah } from '@/lib/utils';
+import { punyaVarian, totalStok, formatHargaProduk } from '@/lib/utils';
 import { labelKategori } from '@/lib/kategori';
 
 const router = useRouter();
@@ -197,27 +197,6 @@ const filterList = [
   { val: 'DISEMBUNYIKAN', label: 'Disembunyikan' },
 ];
 
-// ─── Helpers varian ───────────────────────────────────────────
-
-// Cek apakah produk punya varian yang valid
-const punyaVarian = (p) => Array.isArray(p.varian) && p.varian.length > 0;
-
-// Total stok dari semua varian
-const totalStokVarian = (p) =>
-  p.varian.reduce((sum, v) => sum + (v.stok ?? 0), 0);
-
-// Harga: kalau varian → tampil range (min–max), kalau tidak → harga tunggal
-const tampilHarga = (p) => {
-  if (!punyaVarian(p)) return formatRupiah(p.harga);
-  const hargaList = p.varian.map((v) => v.harga ?? p.harga).filter(Boolean);
-  if (!hargaList.length) return formatRupiah(p.harga);
-  const min = Math.min(...hargaList);
-  const max = Math.max(...hargaList);
-  return min === max
-    ? formatRupiah(min)
-    : `${formatRupiah(min)} – ${formatRupiah(max)}`;
-};
-
 // ─── Filter ───────────────────────────────────────────────────
 
 const produkFiltered = computed(() => {
@@ -226,7 +205,7 @@ const produkFiltered = computed(() => {
     // Produk tanpa varian: stok 0
     // Produk dengan varian: semua varian stok 0
     return produkList.value.filter((p) =>
-      punyaVarian(p) ? totalStokVarian(p) === 0 : p.stok === 0,
+      totalStok(p) === 0,
     );
   }
   return produkList.value.filter((p) => p.status === filterAktif.value);
@@ -236,7 +215,7 @@ const hitungFilter = (val) => {
   if (val === 'semua') return produkList.value.length;
   if (val === 'HABIS')
     return produkList.value.filter((p) =>
-      punyaVarian(p) ? totalStokVarian(p) === 0 : p.stok === 0,
+      totalStok(p) === 0,
     ).length;
   return produkList.value.filter((p) => p.status === val).length;
 };

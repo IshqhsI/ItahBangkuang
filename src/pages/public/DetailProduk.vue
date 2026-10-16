@@ -271,27 +271,20 @@ const currentHarga = computed(() => {
 
 // Computed untuk mendapatkan stok yang sedang aktif
 const currentStok = computed(() => {
-
   if (varianTerpilih.value) {
-    return varianTerpilih.value.stok;
+    return Number(varianTerpilih.value.stok) || 0;
   }
-  
-  if (produk.value.varian && produk.value.varian.length > 0) {
+
+  if (produk.value?.varian?.length > 0) {
     return produk.value.varian.reduce((acc, curr) => acc + (Number(curr.stok) || 0), 0);
   }
 
-  return produk.value.stok || 0;
+  return Number(produk.value?.stok) || 0;
 });
 
 // Pengecekan apakah stok benar-benar habis
-const isHabis = computed(() => {
-  if (produk.value?.varian?.length > 0) {
-    // Jika ada varian, cek apakah varian terpilih habis atau (jika belum pilih) apakah semua varian stoknya 0
-    if (varianTerpilih.value) return varianTerpilih.value.stok === 0;
-    return produk.value.varian.every((v) => v.stok === 0);
-  }
-  return produk.value?.stok === 0;
-});
+// (varian terpilih habis, atau jika belum pilih: semua varian habis)
+const isHabis = computed(() => currentStok.value === 0);
 
 const pilihVarian = (v) => {
   varianTerpilih.value = v;

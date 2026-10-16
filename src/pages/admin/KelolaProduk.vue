@@ -88,15 +88,15 @@
               <td>
                 <span class="kat-pill">{{ labelKategori(p.kategori) }}</span>
               </td>
-              <td class="harga-cell">{{ formatRupiah(p.harga) }}</td>
+              <td class="harga-cell">{{ formatHargaProduk(p) }}</td>
               <td>
                 <span
                   class="stok-text"
                   :class="{
-                    habis: p.stok === 0,
-                    low: p.stok <= 5 && p.stok > 0,
+                    habis: totalStok(p) === 0,
+                    low: totalStok(p) <= 5 && totalStok(p) > 0,
                   }"
-                  >{{ p.stok }}</span
+                  >{{ totalStok(p) }}</span
                 >
               </td>
               <td>
@@ -144,7 +144,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutAdmin from '@/layouts/LayoutAdmin.vue';
-import { formatRupiah } from '@/lib/utils';
+import { totalStok, formatHargaProduk } from '@/lib/utils';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const router = useRouter();

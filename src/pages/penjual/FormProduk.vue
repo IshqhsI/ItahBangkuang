@@ -219,7 +219,7 @@
             <div class="progress-bar">
               <div
                 class="progress-fill"
-                :style="{ width: uploadProgress + '%' }"
+                :style="{ transform: `scaleX(${uploadProgress / 100})` }"
               ></div>
             </div>
             <p class="progress-text">
@@ -366,20 +366,58 @@ const handleSubmit = async () => {
     return;
   }
 
-  // Tambahkan validasi ini:
-  if (!form.value.harga || form.value.harga < 100) {
-    errorMsg.value = 'Harga minimal Rp 100.';
-    return;
+  const pakaiVarian = form.value.varian.length > 0;
+
+  if (pakaiVarian) {
+    // Input harga & stok produk disembunyikan saat pakai varian,
+    // jadi yang divalidasi adalah tiap varian
+    const namaList = form.value.varian.map((v) => (v.nama || '').trim());
+    if (namaList.some((n) => !n)) {
+      errorMsg.value = 'Nama setiap varian wajib diisi.';
+      return;
+    }
+    if (new Set(namaList.map((n) => n.toLowerCase())).size !== namaList.length) {
+      errorMsg.value = 'Nama varian tidak boleh sama.';
+      return;
+    }
+    if (form.value.varian.some((v) => !v.harga || v.harga < 100)) {
+      errorMsg.value = 'Harga setiap varian minimal Rp 100.';
+      return;
+    }
+    if (form.value.varian.some((v) => v.stok === '' || v.stok == null || v.stok < 0)) {
+      errorMsg.value = 'Stok varian tidak boleh kosong atau negatif.';
+      return;
+    }
+  } else {
+    if (!form.value.harga || form.value.harga < 100) {
+      errorMsg.value = 'Harga minimal Rp 100.';
+      return;
+    }
+
+    if (
+      form.value.stok === '' ||
+      form.value.stok === null ||
+      form.value.stok < 0
+    ) {
+      errorMsg.value = 'Stok tidak boleh kosong atau negatif.';
+      return;
+    }
   }
 
-  if (
-    form.value.stok === '' ||
-    form.value.stok === null ||
-    form.value.stok < 0
-  ) {
-    errorMsg.value = 'Stok tidak boleh kosong atau negatif.';
-    return;
-  }
+  // Kalau pakai varian: harga produk = harga varian termurah, stok = total stok varian,
+  // supaya kolom harga/stok di tabel produk tetap sinkron (sorting, filter, dll)
+  const varianBersih = form.value.varian.map((v) => ({
+    ...v,
+    nama: v.nama.trim(),
+    harga: Number(v.harga),
+    stok: Number(v.stok),
+  }));
+  const hargaProduk = pakaiVarian
+    ? Math.min(...varianBersih.map((v) => v.harga))
+    : form.value.harga;
+  const stokProduk = pakaiVarian
+    ? varianBersih.reduce((sum, v) => sum + v.stok, 0)
+    : form.value.stok;
 
   loading.value = true;
 
@@ -399,10 +437,10 @@ const handleSubmit = async () => {
     nama_produk: form.value.nama_produk,
     kategori: form.value.kategori,
     deskripsi: form.value.deskripsi,
-    harga: form.value.harga,
-    stok: form.value.stok,
+    harga: hargaProduk,
+    stok: stokProduk,
     foto_url: fotoUrl,
-    varian: form.value.varian,
+    varian: varianBersih,
     ...(isEdit.value
       ? { status: form.value.status }
       : { toko_id: tokoId.value }),
@@ -757,9 +795,10 @@ textarea {
 }
 .progress-fill {
   background: #2d5016;
+  width: 100%;
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.3s;
+  transform-origin: left;
+  transition: transform 0.3s ease-out;
 }
 .progress-text {
   font-size: 0.78rem;

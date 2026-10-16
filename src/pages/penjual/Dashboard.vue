@@ -192,16 +192,16 @@
                   />
                   <div class="produk-mini-info">
                     <p class="produk-mini-nama">{{ p.nama_produk }}</p>
-                    <p class="produk-mini-harga">{{ formatRupiah(p.harga) }}</p>
+                    <p class="produk-mini-harga">{{ formatHargaProduk(p) }}</p>
                   </div>
                   <div
                     class="produk-mini-stok"
                     :class="{
-                      habis: p.stok === 0,
-                      low: p.stok <= 5 && p.stok > 0,
+                      habis: totalStok(p) === 0,
+                      low: totalStok(p) <= 5 && totalStok(p) > 0,
                     }"
                   >
-                    {{ p.stok === 0 ? 'Habis' : `Stok: ${p.stok}` }}
+                    {{ totalStok(p) === 0 ? 'Habis' : `Stok: ${totalStok(p)}` }}
                   </div>
                 </RouterLink>
               </div>
@@ -244,7 +244,13 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
-import { formatRupiah, formatTanggal, badgeOrderClass } from '@/lib/utils';
+import {
+  formatRupiah,
+  formatTanggal,
+  badgeOrderClass,
+  totalStok,
+  formatHargaProduk,
+} from '@/lib/utils';
 
 const router = useRouter();
 const menuOpen = ref(false);
@@ -303,7 +309,7 @@ onMounted(async () => {
   const [produkRes, orderRes] = await Promise.all([
     supabase
       .from('produk')
-      .select('id, nama_produk, foto_url, harga, stok')
+      .select('id, nama_produk, foto_url, harga, stok, varian')
       .eq('toko_id', tokoData.id)
       .eq('status', 'AKTIF')
       .order('created_at', { ascending: false })

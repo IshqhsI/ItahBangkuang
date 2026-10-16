@@ -84,7 +84,7 @@
               />
               <span class="produk-kat-badge">{{ labelKategori(p.kategori) }}</span>
               <!-- Logika Stok Habis Varian -->
-              <span v-if="hitungTotalStok(p) === 0" class="produk-habis-badge">Habis</span>
+              <span v-if="totalStok(p) === 0" class="produk-habis-badge">Habis</span>
               <!-- Badge info jika ada varian -->
               <span v-if="p.varian?.length > 0" class="varian-count-badge">
                 {{ p.varian.length }} Varian
@@ -99,9 +99,9 @@
                 <span class="produk-harga">{{ formatHargaProduk(p) }}</span>
                 <span
                   class="produk-stok"
-                  :class="{ low: hitungTotalStok(p) <= 5 && hitungTotalStok(p) > 0 }"
+                  :class="{ low: totalStok(p) <= 5 && totalStok(p) > 0 }"
                 >
-                  {{ hitungTotalStok(p) > 0 ? `Stok: ${hitungTotalStok(p)}` : 'Habis' }}
+                  {{ totalStok(p) > 0 ? `Stok: ${totalStok(p)}` : 'Habis' }}
                 </span>
               </div>
             </div>
@@ -132,7 +132,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { formatRupiah } from '@/lib/utils';
+import { totalStok, formatHargaProduk } from '@/lib/utils';
 import { useSeo } from '@/lib/useSeo'
 import { KATEGORI, labelKategori } from '@/lib/kategori';
 
@@ -159,25 +159,6 @@ const kategoriList = [
   ...KATEGORI
 ];
 
-// Helper: Hitung total stok dari kolom stok biasa atau array varian
-const hitungTotalStok = (p) => {
-  if (p.varian && p.varian.length > 0) {
-    return p.varian.reduce((acc, curr) => acc + (Number(curr.stok) || 0), 0);
-  }
-  return p.stok || 0;
-};
-
-// Helper: Format harga (Range atau Single)
-const formatHargaProduk = (p) => {
-  if (p.varian && p.varian.length > 0) {
-    const listHarga = p.varian.map(v => v.harga);
-    const min = Math.min(...listHarga);
-    const max = Math.max(...listHarga);
-    if (min === max) return formatRupiah(min);
-    return `${formatRupiah(min)} - ${formatRupiah(max)}`;
-  }
-  return formatRupiah(p.harga);
-};
 
 const fetchProduk = async () => {
   loadingProduk.value = true;

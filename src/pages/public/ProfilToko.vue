@@ -81,17 +81,17 @@
                 loading="lazy"
               />
               <span class="kat-badge">{{ labelKategori(p.kategori) }}</span>
-              <span v-if="p.stok === 0" class="habis-badge">Habis</span>
+              <span v-if="totalStok(p) === 0" class="habis-badge">Habis</span>
             </div>
             <div class="produk-info">
               <h3 class="produk-nama">{{ p.nama_produk }}</h3>
               <div class="produk-footer">
-                <span class="produk-harga">{{ formatRupiah(p.harga) }}</span>
+                <span class="produk-harga">{{ formatHargaProduk(p) }}</span>
                 <span
                   class="produk-stok"
-                  :class="{ low: p.stok <= 5 && p.stok > 0 }"
+                  :class="{ low: totalStok(p) <= 5 && totalStok(p) > 0 }"
                 >
-                  {{ p.stok > 0 ? `Stok: ${p.stok}` : 'Habis' }}
+                  {{ totalStok(p) > 0 ? `Stok: ${totalStok(p)}` : 'Habis' }}
                 </span>
               </div>
             </div>
@@ -112,7 +112,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { formatRupiah } from '@/lib/utils';
+import { totalStok, formatHargaProduk } from '@/lib/utils';
 import { useStoreSeo } from '@/lib/useSeo';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
 
