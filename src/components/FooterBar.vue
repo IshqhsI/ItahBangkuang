@@ -22,6 +22,7 @@
           <MessageSquareText :size="20" :stroke-width="2.25" />
           Sampaikan di sini
         </RouterLink>
+        <PasangAplikasi class="kaki-pasang" />
       </div>
     </div>
     <div class="kaki-bawah">
@@ -32,6 +33,7 @@
 
 <script setup>
 import { MessageSquareText } from 'lucide-vue-next';
+import PasangAplikasi from '@/components/PasangAplikasi.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
@@ -103,6 +105,9 @@ const tahun = new Date().getFullYear();
 .kaki-saran p {
   font-weight: 700;
   margin-bottom: 0.75rem;
+}
+.kaki-pasang {
+  margin-top: 1rem;
 }
 .kaki-bawah {
   border-top: 2px solid rgba(255, 255, 255, 0.25);
