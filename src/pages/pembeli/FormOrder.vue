@@ -272,8 +272,7 @@ const chatPenjual = () => {
     `Nama: ${form.value.nama_pemesan.trim()}`,
     `Alamat: ${form.value.alamat.trim()}`,
     'Mohon dikonfirmasi ya.',
-  ].join('
-');
+  ].join('\n');
   window.open(tautanWa(produk.value?.toko?.nomor_wa, pesan), '_blank');
 };
 
