@@ -104,38 +104,29 @@
             </RouterLink>
           </div>
 
-          <div v-if="loadingProduk" class="bento">
-            <div class="kerangka" style="border-radius: 28px; min-height: 280px"></div>
-            <div v-for="n in 4" :key="n" class="kerangka" style="aspect-ratio: 3 / 4; border-radius: 24px"></div>
+          <div v-if="loadingProduk" class="grid-produk">
+            <div v-for="n in 8" :key="n" class="kerangka" style="aspect-ratio: 4 / 5.6; border-radius: 20px"></div>
           </div>
-          <div v-else-if="sisaProduk.length" class="bento">
+          <div v-else-if="sisaProduk.length" class="grid-produk">
             <RouterLink
-              v-for="(p, i) in sisaProduk"
+              v-for="p in sisaProduk"
               :key="p.id"
               :to="`/produk/${p.id}`"
               class="kartu"
-              :class="{ 'kartu-besar': i === 0, 'kartu-habis': totalStok(p) === 0 }"
+              :class="{ 'kartu-habis': totalStok(p) === 0 }"
             >
               <span class="kartu-foto">
                 <img v-if="p.foto_url" :src="p.foto_url" :alt="p.nama_produk" loading="lazy" />
                 <Store v-else :size="36" :stroke-width="1.5" />
-                <span v-if="i === 0" class="tag tag-baru">Terbaru</span>
-                <span v-else-if="punyaVarian(p)" class="tag">{{ p.varian.length }} varian</span>
                 <span v-if="totalStok(p) === 0" class="habis">Habis</span>
-                <span class="panah" aria-hidden="true"><ArrowUpRight :size="20" :stroke-width="2" /></span>
+                <span v-else-if="totalStok(p) <= 5" class="tag-sisa">Sisa {{ totalStok(p) }}</span>
               </span>
               <span class="kartu-isi">
-                <span v-if="p.kategori" class="kartu-kat">{{ labelKategori(p.kategori) }}</span>
                 <span class="kartu-nama">{{ p.nama_produk }}</span>
+                <span class="kartu-harga">{{ formatHargaProduk(p) }}</span>
                 <span class="kartu-toko">
                   <Store :size="14" :stroke-width="2" />
-                  {{ p.toko?.nama_toko }}
-                </span>
-                <span class="kartu-kaki">
-                  <span class="kartu-harga">{{ formatHargaProduk(p) }}</span>
-                  <span v-if="totalStok(p) > 0" class="kartu-stok" :class="{ sedikit: totalStok(p) <= 5 }">
-                    {{ totalStok(p) <= 5 ? `Sisa ${totalStok(p)}` : `Stok ${totalStok(p)}` }}
-                  </span>
+                  <span class="kartu-toko-nama">{{ p.toko?.nama_toko }}</span>
                 </span>
               </span>
             </RouterLink>
@@ -243,13 +234,12 @@ import {
   ArrowRight,
   Check,
   MapPin,
-  ArrowUpRight,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import { formatHargaProduk, punyaVarian, totalStok } from '@/lib/utils';
+import { formatHargaProduk, totalStok } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { KATEGORI, labelKategori } from '@/lib/kategori';
+import { KATEGORI } from '@/lib/kategori';
 
 const authStore = useAuthStore();
 const loadingProduk = ref(true);
@@ -263,13 +253,13 @@ const kategori = KATEGORI;
 // Tiga produk terbaru yang punya foto, untuk etalase di bagian depan
 const etalase = computed(() => produkTerbaru.value.filter((p) => p.foto_url).slice(0, 3));
 
-// Produk di bagian "Baru dipajang": yang belum tampil di lengkung hero
+// Produk di bagian "Baru dipajang": yang belum tampil di panel hero
 const sisaProduk = computed(() =>
   produkTerbaru.value
     .filter((p) => !etalase.value.includes(p))
     // yang masih ada stok tampil duluan; yang habis di belakang
     .sort((a, b) => Number(totalStok(a) === 0) - Number(totalStok(b) === 0))
-    .slice(0, 5),
+    .slice(0, 8),
 );
 
 const caraKerja = [
@@ -312,7 +302,7 @@ onMounted(async () => {
     .select('*, toko(nama_toko, alamat, status)')
     .eq('status', 'AKTIF')
     .order('created_at', { ascending: false })
-    .limit(8);
+    .limit(11);
 
   produkTerbaru.value = produk?.filter((p) => p.toko?.status === 'AKTIF') ?? [];
   loadingProduk.value = false;
@@ -545,28 +535,17 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   grid-template-rows: auto 1fr 1fr;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: linear-gradient(160deg, #2a6354 0%, var(--sungai) 55%, var(--sungai-dalam) 100%);
-  border-radius: 40px 40px 28px 28px;
-  box-shadow: 0 2px 4px rgba(22, 58, 50, 0.12), 0 28px 60px rgba(22, 58, 50, 0.28);
-}
-.etalase::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border: 1.5px solid rgba(255, 255, 255, 0.16);
-  border-radius: 34px 34px 22px 22px;
-  pointer-events: none;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: var(--sungai);
+  border-radius: 30px;
+  box-shadow: 0 14px 32px rgba(22, 58, 50, 0.18);
 }
 @media (min-width: 980px) {
   .etalase {
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 56px 56px 32px 32px;
-  }
-  .etalase::before {
-    border-radius: 50px 50px 26px 26px;
+    gap: 0.7rem;
+    padding: 0.7rem;
+    border-radius: 34px;
   }
 }
 .etalase-lencana {
@@ -575,11 +554,12 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.4rem 1rem;
+  margin: 0.15rem 0 0.1rem 0.2rem;
+  padding: 0.28rem 0.8rem;
   background: var(--aprikot);
   border-radius: 999px;
   color: var(--sungai-dalam);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -599,7 +579,7 @@ onMounted(async () => {
   text-decoration: none;
   color: var(--ink);
   background: var(--sage);
-  border-radius: 999px 999px 22px 22px;
+  border-radius: 999px 999px 20px 20px;
   transition: transform 0.4s var(--ease-out);
 }
 .lengkung:nth-of-type(1) {
@@ -608,7 +588,7 @@ onMounted(async () => {
 }
 @media (min-width: 980px) {
   .lengkung:nth-of-type(1) {
-    min-height: 420px;
+    min-height: 400px;
   }
 }
 .lengkung:nth-of-type(2) {
@@ -670,8 +650,8 @@ onMounted(async () => {
 }
 @media (max-width: 560px) {
   .etalase {
-    padding: 0.75rem;
-    border-radius: 32px 32px 24px 24px;
+    padding: 0.5rem;
+    border-radius: 26px;
   }
   .lengkung:nth-of-type(1) {
     min-height: 300px;
@@ -819,40 +799,39 @@ onMounted(async () => {
   color: #8a3b30;
 }
 
-/* ── Kartu produk terbaru ──────────────────────────────────── */
-.bento {
+/* ── Kartu produk: pola marketplace (foto, nama, harga, toko) ── */
+.grid-produk {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
-.bento > :first-child {
-  grid-column: 1 / -1;
+@media (min-width: 720px) {
+  .grid-produk {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
 }
-@media (min-width: 900px) {
-  .bento {
+@media (min-width: 1024px) {
+  .grid-produk {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.25rem;
-  }
-  .bento > :first-child {
-    grid-column: span 2;
-    grid-row: span 2;
   }
 }
 .kartu {
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 26px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: var(--bayang);
   text-decoration: none;
   color: var(--ink);
+  box-shadow: 0 1px 2px rgba(29, 42, 38, 0.06);
   transition:
     transform 0.3s var(--ease-out),
     box-shadow 0.3s ease;
 }
 .kartu:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: var(--bayang-naik);
 }
 .kartu-foto {
@@ -870,54 +849,29 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.7s var(--ease-out);
+  transition: transform 0.6s var(--ease-out);
 }
 .kartu:hover .kartu-foto img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
-.tag {
+/* Satu sinyal saja, hanya bila berarti: stok tinggal sedikit */
+.tag-sisa {
   position: absolute;
-  top: 0.7rem;
-  left: 0.7rem;
-  padding: 0.25rem 0.7rem;
-  background: rgba(255, 255, 255, 0.94);
+  left: 0.6rem;
+  bottom: 0.6rem;
+  padding: 0.2rem 0.6rem;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 999px;
-  color: var(--sungai);
-  font-size: 0.76rem;
+  color: #a8481f;
+  font-size: 0.74rem;
   font-weight: 800;
-}
-.tag-baru {
-  background: var(--aprikot);
-  color: var(--sungai-dalam);
-}
-.panah {
-  position: absolute;
-  right: 0.7rem;
-  bottom: 0.7rem;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  background: #fff;
-  border-radius: 50%;
-  color: var(--sungai);
-  box-shadow: 0 4px 14px rgba(29, 42, 38, 0.18);
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.3s var(--ease-out);
-}
-.kartu:hover .panah {
-  background: var(--sungai);
-  color: #fff;
-  transform: translate(2px, -2px);
 }
 .habis {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(244, 246, 242, 0.72);
+  background: rgba(244, 246, 242, 0.75);
   color: var(--ink);
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -929,95 +883,52 @@ onMounted(async () => {
 .kartu-isi {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.95rem 1.05rem 1.15rem;
-}
-.kartu-kat {
-  align-self: flex-start;
-  padding: 0.15rem 0.6rem;
-  background: var(--sage);
-  border-radius: 999px;
-  color: var(--sungai);
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  gap: 0.2rem;
+  padding: 0.75rem 0.85rem 0.9rem;
 }
 .kartu-nama {
-  font-weight: 800;
-  font-size: 1.02rem;
-  line-height: 1.3;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 2.7em;
+}
+.kartu-harga {
+  margin-top: 0.15rem;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--sungai);
 }
 .kartu-toko {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.88rem;
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
   color: var(--ink-2);
+  min-width: 0;
+}
+.kartu-toko svg {
+  flex-shrink: 0;
+}
+.kartu-toko-nama {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.kartu-kaki {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.2rem 0.6rem;
-  margin-top: 0.45rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--sage);
-}
-.kartu-harga {
-  font-weight: 800;
-  color: var(--sungai);
-  font-size: 1.05rem;
-}
-.kartu-stok {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--ink-2);
-}
-.kartu-stok.sedikit {
-  color: #a8481f;
-}
-/* Sorotan besar */
-.kartu-besar .kartu-foto {
-  aspect-ratio: auto;
-  flex: 1;
-  min-height: 280px;
-}
-@media (min-width: 900px) {
-  .kartu-besar .kartu-foto {
-    min-height: 360px;
-  }
-}
-.kartu-besar .kartu-isi {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-.kartu-besar .kartu-nama {
-  font-family: var(--font-judul);
-  font-weight: 400;
-  font-size: 2.1rem;
-  line-height: 1.08;
-  color: var(--sungai);
-  letter-spacing: -0.01em;
-}
-.kartu-besar .kartu-harga {
-  font-size: 1.3rem;
-}
 @media (max-width: 560px) {
   .kartu-isi {
-    padding: 0.8rem 0.85rem 1rem;
+    padding: 0.65rem 0.7rem 0.8rem;
   }
   .kartu-nama {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
   }
-  .kartu-besar .kartu-nama {
-    font-size: 1.7rem;
+  .kartu-harga {
+    font-size: 1rem;
   }
 }
 .kosong-lembut {
