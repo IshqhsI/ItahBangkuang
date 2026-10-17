@@ -28,8 +28,8 @@
     <div v-else-if="orderSuccess" class="wadah sempit berhasil-wrap">
       <div class="papan papan-hijau papan-bingkai berhasil">
         <CircleCheck :size="48" :stroke-width="2.25" />
-        <h2 class="huruf-papan">Pesananmu terkirim!</h2>
-        <p>Penjual konfirmasi lewat WhatsApp. Mau menyapa duluan juga boleh.</p>
+        <h2 class="huruf-papan">Pesananmu tercatat</h2>
+        <p>Satu langkah lagi: kirim pesanmu ke penjual lewat WhatsApp supaya cepat dikonfirmasi.</p>
 
         <dl class="rincian">
           <div><dt>Produk</dt><dd>{{ produk.nama_produk }}<template v-if="varianNama"> ({{ varianNama }})</template></dd></div>
@@ -41,7 +41,7 @@
         <div class="berhasil-aksi">
           <button type="button" class="tombol tombol-kuning tombol-besar" @click="chatPenjual">
             <IkonWa :size="22" />
-            Sapa penjual di WA
+            Kirim pesanan ke WhatsApp penjual
           </button>
           <RouterLink to="/riwayat" class="tombol tombol-besar">Lihat Pesanan Saya</RouterLink>
         </div>
@@ -266,7 +266,14 @@ const clampJumlah = () => {
 const chatPenjual = () => {
   let detail = `*${produk.value.nama_produk}*`;
   if (varianNama.value) detail += ` (varian ${varianNama.value})`;
-  const pesan = `Halo, saya baru memesan ${detail} sebanyak ${form.value.jumlah} lewat ItahBangkuang. Mohon dikonfirmasi ya.`;
+  const pesan = [
+    `Halo, saya baru memesan ${detail} sebanyak ${form.value.jumlah} lewat ItahBangkuang.`,
+    `Total: ${formatRupiah(total.value)} (${form.value.metode === 'COD' ? 'COD' : 'transfer'}).`,
+    `Nama: ${form.value.nama_pemesan.trim()}`,
+    `Alamat: ${form.value.alamat.trim()}`,
+    'Mohon dikonfirmasi ya.',
+  ].join('
+');
   window.open(tautanWa(produk.value?.toko?.nomor_wa, pesan), '_blank');
 };
 

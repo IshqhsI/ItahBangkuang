@@ -228,7 +228,7 @@ const penjual = {
         'Isi nama, email, dan kata sandi, lalu lanjut ke info toko.',
         'Isi <strong>nama toko</strong>, <strong>nomor WhatsApp</strong>, dan <strong>alamat</strong>.',
       ],
-      catatan: { jenis: 'awas', teks: 'Pastikan <strong>nomor WhatsApp benar</strong>. Pembeli dan notifikasi pesanan masuk lewat nomor ini.' },
+      catatan: { jenis: 'awas', teks: 'Pastikan <strong>nomor WhatsApp benar</strong>. Pembeli menghubungimu lewat nomor ini. Pesanan baru juga muncul di halaman Pesanan, jadi cek rutin ya.' },
     },
     {
       judul: 'Tunggu admin memeriksa tokomu',

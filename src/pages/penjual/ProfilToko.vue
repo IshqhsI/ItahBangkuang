@@ -77,7 +77,7 @@
                 @input="rapikanWa"
               />
             </div>
-            <span id="wa-bantuan" class="bantuan">Pembeli dan notifikasi pesanan masuk lewat nomor ini. Tulis tanpa 0 di depan.</span>
+            <span id="wa-bantuan" class="bantuan">Pembeli menghubungimu lewat nomor ini. Pesanan baru juga muncul di halaman Pesanan. Tulis tanpa 0 di depan.</span>
           </div>
 
           <div class="isian">
