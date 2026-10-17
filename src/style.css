@@ -30,7 +30,7 @@
   --garis: #5a4f46;
   --garis-lembut: #e3dacd;
 
-  --font-papan: 'Instrument Serif', 'Atkinson Hyperlegible Next', sans-serif;
+  --font-papan: 'Besley', 'Atkinson Hyperlegible Next', sans-serif;
   --font-teks: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
 
   --sudut: 12px;
@@ -150,7 +150,7 @@ button {
    ============================================================ */
 .huruf-papan {
   font-family: var(--font-papan);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1.05;
   text-wrap: balance;
@@ -164,7 +164,7 @@ button {
 
 .judul-halaman {
   font-family: var(--font-papan);
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(1.6rem, 4.5vw, 2.4rem);
   line-height: 1.05;
   color: var(--tinta);

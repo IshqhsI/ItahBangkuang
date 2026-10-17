@@ -2,7 +2,7 @@
   <LayoutPublic>
     <!--
       THESIS: Beranda yang tenang dan resmi tapi hangat: lengkung pintu, hijau sungai, ruang napas. Menolak papan warung bersudut keras.
-      OWN-WORLD: kabut sage #F4F6F2, hijau sungai #1F4D42, aprikot #F4B98A hanya untuk sorotan kecil, huruf Instrument Serif + Hanken Grotesk, bingkai foto berbentuk lengkung, kartu putih bersudut 24-28px, bayangan sangat tipis.
+      OWN-WORLD: kabut sage #F4F6F2, hijau sungai #1F4D42, aprikot #F4B98A hanya untuk sorotan kecil, huruf Besley + Schibsted Grotesk, bingkai foto berbentuk lengkung, kartu putih bersudut 24-28px, bayangan sangat tipis.
       STORY: pembeli paham ini etalase tetangga satu kelurahan, lalu memilih belanja atau jualan.
       FIRST VIEWPORT: kiri tagline serif besar + dua tombol pil; kanan kartu pencarian hijau sage (cari, kategori, hitungan nyata).
       FORM: beranda marketplace yang tenang, pencarian di depan.
@@ -349,9 +349,10 @@ onMounted(async () => {
   --ink-2: #4a5a54;
   --bayang: 0 1px 2px rgba(29, 42, 38, 0.05), 0 8px 24px rgba(29, 42, 38, 0.06);
   --bayang-naik: 0 2px 4px rgba(29, 42, 38, 0.06), 0 16px 36px rgba(29, 42, 38, 0.1);
-  --font-judul: 'Instrument Serif', Georgia, serif;
-  --font-badan: 'Hanken Grotesk', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-judul: 'Besley', Georgia, serif;
+  --font-badan: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
   font-family: var(--font-badan);
+  font-variant-numeric: normal;
   color: var(--ink);
   background: var(--kabut);
 }
@@ -455,10 +456,10 @@ onMounted(async () => {
 .depan-judul {
   margin-top: 1.25rem;
   font-family: var(--font-judul);
-  font-weight: 400;
-  font-size: clamp(2.6rem, 7.4vw, 4.6rem);
-  line-height: 0.98;
-  letter-spacing: -0.015em;
+  font-weight: 600;
+  font-size: clamp(2.3rem, 6vw, 3.9rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   color: var(--sungai);
   text-wrap: balance;
 }
@@ -536,8 +537,8 @@ onMounted(async () => {
 }
 .cari-judul {
   font-family: var(--font-judul);
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
-  line-height: 1.05;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.1;
   letter-spacing: -0.01em;
 }
 .cari-form {
@@ -700,7 +701,7 @@ onMounted(async () => {
 }
 .judul-bagian {
   font-family: var(--font-judul);
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(2.2rem, 5.6vw, 3.4rem);
   line-height: 1.05;
   letter-spacing: -0.01em;
@@ -1051,7 +1052,7 @@ onMounted(async () => {
 }
 .ajakan-judul {
   font-family: var(--font-judul);
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(2.4rem, 6vw, 3.6rem);
   line-height: 1.02;
   max-width: 14ch;
