@@ -18,7 +18,7 @@ import FooterBar from '@/components/FooterBar.vue';
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--papan);
+  background: var(--kabut);
 }
 .isi-utama {
   flex: 1;

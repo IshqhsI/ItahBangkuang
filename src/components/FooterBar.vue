@@ -2,10 +2,11 @@
   <footer class="kaki">
     <div class="wadah kaki-dalam">
       <div class="kaki-merek">
-        <RouterLink to="/" class="kaki-papan" aria-label="ItahBangkuang — Beranda">
-          <span class="itah">Itah</span><span>Bangkuang</span>
+        <RouterLink to="/" class="kaki-merek-tautan" aria-label="ItahBangkuang — Beranda">
+          <span class="kaki-tanda" aria-hidden="true"><Store :size="16" :stroke-width="2.25" /></span>
+          <span class="kaki-nama"><span class="itah">Itah</span>Bangkuang</span>
         </RouterLink>
-        <p class="kaki-semboyan huruf-papan">Belanja dari tetangga, jualan untuk tetangga.</p>
+        <p class="kaki-semboyan">Belanja dari tetangga, jualan untuk tetangga.</p>
         <p class="kaki-ket">Pasar online warga Kelurahan Bangkuang.</p>
       </div>
 
@@ -17,22 +18,22 @@
       </nav>
 
       <div class="kaki-saran">
-        <p>Ada saran atau keluhan?</p>
-        <RouterLink to="/feedback" class="tombol tombol-kuning">
-          <MessageSquareText :size="20" :stroke-width="2.25" />
+        <p class="kaki-saran-judul">Ada saran atau keluhan?</p>
+        <RouterLink to="/feedback" class="tombol tombol-merah">
+          <MessageSquareText :size="20" :stroke-width="2" />
           Sampaikan di sini
         </RouterLink>
-        <PasangAplikasi class="kaki-pasang" />
+        <PasangAplikasi class="kaki-pasang" kelas="" />
       </div>
     </div>
     <div class="kaki-bawah">
-      <div class="wadah">© {{ tahun }} ItahBangkuang · Platform UMKM lokal</div>
+      <div class="wadah">© {{ tahun }} ItahBangkuang. Platform UMKM lokal.</div>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { MessageSquareText } from 'lucide-vue-next';
+import { MessageSquareText, Store } from 'lucide-vue-next';
 import PasangAplikasi from '@/components/PasangAplikasi.vue';
 import { useAuthStore } from '@/stores/auth';
 
@@ -42,77 +43,108 @@ const tahun = new Date().getFullYear();
 
 <style scoped>
 .kaki {
-  background: var(--biru);
-  color: #fff;
-  border-top: 3px solid var(--tinta);
-  box-shadow: inset 0 5px 0 var(--kuning);
+  margin-top: 1rem;
+  background: var(--sage);
+  color: var(--ink);
+  border-radius: 36px 36px 0 0;
+}
+@media (min-width: 768px) {
+  .kaki {
+    border-radius: 56px 56px 0 0;
+  }
 }
 .kaki-dalam {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.25rem;
-  padding-top: 3rem;
+  padding-top: 3.25rem;
   padding-bottom: 2.5rem;
 }
 @media (min-width: 820px) {
   .kaki-dalam {
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.5fr 0.8fr 1fr;
     gap: 3rem;
   }
 }
-.kaki-papan {
+.kaki-merek-tautan {
   display: inline-flex;
-  padding: 0.35rem 0.6rem 0.3rem;
-  background: var(--kuning);
-  color: var(--tinta);
-  border: var(--tebal) solid var(--garis);
-  border-radius: 6px;
-  font-family: var(--font-papan);
-  font-size: 1.1rem;
-  line-height: 1;
+  align-items: center;
+  gap: 0.6rem;
   text-decoration: none;
-  transform: rotate(-1.5deg);
 }
-.kaki-papan .itah {
-  color: var(--merah);
+.kaki-tanda {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 36px;
+  background: var(--sungai);
+  color: #fff;
+  border-radius: 999px 999px 9px 9px;
+}
+.kaki-nama {
+  font-family: var(--font-papan);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.015em;
+  color: var(--sungai-dalam);
+}
+.kaki-nama .itah {
+  color: var(--sungai-sedang);
 }
 .kaki-semboyan {
   margin-top: 1.1rem;
-  font-size: clamp(1.25rem, 3.4vw, 1.6rem);
-  color: var(--kuning);
-  max-width: 18ch;
+  font-family: var(--font-papan);
+  font-weight: 600;
+  font-size: clamp(1.4rem, 3.4vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--sungai);
+  max-width: 20ch;
 }
 .kaki-ket {
   margin-top: 0.7rem;
-  color: #dbe4f3;
+  color: var(--ink-2);
   max-width: 40ch;
 }
 .kaki-tautan {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
 }
 .kaki-tautan a {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
-  color: #fff;
-  font-weight: 700;
+  min-height: 42px;
+  color: var(--ink);
+  font-weight: 600;
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 .kaki-tautan a:hover {
+  color: var(--sungai-sedang);
   text-decoration: underline;
+  text-underline-offset: 0.25em;
 }
-.kaki-saran p {
+.kaki-saran {
+  padding: 1.4rem;
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: var(--bayang);
+}
+.kaki-saran-judul {
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+.kaki-saran :deep(.tombol) {
+  width: 100%;
 }
 .kaki-pasang {
-  margin-top: 1rem;
+  margin-top: 0.7rem;
 }
 .kaki-bawah {
-  border-top: 2px solid rgba(255, 255, 255, 0.25);
-  padding: 1rem 0;
+  border-top: 1px solid var(--sage-2);
+  padding: 1.1rem 0 1.4rem;
   font-size: 0.88rem;
-  color: #dbe4f3;
+  color: var(--ink-2);
 }
 </style>

@@ -2,7 +2,8 @@
   <header class="bilah" :class="`bilah-${area}`">
     <div class="bilah-dalam wadah">
       <RouterLink to="/" class="merek" aria-label="ItahBangkuang — Beranda">
-        <span class="merek-papan">
+        <span class="merek-tanda" aria-hidden="true"><Store :size="16" :stroke-width="2.25" /></span>
+        <span class="merek-teks">
           <span class="merek-itah">Itah</span><span class="merek-bangkuang">Bangkuang</span>
         </span>
         <span v-if="area !== 'publik'" class="merek-area">{{ judulArea }}</span>
@@ -17,15 +18,15 @@
       <div class="aksi">
         <template v-if="!authStore.user">
           <RouterLink to="/login" class="tombol tombol-kecil aksi-masuk">Masuk</RouterLink>
-          <RouterLink to="/register" class="tombol tombol-kecil tombol-kuning">Daftar</RouterLink>
+          <RouterLink to="/register" class="tombol tombol-kecil tombol-merah">Daftar</RouterLink>
         </template>
         <template v-else>
           <RouterLink
             v-if="tautanPeran"
             :to="tautanPeran.to"
-            class="tombol tombol-kecil tombol-kuning aksi-peran"
+            class="tombol tombol-kecil aksi-peran"
           >
-            <component :is="tautanPeran.icon" :size="18" :stroke-width="2.25" />
+            <component :is="tautanPeran.icon" :size="18" :stroke-width="2" />
             {{ tautanPeran.label }}
           </RouterLink>
           <button class="tombol tombol-kecil aksi-keluar" @click="handleLogout">
@@ -215,40 +216,30 @@ onUnmounted(() => {
 const handleLogout = () => {
   menuOpen.value = false;
   authStore.logout(router);
-  toast.success('Sudah keluar. Sampai ketemu lagi!');
+  toast.success('Sudah keluar. Sampai ketemu lagi.');
 };
 </script>
 
 <style scoped>
 .bilah {
-  --bilah-bg: var(--merah);
-  --bilah-list: var(--kuning);
   position: fixed;
   inset: 0 0 auto;
   z-index: 100;
   height: var(--nav-h);
-  background: var(--bilah-bg);
-  border-bottom: 3px solid var(--tinta);
-  box-shadow: inset 0 -5px 0 var(--bilah-list);
-  color: #fff;
+  background: rgba(244, 246, 242, 0.88);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid var(--sage-2);
+  color: var(--ink);
 }
-.bilah-toko {
-  --bilah-bg: var(--hijau);
-}
-.bilah-admin {
-  --bilah-bg: var(--biru);
-  --bilah-list: #fff;
-}
-
 .bilah-dalam {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding-bottom: 5px;
+  gap: 1.25rem;
 }
 
-/* Papan merek */
+/* Merek: lengkung hijau + nama */
 .merek {
   display: flex;
   align-items: center;
@@ -256,66 +247,73 @@ const handleLogout = () => {
   text-decoration: none;
   flex-shrink: 0;
 }
-.merek-papan {
-  display: inline-flex;
-  align-items: baseline;
-  padding: 0.3rem 0.55rem 0.25rem;
-  background: var(--kuning);
-  border: var(--tebal) solid var(--garis);
-  border-radius: 6px;
-  font-family: var(--font-papan);
-  font-size: 1.05rem;
-  line-height: 1;
-  transform: rotate(-1.5deg);
-  transform-origin: left center;
+.merek-tanda {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 36px;
+  background: var(--sungai);
+  color: #fff;
+  border-radius: 999px 999px 9px 9px;
   transition: transform 0.4s var(--ease-out);
 }
-.merek:hover .merek-papan {
-  transform: rotate(0deg);
+.merek:hover .merek-tanda {
+  transform: translateY(-2px);
+}
+.merek-teks {
+  font-family: var(--font-papan);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: -0.015em;
+  line-height: 1;
 }
 .merek-itah {
-  color: var(--merah);
+  color: var(--sungai-sedang);
 }
 .merek-bangkuang {
-  color: var(--tinta);
+  color: var(--sungai-dalam);
 }
 .merek-area {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #fff;
-  opacity: 0.92;
+  padding: 0.22rem 0.7rem;
+  background: var(--sage);
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.bilah-admin .merek-area {
+  background: var(--langit-muda);
+  color: var(--biru-tua);
 }
 
 /* Tautan desktop */
 .tautan {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   margin-left: 0.5rem;
 }
 .tautan a {
-  position: relative;
-  padding: 0.55rem 0.7rem;
-  color: #fff;
-  font-weight: 700;
+  padding: 0.55rem 1rem;
+  color: var(--ink-2);
+  font-weight: 600;
   font-size: 0.97rem;
   text-decoration: none;
-  border-radius: 6px;
-  transition: background-color 0.15s ease;
+  border-radius: 999px;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 .tautan a:hover {
-  background: rgba(0, 0, 0, 0.16);
+  background: var(--sage);
+  color: var(--sungai);
 }
-.tautan a.router-link-exact-active::after,
-.tautan a.router-link-active::after {
-  content: '';
-  position: absolute;
-  left: 0.7rem;
-  right: 0.7rem;
-  bottom: 0.15rem;
-  height: 4px;
-  background: var(--bilah-list);
-  border-radius: 2px;
+.tautan a.router-link-exact-active,
+.tautan a.router-link-active {
+  background: var(--sage);
+  color: var(--sungai);
+  font-weight: 700;
 }
 
 .aksi {
@@ -327,23 +325,32 @@ const handleLogout = () => {
 .aksi-masuk,
 .aksi-keluar {
   --t-bg: transparent;
-  --t-bg-hover: rgba(0, 0, 0, 0.18);
-  --t-fg: #fff;
-  border-color: #fff;
+  --t-bg-hover: var(--sage);
+  --t-fg: var(--sungai);
+}
+.aksi-peran {
+  --t-bg: var(--sage);
+  --t-bg-hover: var(--sage-2);
+  --t-fg: var(--sungai);
+  border-color: transparent;
 }
 
 .tombol-menu {
   display: none;
   margin-left: auto;
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   align-items: center;
   justify-content: center;
-  background: var(--kuning);
-  color: var(--tinta);
-  border: var(--tebal) solid var(--garis);
-  border-radius: 8px;
+  background: #fff;
+  color: var(--sungai);
+  border: 1.5px solid var(--sage-2);
+  border-radius: 50%;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.tombol-menu:hover {
+  background: var(--sage);
 }
 
 @media (max-width: 900px) {
@@ -361,7 +368,8 @@ const handleLogout = () => {
   position: fixed;
   inset: 0;
   z-index: 150;
-  background: rgba(20, 20, 20, 0.5);
+  background: rgba(22, 40, 35, 0.4);
+  backdrop-filter: blur(3px);
 }
 .laci {
   position: fixed;
@@ -372,39 +380,52 @@ const handleLogout = () => {
   width: min(86vw, 340px);
   display: flex;
   flex-direction: column;
-  background: var(--papan);
-  box-shadow: -3px 0 0 var(--tinta);
-  padding: 1.25rem 1rem 1.25rem;
+  background: var(--kabut);
+  border-radius: 28px 0 0 28px;
+  box-shadow: -16px 0 48px rgba(29, 42, 38, 0.2);
+  padding: 1.4rem 1rem 1.25rem;
   overflow-y: auto;
 }
 .laci-judul {
   font-family: var(--font-papan);
-  font-size: 1.2rem;
-  padding: 0.25rem 0.5rem 1rem;
-  border-bottom: var(--tebal) solid var(--garis);
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--sungai);
+  padding: 0.25rem 0.6rem 1rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid var(--sage-2);
 }
 .laci-tautan {
   display: flex;
   flex-direction: column;
+  gap: 0.15rem;
 }
 .laci-tautan a {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  min-height: 56px;
-  padding: 0 0.6rem;
-  color: var(--tinta);
-  font-weight: 700;
-  font-size: 1.08rem;
+  min-height: 54px;
+  padding: 0 0.9rem;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 1.05rem;
   text-decoration: none;
-  border-bottom: 1px solid var(--garis-lembut);
+  border-radius: 16px;
+  transition: background-color 0.2s ease;
+}
+.laci-tautan a svg {
+  color: var(--ink-2);
+}
+.laci-tautan a:hover {
+  background: var(--sage);
 }
 .laci-tautan a.router-link-exact-active {
-  color: var(--merah);
+  background: var(--sage);
+  color: var(--sungai);
+  font-weight: 700;
 }
 .laci-tautan a.router-link-exact-active svg {
-  color: var(--merah);
+  color: var(--sungai);
 }
 .laci-kaki {
   margin-top: auto;
@@ -413,14 +434,13 @@ const handleLogout = () => {
   flex-direction: column;
   gap: 0.6rem;
 }
-
 .laci-pasang :deep(.tombol) {
   width: 100%;
 }
 
 .laci-enter-active,
 .laci-leave-active {
-  transition: transform 0.32s var(--ease-out);
+  transition: transform 0.35s var(--ease-out);
 }
 .laci-enter-from,
 .laci-leave-to {
@@ -438,25 +458,40 @@ const handleLogout = () => {
     z-index: 90;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    background: var(--papan);
-    border-top: 3px solid var(--tinta);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--sage-2);
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -8px 28px rgba(29, 42, 38, 0.08);
     padding-bottom: env(safe-area-inset-bottom);
   }
   .tab-bawah a {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.15rem;
-    min-height: 62px;
-    color: var(--tinta-3);
-    font-size: 0.78rem;
+    gap: 0.2rem;
+    min-height: 64px;
+    color: var(--ink-2);
+    font-size: 0.76rem;
     font-weight: 700;
     text-decoration: none;
   }
   .tab-bawah a.router-link-active {
-    color: var(--hijau);
-    box-shadow: inset 0 4px 0 var(--hijau);
+    color: var(--sungai);
+  }
+  .tab-bawah a.router-link-active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 28px;
+    height: 3px;
+    transform: translateX(-50%);
+    background: var(--sungai);
+    border-radius: 0 0 3px 3px;
   }
 }
 </style>
