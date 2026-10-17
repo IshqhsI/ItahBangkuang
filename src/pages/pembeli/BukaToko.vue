@@ -6,7 +6,7 @@
 
     <div v-else-if="!success" class="papan formulir">
       <h1 class="judul-halaman">Buka toko</h1>
-      <p class="sub-halaman">Gratis. Toko diperiksa admin sebelum ditampilkan.</p>
+      <p class="sub-halaman">Gratis. Toko langsung tampil setelah didaftarkan.</p>
 
       <p class="pesan pesan-info catatan">
         <ShieldCheck :size="20" :stroke-width="2.5" />
@@ -88,7 +88,7 @@
     <div v-else class="papan papan-hijau papan-bingkai berhasil">
       <CircleCheck :size="48" :stroke-width="2.25" />
       <h2 class="huruf-papan">Toko berhasil didaftarkan</h2>
-      <p>Admin akan memeriksa toko terlebih dahulu. Sambil menunggu, Anda dapat melengkapi profil toko.</p>
+      <p>Toko Anda sudah tampil. Admin akan memverifikasinya kemudian. Sampai saat itu, Anda dapat menambahkan maksimal 5 produk.</p>
       <button type="button" class="tombol tombol-kuning tombol-besar" @click="keDashboard">
         Ke dashboard toko
         <ArrowRight :size="20" :stroke-width="2.5" />

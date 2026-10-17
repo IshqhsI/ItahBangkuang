@@ -148,7 +148,10 @@
                 <Store v-else :size="26" :stroke-width="1.75" />
               </span>
               <span class="tetangga-teks">
-                <span class="tetangga-nama">{{ t.nama_toko }}</span>
+                <span class="tetangga-nama">
+                  {{ t.nama_toko }}
+                  <BadgeCheck v-if="t.terverifikasi" class="tetangga-verif" :size="16" :stroke-width="2.25" aria-label="Terverifikasi" />
+                </span>
                 <span v-if="t.alamat" class="tetangga-alamat">
                   <MapPin :size="14" :stroke-width="2" />
                   {{ t.alamat }}
@@ -231,6 +234,7 @@ import {
   Check,
   MapPin,
   Search,
+  BadgeCheck,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { formatHargaProduk, totalStok, beragamkan } from '@/lib/utils';
@@ -276,7 +280,7 @@ const caraKerja = [
     peran: 'Saya penjual',
     icon: Store,
     langkah: [
-      { judul: 'Daftarkan toko', ket: 'Gratis. Admin memeriksa toko sebelum ditampilkan.' },
+      { judul: 'Daftarkan toko', ket: 'Gratis. Toko langsung tampil setelah mendaftar.' },
       { judul: 'Tambah produk', ket: 'Isi foto, nama, harga, dan stok. Gunakan varian untuk ukuran atau rasa berbeda.' },
       { judul: 'Terima pesanan', ket: 'Pesanan baru tampil di halaman Pesanan. Konfirmasi, lalu atur pengantaran.' },
     ],
@@ -319,7 +323,7 @@ onMounted(async () => {
         .eq('status', 'AKTIF'),
       supabase
         .from('toko')
-        .select('id, nama_toko, alamat, foto_toko')
+        .select('id, nama_toko, alamat, foto_toko, terverifikasi')
         .eq('status', 'AKTIF')
         .order('created_at', { ascending: false })
         .limit(6),
@@ -950,6 +954,12 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.tetangga-verif {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-left: 0.2rem;
+  color: var(--sungai-sedang);
 }
 .tetangga-alamat {
   display: flex;

@@ -61,6 +61,13 @@
         </section>
 
         <div class="wadah isi">
+          <p v-if="toko && !toko.terverifikasi" class="pesan pesan-info belum-verif">
+            <span>
+              Toko Anda sudah tampil. Admin akan memverifikasinya kemudian. Sampai saat itu,
+              Anda dapat menambahkan maksimal 5 produk.
+            </span>
+          </p>
+
           <!-- Yang perlu dikerjakan -->
           <RouterLink
             v-if="stats.orderMenunggu > 0"
@@ -308,6 +315,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.belum-verif {
+  margin-bottom: 1rem;
+}
 /* Status non-aktif */
 .status-wrap {
   padding-top: 2rem;

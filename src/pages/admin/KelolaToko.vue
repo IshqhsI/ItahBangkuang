@@ -3,7 +3,7 @@
     <section class="kepala">
       <div class="wadah">
         <h1 class="judul-halaman">Kelola toko</h1>
-        <p class="sub-halaman">Periksa toko baru, tolak yang tidak sesuai, dan blokir yang melanggar.</p>
+        <p class="sub-halaman">Verifikasi toko baru, tolak yang tidak sesuai, dan blokir yang melanggar.</p>
       </div>
     </section>
 
@@ -47,6 +47,13 @@
               <div class="info-nama">
                 <h2>{{ t.nama_toko }}</h2>
                 <span class="badge" :class="badgeClass(t.status)">{{ labelStatus(t.status) }}</span>
+                <span
+                  v-if="t.status === 'AKTIF'"
+                  class="badge"
+                  :class="t.terverifikasi ? 'badge-aktif' : 'badge-menunggu'"
+                >
+                  {{ t.terverifikasi ? 'Terverifikasi' : 'Belum diverifikasi' }}
+                </span>
               </div>
               <p class="info-ket"><MapPin :size="14" :stroke-width="2.5" /> {{ t.alamat }}</p>
               <p class="info-ket"><Phone :size="14" :stroke-width="2.5" /> +62{{ t.nomor_wa }}</p>
@@ -68,16 +75,45 @@
               </button>
               <button type="button" class="tombol tombol-kecil tombol-bahaya" :disabled="prosesId === t.id" @click="bukaTolak(t)">Tolak</button>
             </template>
-            <button
-              v-else-if="t.status === 'AKTIF'"
-              type="button"
-              class="tombol tombol-kecil tombol-bahaya"
-              :disabled="prosesId === t.id"
-              @click="mintaBlokir(t)"
-            >
-              <Ban :size="16" :stroke-width="2.5" />
-              Blokir
-            </button>
+            <template v-else-if="t.status === 'AKTIF'">
+              <button
+                v-if="!t.terverifikasi"
+                type="button"
+                class="tombol tombol-kecil tombol-hijau"
+                :disabled="prosesId === t.id"
+                @click="verifikasi(t)"
+              >
+                <Check :size="16" :stroke-width="3" />
+                {{ prosesId === t.id ? 'Menyimpan…' : 'Verifikasi' }}
+              </button>
+              <button
+                v-else
+                type="button"
+                class="tombol tombol-kecil"
+                :disabled="prosesId === t.id"
+                @click="cabutVerifikasi(t)"
+              >
+                Cabut verifikasi
+              </button>
+              <button
+                v-if="!t.terverifikasi"
+                type="button"
+                class="tombol tombol-kecil tombol-bahaya"
+                :disabled="prosesId === t.id"
+                @click="bukaTolak(t)"
+              >
+                Tolak
+              </button>
+              <button
+                type="button"
+                class="tombol tombol-kecil tombol-bahaya"
+                :disabled="prosesId === t.id"
+                @click="mintaBlokir(t)"
+              >
+                <Ban :size="16" :stroke-width="2.5" />
+                Blokir
+              </button>
+            </template>
             <button
               v-else-if="t.status === 'DITOLAK'"
               type="button"
@@ -176,6 +212,7 @@ const alasanTolak = ref('');
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
+  { val: 'BELUM_VERIF', label: 'Perlu diverifikasi' },
   { val: 'PENDING', label: 'Menunggu' },
   { val: 'AKTIF', label: 'Aktif' },
   { val: 'DITOLAK', label: 'Ditolak' },
@@ -186,11 +223,15 @@ const labelStatus = (s) =>
   ({ PENDING: 'Menunggu', AKTIF: 'Aktif', DITOLAK: 'Ditolak', DIBLOKIR: 'Diblokir' })[s] ?? s;
 const badgeClass = (s) => `badge-${(s ?? '').toLowerCase()}`;
 
+const cocokFilter = (t, val) =>
+  val === 'semua'
+    ? true
+    : val === 'BELUM_VERIF'
+      ? t.status === 'AKTIF' && !t.terverifikasi
+      : t.status === val;
+
 const tokoFiltered = computed(() => {
-  let list =
-    filterAktif.value === 'semua'
-      ? tokoList.value
-      : tokoList.value.filter((t) => t.status === filterAktif.value);
+  let list = tokoList.value.filter((t) => cocokFilter(t, filterAktif.value));
   const kw = keyword.value.trim().toLowerCase();
   if (kw) {
     list = list.filter(
@@ -200,8 +241,7 @@ const tokoFiltered = computed(() => {
   return list;
 });
 
-const hitungFilter = (val) =>
-  val === 'semua' ? tokoList.value.length : tokoList.value.filter((t) => t.status === val).length;
+const hitungFilter = (val) => tokoList.value.filter((t) => cocokFilter(t, val)).length;
 
 const ubah = async (t, perubahan, pesanSukses) => {
   prosesId.value = t.id;
@@ -216,7 +256,10 @@ const ubah = async (t, perubahan, pesanSukses) => {
   return true;
 };
 
-const accToko = (t) => ubah(t, { status: 'AKTIF', alasan_tolak: null }, `${t.nama_toko} disetujui.`);
+const accToko = (t) =>
+  ubah(t, { status: 'AKTIF', terverifikasi: true, alasan_tolak: null }, `${t.nama_toko} disetujui dan diverifikasi.`);
+const verifikasi = (t) => ubah(t, { terverifikasi: true }, `${t.nama_toko} terverifikasi.`);
+const cabutVerifikasi = (t) => ubah(t, { terverifikasi: false }, `Verifikasi ${t.nama_toko} dicabut.`);
 const updateStatus = (t, status) => ubah(t, { status }, `${t.nama_toko} ${status === 'AKTIF' ? 'diaktifkan lagi' : 'diperbarui'}.`);
 
 const bukaTolak = (t) => {
@@ -261,7 +304,8 @@ onMounted(async () => {
 
   const { data } = await supabase.from('toko').select('*').order('created_at', { ascending: false });
   tokoList.value = data ?? [];
-  if (tokoList.value.some((t) => t.status === 'PENDING')) filterAktif.value = 'PENDING';
+  if (tokoList.value.some((t) => cocokFilter(t, 'BELUM_VERIF'))) filterAktif.value = 'BELUM_VERIF';
+  else if (tokoList.value.some((t) => t.status === 'PENDING')) filterAktif.value = 'PENDING';
   loading.value = false;
 });
 </script>

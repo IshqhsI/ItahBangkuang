@@ -14,7 +14,7 @@
           <dd>{{ stats.tokoAktif }}</dd>
         </div>
         <div :class="{ perlu: stats.tokoPending > 0 }">
-          <dt>Menunggu diperiksa</dt>
+          <dt>Perlu diverifikasi</dt>
           <dd>{{ stats.tokoPending }}</dd>
         </div>
         <div>
@@ -31,7 +31,7 @@
         <!-- Toko menunggu -->
         <section aria-labelledby="h-toko">
           <div class="kepala-bagian">
-            <h2 id="h-toko" class="huruf-papan">Toko menunggu diperiksa</h2>
+            <h2 id="h-toko" class="huruf-papan">Toko perlu diverifikasi</h2>
             <RouterLink to="/admin/toko" class="lihat">Semua toko</RouterLink>
           </div>
 
@@ -48,7 +48,7 @@
               <div class="baris-aksi">
                 <button type="button" class="tombol tombol-kecil tombol-hijau" :disabled="prosesId === t.id" @click="accToko(t.id)">
                   <Check :size="16" :stroke-width="3" />
-                  {{ prosesId === t.id ? 'Menyimpan…' : 'Setujui' }}
+                  {{ prosesId === t.id ? 'Menyimpan…' : 'Verifikasi' }}
                 </button>
                 <button type="button" class="tombol tombol-kecil tombol-bahaya" :disabled="prosesId === t.id" @click="bukaTolak(t)">
                   Tolak
@@ -57,7 +57,7 @@
             </li>
           </ul>
 
-          <p v-else class="tenang"><CircleCheck :size="20" :stroke-width="2.5" /> Tidak ada toko yang menunggu.</p>
+          <p v-else class="tenang"><CircleCheck :size="20" :stroke-width="2.5" /> Semua toko sudah diverifikasi.</p>
         </section>
 
         <!-- Pesanan terbaru -->
@@ -200,15 +200,18 @@ const tandaiSemuaDibaca = async () => {
 
 const accToko = async (id) => {
   prosesId.value = id;
-  const { error } = await supabase.from('toko').update({ status: 'AKTIF' }).eq('id', id);
+  const { error } = await supabase
+    .from('toko')
+    .update({ status: 'AKTIF', terverifikasi: true })
+    .eq('id', id);
   if (error) {
     toast.error('Toko belum berhasil disetujui. Coba lagi.');
   } else {
     const t = tokoPending.value.find((x) => x.id === id);
     tokoPending.value = tokoPending.value.filter((x) => x.id !== id);
     stats.value.tokoPending--;
-    stats.value.tokoAktif++;
-    toast.success(`${t?.nama_toko ?? 'Toko'} disetujui.`);
+    if (t?.status !== 'AKTIF') stats.value.tokoAktif++; // toko baru sudah aktif sejak mendaftar
+    toast.success(`${t?.nama_toko ?? 'Toko'} diverifikasi.`);
   }
   prosesId.value = null;
 };
@@ -256,16 +259,18 @@ onMounted(async () => {
     return;
   }
 
+  // Toko yang perlu ditinjau: menunggu (lama) atau sudah aktif tetapi belum terverifikasi
+  const BELUM_VERIF = 'status.eq.PENDING,and(status.eq.AKTIF,terverifikasi.eq.false)';
   const hitung = (tabel, status) => {
     let q = supabase.from(tabel).select('*', { count: 'exact', head: true });
     return status ? q.eq('status', status) : q;
   };
 
   const [tokoRes, orderRes, a, b, c, d, feedbackRes] = await Promise.all([
-    supabase.from('toko').select('*').eq('status', 'PENDING').order('created_at', { ascending: true }).limit(10),
+    supabase.from('toko').select('*').or(BELUM_VERIF).order('created_at', { ascending: true }).limit(10),
     supabase.from('orders').select('*, produk(nama_produk), toko(nama_toko)').order('created_at', { ascending: false }).limit(8),
     hitung('toko', 'AKTIF'),
-    hitung('toko', 'PENDING'),
+    supabase.from('toko').select('*', { count: 'exact', head: true }).or(BELUM_VERIF),
     hitung('produk', 'AKTIF'),
     hitung('orders'),
     supabase.from('feedback').select('*, profiles(nama_lengkap)').eq('status', 'BARU').order('created_at', { ascending: false }).limit(20),

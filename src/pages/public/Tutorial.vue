@@ -231,13 +231,13 @@ const penjual = {
       catatan: { jenis: 'awas', teks: 'Pastikan <strong>nomor WhatsApp benar</strong>. Pembeli menghubungi Anda lewat nomor ini. Pesanan baru juga tampil di halaman Pesanan, sehingga perlu dicek secara rutin.' },
     },
     {
-      judul: 'Tunggu admin memeriksa toko Anda',
-      ket: 'Toko Anda belum tampil sebelum disetujui admin.',
+      judul: 'Toko langsung tampil',
+      ket: 'Toko Anda aktif begitu pendaftaran selesai.',
       butir: [
-        'Setelah daftar, status Anda <strong>Menunggu</strong>.',
-        'Setelah disetujui, statusnya <strong>Aktif</strong> dan Anda dapat menambahkan produk.',
+        'Setelah daftar, toko Anda langsung <strong>Aktif</strong> dan dapat menerima pesanan.',
+        'Admin memeriksa toko secara berkala. Toko yang sesuai mendapat lencana <strong>Terverifikasi</strong>.',
       ],
-      catatan: { jenis: 'info', teks: 'Biasanya kurang dari 24 jam. Kalau ditolak, alasannya akan dijelaskan dan Anda bisa memperbaikinya.' },
+      catatan: { jenis: 'info', teks: 'Sebelum terverifikasi, toko dapat menambahkan maksimal 5 produk. Toko yang melanggar ketentuan dapat diblokir admin.' },
     },
     {
       judul: 'Lengkapi profil toko Anda',
@@ -290,8 +290,8 @@ const penjual = {
   },
   tanya: [
     {
-      t: 'Berapa lama toko diperiksa?',
-      j: 'Biasanya kurang dari 24 jam. Admin memeriksa info toko Anda, lalu mengaktifkannya kalau sudah sesuai.',
+      t: 'Apa arti lencana Terverifikasi?',
+      j: 'Artinya admin sudah memeriksa toko Anda dan informasinya sesuai. Toko baru langsung tampil tanpa lencana, dan lencana diberikan setelah admin memeriksanya.',
     },
     {
       t: 'Tokoku ditolak. Apa yang harus dilakukan?',

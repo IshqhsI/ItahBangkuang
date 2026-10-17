@@ -432,7 +432,9 @@ const handleSubmit = async () => {
     const { error } = await supabase.from('produk').insert(payload);
 
     if (error) {
-      errorMsg.value = 'Produk belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
+      errorMsg.value = error.message?.includes('batas_produk_belum_verifikasi')
+        ? 'Toko yang belum diverifikasi dapat memiliki maksimal 5 produk. Hubungi admin untuk verifikasi toko.'
+        : 'Produk belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
       loading.value = false;
       return;
     }

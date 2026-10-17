@@ -93,7 +93,7 @@
         <template v-else>
           <div class="pesan pesan-info">
             <ShieldCheck :size="20" :stroke-width="2.5" />
-            <span>Admin akan memeriksa toko terlebih dahulu. Setelah disetujui, produk langsung ditampilkan.</span>
+            <span>Toko langsung tampil setelah didaftarkan. Admin memverifikasinya kemudian untuk memberi lencana Terverifikasi.</span>
           </div>
 
           <div class="isian">
@@ -302,7 +302,7 @@ const handleSubmit = async () => {
       toast.warning('Akun berhasil dibuat, tetapi info toko belum tersimpan. Lengkapi melalui menu Buka Toko.');
       router.push('/buka-toko');
     } else {
-      toast.success('Toko berhasil didaftarkan. Menunggu pemeriksaan admin.');
+      toast.success('Toko berhasil didaftarkan dan sudah tampil.');
       router.push('/toko/dashboard');
     }
   } else {

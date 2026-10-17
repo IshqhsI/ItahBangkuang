@@ -69,10 +69,11 @@
                     {{ toko.alamat }}
                   </span>
                 </span>
-                <span class="toko-terverifikasi">
+                <span v-if="toko?.terverifikasi" class="toko-terverifikasi">
                   <BadgeCheck :size="16" :stroke-width="2" />
                   Terverifikasi admin
                 </span>
+                <span v-else class="toko-terverifikasi toko-baru">Toko baru</span>
                 <ChevronRight :size="20" :stroke-width="2" class="toko-panah" />
               </RouterLink>
 
@@ -773,6 +774,10 @@ watch(() => route.params.id, fetchData);
   color: var(--sungai);
   font-size: 0.76rem;
   font-weight: 800;
+}
+.toko-baru {
+  background: var(--aprikot-muda);
+  color: #7a4a24;
 }
 .papan-toko:hover .toko-terverifikasi {
   background: #fff;
