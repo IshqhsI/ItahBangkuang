@@ -654,7 +654,19 @@ onMounted(async () => {
   font-size: 2.2rem;
   line-height: 1.05;
 }
+@media (max-width: 560px) {
+  .cari-chip {
+    min-height: 44px;
+  }
+}
 @media (max-width: 420px) {
+  .cari-kartu {
+    padding: 1.25rem 1rem 1.1rem;
+    border-radius: 28px;
+  }
+  .cari-form {
+    padding-left: 0.85rem;
+  }
   .cari-tombol {
     padding: 0 1.05rem;
   }
@@ -741,6 +753,12 @@ onMounted(async () => {
   .grid-produk {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.25rem;
+  }
+}
+/* Tablet: 3 kolom, tampilkan 6 supaya baris terakhir tidak bolong */
+@media (min-width: 720px) and (max-width: 1023px) {
+  .grid-produk > :nth-child(n + 7) {
+    display: none;
   }
 }
 .kartu {
