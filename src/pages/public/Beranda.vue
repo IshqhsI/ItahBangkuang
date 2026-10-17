@@ -1,190 +1,176 @@
 <template>
   <LayoutPublic>
-    <!-- PAPAN DEPAN -->
-    <section class="depan">
-      <div class="wadah depan-dalam">
-        <div class="depan-teks">
-          <div class="gantung gantung-kecil ayun">
-            <svg class="tali" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M14 26 L50 3 L86 26" />
-              <circle cx="50" cy="3" r="3" />
-            </svg>
-            <span class="papan-sapa">Uluh Itah Kia</span>
+    <!--
+      THESIS: Beranda yang tenang dan resmi tapi hangat: lengkung pintu, hijau sungai, ruang napas. Menolak papan warung bersudut keras.
+      OWN-WORLD: kabut sage #F4F6F2, hijau sungai #1F4D42, aprikot #F4B98A hanya untuk sorotan kecil, huruf Young Serif + Figtree, bingkai foto berbentuk lengkung, kartu putih bersudut 24-28px, bayangan sangat tipis.
+      STORY: pembeli paham ini etalase tetangga satu kelurahan, lalu memilih belanja atau jualan.
+      FIRST VIEWPORT: kiri tagline serif besar + dua tombol pil + hitungan nyata; kanan tiga lengkung foto produk asli terbaru.
+      FORM: lengkung pintu / etalase lembut.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
+    <div class="beranda">
+      <!-- DEPAN -->
+      <section class="depan">
+        <div class="wadah depan-dalam">
+          <div class="depan-teks">
+            <p class="sapa">Uluh Itah Kia</p>
+
+            <h1 class="depan-judul">
+              Bapapili mangat,
+              <span class="depan-judul-2">Bajualan mangat kia.</span>
+            </h1>
+
+            <p class="depan-sub">
+              Tempat warga <strong>Kelurahan Bangkuang</strong> berjualan dan berbelanja.
+              Pesan di sini, selesaikan lewat WhatsApp.
+            </p>
+
+            <div class="depan-aksi">
+              <RouterLink to="/produk" class="btn btn-utama">
+                <ShoppingBasket :size="22" :stroke-width="2" />
+                Mau belanja
+                <ArrowRight :size="20" :stroke-width="2" />
+              </RouterLink>
+              <RouterLink :to="bukaTokoDest" class="btn btn-lembut">
+                <Store :size="22" :stroke-width="2" />
+                Mau jualan
+              </RouterLink>
+            </div>
+
+            <p v-if="statsSiap" class="depan-hitung">
+              Sudah ada <strong>{{ stats.produk }}</strong> produk dari
+              <strong>{{ stats.toko }}</strong> toko tetangga.
+            </p>
           </div>
 
-          <h1 class="depan-judul huruf-papan">
-            <span class="baris-1 berbayang">Bapapili mangat,</span>
-            <span class="baris-2 berbayang">Bajualan mangat kia.</span>
-          </h1>
-
-          <p class="depan-sub">
-            Tempat warga <strong>Kelurahan Bangkuang</strong> berjualan dan
-            berbelanja. Pesan di sini, selesaikan lewat WhatsApp.
-          </p>
-
-          <div class="depan-pintu">
-            <RouterLink to="/produk" class="pintu papan papan-kuning papan-bingkai">
-              <ShoppingBasket class="pintu-ikon" :size="30" :stroke-width="2.25" />
-              <span class="pintu-teks">
-                <span class="pintu-judul">Mau belanja</span>
-                <span class="pintu-ket">Lihat dagangan tetangga</span>
-              </span>
-              <ArrowRight class="pintu-panah" :size="24" :stroke-width="2.5" />
-            </RouterLink>
-            <RouterLink :to="bukaTokoDest" class="pintu papan papan-bingkai">
-              <Store class="pintu-ikon" :size="30" :stroke-width="2.25" />
-              <span class="pintu-teks">
-                <span class="pintu-judul">Mau jualan</span>
-                <span class="pintu-ket">Buka toko, gratis</span>
-              </span>
-              <ArrowRight class="pintu-panah" :size="24" :stroke-width="2.5" />
-            </RouterLink>
-          </div>
-
-          <p v-if="statsSiap" class="depan-hitung">
-            Sudah ada <strong>{{ stats.produk }}</strong> produk dari
-            <strong>{{ stats.toko }}</strong> toko tetangga.
-          </p>
-        </div>
-
-        <!-- Etalase: produk asli terbaru -->
-        <div v-if="loadingProduk || etalase.length" class="etalase" aria-label="Baru dipajang">
-          <p class="etalase-judul">Baru dipajang</p>
-          <div class="etalase-deret">
+          <!-- Etalase: produk asli terbaru -->
+          <div v-if="loadingProduk || etalase.length" class="etalase" aria-label="Baru dipajang">
             <template v-if="loadingProduk">
-              <div v-for="n in 3" :key="n" class="etalase-papan kerangka-papan">
-                <div class="kerangka etalase-foto"></div>
-                <div class="kerangka" style="height: 1rem; width: 70%"></div>
-              </div>
+              <div v-for="n in 3" :key="n" class="lengkung-kerangka"></div>
             </template>
             <RouterLink
-              v-for="(p, i) in etalase"
+              v-for="p in etalase"
               v-else
               :key="p.id"
               :to="`/produk/${p.id}`"
-              class="etalase-papan"
-              :style="{ '--miring': ['-2deg', '1.5deg', '-1deg'][i] }"
+              class="lengkung"
             >
-              <img :src="p.foto_url" :alt="p.nama_produk" class="etalase-foto" />
-              <span class="etalase-nama">{{ p.nama_produk }}</span>
-              <span class="plat-harga">{{ formatHargaProduk(p) }}</span>
+              <img :src="p.foto_url" :alt="p.nama_produk" class="lengkung-foto" />
+              <span class="lengkung-nama">{{ p.nama_produk }}</span>
+              <span class="lengkung-harga">{{ formatHargaProduk(p) }}</span>
             </RouterLink>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- KATEGORI -->
-    <section class="bagian">
-      <div class="wadah">
-        <h2 class="judul-bagian huruf-papan">Mau cari apa?</h2>
-        <p class="sub-bagian">Tinggal pilih papannya.</p>
-        <div class="kategori-grid">
-          <RouterLink
-            v-for="kat in kategori"
-            :key="kat.slug"
-            :to="`/produk?kategori=${kat.slug}`"
-            class="papan-kategori papan papan-bingkai"
-            :class="`papan-${kat.warna}`"
-          >
-            <span class="kat-ikon"><component :is="kat.icon" :size="26" :stroke-width="2.25" /></span>
-            <span class="kat-nama">{{ kat.label }}</span>
-          </RouterLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- PRODUK TERBARU -->
-    <section class="bagian bagian-dinding">
-      <div class="wadah">
-        <div class="kepala-bagian">
-          <div>
-            <h2 class="judul-bagian huruf-papan">Baru dipajang</h2>
-            <p class="sub-bagian">Yang paling baru dari tetangga.</p>
-          </div>
-          <RouterLink to="/produk" class="tombol">
-            Lihat semua
-            <ArrowRight :size="20" :stroke-width="2.5" />
-          </RouterLink>
-        </div>
-
-        <div v-if="loadingProduk" class="grid-produk">
-          <div v-for="n in 8" :key="n" class="kerangka" style="aspect-ratio: 3 / 4"></div>
-        </div>
-        <div v-else-if="produkTerbaru.length" class="grid-produk">
-          <KartuProduk v-for="p in produkTerbaru" :key="p.id" :produk="p" />
-        </div>
-        <div v-else class="kosong">
-          <Store :size="40" :stroke-width="2" />
-          <h3>Etalase masih kosong</h3>
-          <p>Belum ada yang jualan. Jadi yang pertama?</p>
-          <RouterLink :to="bukaTokoDest" class="tombol tombol-merah">Buka toko gratis</RouterLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- CARA KERJA -->
-    <section class="bagian bagian-kuning">
-      <div class="wadah">
-        <h2 class="judul-bagian huruf-papan">Caranya gampang</h2>
-        <p class="sub-bagian">Tiga langkah. Cukup pakai HP.</p>
-        <div class="cara-grid">
-          <div v-for="c in caraKerja" :key="c.peran" class="papan cara-papan">
-            <h3 class="cara-peran">
-              <component :is="c.icon" :size="24" :stroke-width="2.25" />
-              {{ c.peran }}
-            </h3>
-            <ol class="cara-langkah">
-              <li v-for="(l, i) in c.langkah" :key="l.judul">
-                <span class="langkah-no huruf-papan">{{ i + 1 }}</span>
-                <span>
-                  <span class="langkah-judul">{{ l.judul }}</span>
-                  <span class="langkah-ket">{{ l.ket }}</span>
-                </span>
-              </li>
-            </ol>
+      <!-- KATEGORI -->
+      <section class="bagian">
+        <div class="wadah">
+          <h2 class="judul-bagian">Mau cari apa?</h2>
+          <p class="sub-bagian">Pilih jenisnya, nanti kami tunjukkan dagangan tetangga.</p>
+          <div class="kategori-grid">
+            <RouterLink
+              v-for="kat in kategori"
+              :key="kat.slug"
+              :to="`/produk?kategori=${kat.slug}`"
+              class="kat"
+            >
+              <span class="kat-ikon"><component :is="kat.icon" :size="26" :stroke-width="1.75" /></span>
+              <span class="kat-nama">{{ kat.label }}</span>
+            </RouterLink>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- AJAKAN PENJUAL -->
-    <section class="bagian bagian-hijau">
-      <div class="wadah ajakan">
-        <div class="ajakan-teks">
-          <h2 class="judul-bagian huruf-papan ajakan-judul berbayang">
-            Punya dagangan andalan?
-          </h2>
-          <p class="ajakan-ket">
-            Biasa jualan lewat status WA atau grup Facebook? Pajang juga di
-            sini, biar tetangga gampang nemu dan pesan. Gratis.
-          </p>
-          <ul class="ajakan-daftar">
-            <li v-for="u in untung" :key="u">
-              <Check :size="22" :stroke-width="3" />
-              {{ u }}
-            </li>
-          </ul>
-          <RouterLink :to="bukaTokoDest" class="tombol tombol-kuning tombol-besar">
-            Buka toko gratis
-            <ArrowRight :size="22" :stroke-width="2.5" />
-          </RouterLink>
+      <!-- PRODUK TERBARU -->
+      <section class="bagian bagian-sage">
+        <div class="wadah">
+          <div class="kepala-bagian">
+            <div>
+              <h2 class="judul-bagian">Baru dipajang</h2>
+              <p class="sub-bagian">Yang paling baru dari tetangga.</p>
+            </div>
+            <RouterLink to="/produk" class="btn btn-garis">
+              Lihat semua
+              <ArrowRight :size="20" :stroke-width="2" />
+            </RouterLink>
+          </div>
+
+          <div v-if="loadingProduk" class="grid-baru">
+            <div v-for="n in 8" :key="n" class="kerangka" style="aspect-ratio: 3 / 4; border-radius: 24px"></div>
+          </div>
+          <div v-else-if="produkTerbaru.length" class="grid-baru">
+            <RouterLink v-for="p in produkTerbaru" :key="p.id" :to="`/produk/${p.id}`" class="kartu">
+              <span class="kartu-foto">
+                <img v-if="p.foto_url" :src="p.foto_url" :alt="p.nama_produk" loading="lazy" />
+                <Store v-else :size="36" :stroke-width="1.5" />
+              </span>
+              <span class="kartu-isi">
+                <span class="kartu-nama">{{ p.nama_produk }}</span>
+                <span class="kartu-toko">{{ p.toko?.nama_toko }}</span>
+                <span class="kartu-harga">{{ formatHargaProduk(p) }}</span>
+              </span>
+            </RouterLink>
+          </div>
+          <div v-else class="kosong-lembut">
+            <Store :size="40" :stroke-width="1.5" />
+            <h3>Etalase masih kosong</h3>
+            <p>Belum ada yang jualan. Jadi yang pertama?</p>
+            <RouterLink :to="bukaTokoDest" class="btn btn-utama">Buka toko gratis</RouterLink>
+          </div>
         </div>
+      </section>
 
-        <div class="ajakan-papan" aria-hidden="true">
-          <div class="gantung ayun ayun-lambat">
-            <svg class="tali" viewBox="0 0 100 40" preserveAspectRatio="none">
-              <path d="M12 40 L50 4 L88 40" />
-              <circle cx="50" cy="4" r="3.5" />
-            </svg>
-            <div class="papan-buka">
-              <span class="buka-kata huruf-papan">BUKA</span>
-              <span class="buka-ket">Ayo mampir</span>
+      <!-- CARA KERJA -->
+      <section class="bagian">
+        <div class="wadah">
+          <h2 class="judul-bagian">Caranya gampang</h2>
+          <p class="sub-bagian">Tiga langkah. Cukup pakai HP.</p>
+          <div class="cara-grid">
+            <div v-for="c in caraKerja" :key="c.peran" class="cara">
+              <h3 class="cara-peran">
+                <span class="cara-ikon"><component :is="c.icon" :size="22" :stroke-width="1.75" /></span>
+                {{ c.peran }}
+              </h3>
+              <ol class="cara-langkah">
+                <li v-for="(l, i) in c.langkah" :key="l.judul">
+                  <span class="langkah-no">{{ i + 1 }}</span>
+                  <span>
+                    <span class="langkah-judul">{{ l.judul }}</span>
+                    <span class="langkah-ket">{{ l.ket }}</span>
+                  </span>
+                </li>
+              </ol>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- AJAKAN PENJUAL -->
+      <section class="ajakan-bagian">
+        <div class="wadah">
+          <div class="ajakan">
+            <div class="ajakan-teks">
+              <h2 class="ajakan-judul">Punya dagangan andalan?</h2>
+              <p class="ajakan-ket">
+                Biasa jualan lewat status WA atau grup Facebook? Pajang juga di sini,
+                biar tetangga gampang nemu dan pesan. Gratis.
+              </p>
+              <RouterLink :to="bukaTokoDest" class="btn btn-terang">
+                Buka toko gratis
+                <ArrowRight :size="20" :stroke-width="2" />
+              </RouterLink>
+            </div>
+            <ul class="ajakan-daftar">
+              <li v-for="u in untung" :key="u">
+                <span class="cek"><Check :size="18" :stroke-width="2.5" /></span>
+                {{ u }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
   </LayoutPublic>
 </template>
 
@@ -200,7 +186,6 @@ import { supabase } from '@/lib/supabase';
 import { formatHargaProduk } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import KartuProduk from '@/components/KartuProduk.vue';
 import { KATEGORI } from '@/lib/kategori';
 
 const authStore = useAuthStore();
@@ -210,7 +195,7 @@ const stats = ref({ produk: 0, toko: 0, alamat: 0 });
 const statsSiap = ref(false);
 const kategori = KATEGORI;
 
-// Tiga produk terbaru yang punya foto, untuk etalase di papan depan
+// Tiga produk terbaru yang punya foto, untuk etalase di bagian depan
 const etalase = computed(() => produkTerbaru.value.filter((p) => p.foto_url).slice(0, 3));
 
 const caraKerja = [
@@ -281,286 +266,260 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ── Papan gantung (tanda tangan visual) ───────────────────── */
-.gantung {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  transform-origin: 50% 0;
-}
-.tali {
-  width: 100%;
-  height: 26px;
-  overflow: visible;
-}
-.tali path {
-  fill: none;
-  stroke: var(--tinta);
-  stroke-width: 2.5;
-  vector-effect: non-scaling-stroke;
-}
-.tali circle {
-  fill: var(--tinta);
-}
-.ayun {
-  animation: ayun 2.2s var(--ease-out) 0.25s both;
-}
-.ayun-lambat {
-  animation-duration: 3s;
-}
-.gantung:hover {
-  animation: ayun-kecil 1.4s var(--ease-out);
-}
-@keyframes ayun {
-  0% { transform: rotate(9deg); }
-  22% { transform: rotate(-6deg); }
-  44% { transform: rotate(3.5deg); }
-  64% { transform: rotate(-1.8deg); }
-  82% { transform: rotate(0.8deg); }
-  100% { transform: rotate(0deg); }
-}
-@keyframes ayun-kecil {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(4deg); }
-  55% { transform: rotate(-2.5deg); }
-  80% { transform: rotate(1deg); }
-  100% { transform: rotate(0deg); }
+.beranda {
+  --kabut: #f4f6f2;
+  --sage: #e5ece6;
+  --sage-2: #cfdcd2;
+  --sungai: #1f4d42;
+  --sungai-dalam: #163a32;
+  --aprikot: #f4b98a;
+  --aprikot-muda: #fbe8d8;
+  --langit-muda: #e3edf2;
+  --mawar-muda: #f6e6e1;
+  --ink: #1d2a26;
+  --ink-2: #4a5a54;
+  --bayang: 0 1px 2px rgba(29, 42, 38, 0.05), 0 8px 24px rgba(29, 42, 38, 0.06);
+  --bayang-naik: 0 2px 4px rgba(29, 42, 38, 0.06), 0 16px 36px rgba(29, 42, 38, 0.1);
+  --font-judul: 'Young Serif', Georgia, serif;
+  --font-badan: 'Figtree', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  font-family: var(--font-badan);
+  color: var(--ink);
+  background: var(--kabut);
 }
 
-/* ── Papan depan ───────────────────────────────────────────── */
-.depan {
-  background: var(--merah);
+/* ── Tombol ────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 52px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  font-family: var(--font-badan);
+  font-size: 1.02rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s var(--ease-out);
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn-utama {
+  background: var(--sungai);
   color: #fff;
-  border-bottom: 3px solid var(--tinta);
-  padding: 1.5rem 0 3.25rem;
-  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(31, 77, 66, 0.22);
+}
+.btn-utama:hover {
+  background: var(--sungai-dalam);
+  box-shadow: 0 10px 24px rgba(31, 77, 66, 0.28);
+}
+.btn-lembut {
+  background: #fff;
+  color: var(--sungai);
+  border-color: var(--sage-2);
+}
+.btn-lembut:hover {
+  background: var(--sage);
+}
+.btn-garis {
+  background: transparent;
+  color: var(--sungai);
+  border-color: var(--sungai);
+}
+.btn-garis:hover {
+  background: #fff;
+}
+.btn-terang {
+  background: var(--aprikot);
+  color: var(--sungai-dalam);
+}
+.btn-terang:hover {
+  background: #f7c6a0;
+}
+
+/* ── Depan ─────────────────────────────────────────────────── */
+.depan {
+  padding: 2.5rem 0 3.5rem;
+  background:
+    radial-gradient(900px 420px at 88% -10%, var(--sage) 0%, transparent 70%),
+    var(--kabut);
 }
 .depan-dalam {
   display: grid;
-  gap: 2.5rem;
+  gap: 2.75rem;
   align-items: center;
 }
 @media (min-width: 980px) {
   .depan {
-    padding: 2rem 0 4.5rem;
+    padding: 4rem 0 5.5rem;
   }
   .depan-dalam {
-    grid-template-columns: 1.25fr 0.75fr;
-    gap: 3rem;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 4rem;
   }
 }
-
-.gantung-kecil .tali {
-  width: 120px;
-}
-.papan-sapa {
+.sapa {
   display: inline-block;
-  padding: 0.45rem 0.85rem 0.4rem;
-  background: var(--kuning);
-  color: var(--tinta);
-  border: var(--tebal) solid var(--garis);
-  border-radius: 6px;
-  font-family: var(--font-papan);
-  font-size: 0.95rem;
-  line-height: 1;
+  padding: 0.4rem 1rem;
+  background: var(--aprikot-muda);
+  color: #7a4a24;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
-
 .depan-judul {
   margin-top: 1.25rem;
-  font-size: clamp(2.35rem, 8.4vw, 5rem);
-  line-height: 1.02;
+  font-family: var(--font-judul);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 7vw, 4.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--sungai);
+  text-wrap: balance;
 }
-.depan-judul span {
+.depan-judul-2 {
   display: block;
-}
-.baris-1 {
-  color: #fff;
-}
-.baris-2 {
-  color: var(--kuning);
+  color: var(--ink);
 }
 .depan-sub {
   margin-top: 1.4rem;
-  font-size: 1.12rem;
-  line-height: 1.6;
-  max-width: 50ch;
-  color: #fff;
+  max-width: 48ch;
+  font-size: 1.14rem;
+  line-height: 1.65;
+  color: var(--ink-2);
 }
-
-.depan-pintu {
-  display: grid;
-  gap: 0.85rem;
-  margin-top: 1.9rem;
-  max-width: 640px;
+.depan-sub strong {
+  color: var(--ink);
 }
-@media (min-width: 620px) {
-  .depan-pintu {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-.pintu {
+.depan-aksi {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 0.85rem;
-  padding: 1.05rem 1.1rem;
-  color: var(--tinta);
-  text-decoration: none;
-  transition: transform 0.3s var(--ease-out);
+  margin-top: 2rem;
 }
-.pintu:hover {
-  transform: translateY(-3px) rotate(-0.6deg);
-}
-.pintu-ikon {
-  flex-shrink: 0;
-}
-.pintu-teks {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  flex: 1;
-  min-width: 0;
-}
-.pintu-judul {
-  font-family: var(--font-papan);
-  font-size: 1.08rem;
-  line-height: 1.1;
-}
-.pintu-ket {
-  font-size: 0.9rem;
-  color: var(--tinta-2);
-  line-height: 1.35;
-}
-.papan-kuning .pintu-ket {
-  color: #3a2f00;
-}
-.pintu-panah {
-  flex-shrink: 0;
-  transition: transform 0.3s var(--ease-out);
-}
-.pintu:hover .pintu-panah {
-  transform: translateX(4px);
-}
-
 .depan-hitung {
-  margin-top: 1.4rem;
+  margin-top: 1.5rem;
+  color: var(--ink-2);
   font-size: 1rem;
-  color: #ffe9ea;
 }
 .depan-hitung strong {
-  color: #fff;
-  font-size: 1.08rem;
+  color: var(--sungai);
+  font-size: 1.1rem;
 }
 
-/* Etalase */
-.etalase-judul {
-  font-family: var(--font-papan);
-  font-size: 1rem;
-  color: var(--kuning);
-  margin-bottom: 0.9rem;
-}
-.etalase-deret {
+/* Lengkung pintu: foto produk asli */
+.etalase {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
+  align-items: end;
 }
 @media (min-width: 980px) {
-  .etalase-deret {
-    grid-template-columns: 1fr 1fr;
+  .etalase {
     gap: 1rem;
   }
-  .etalase-papan:first-child {
-    grid-column: 1 / -1;
-  }
 }
-.etalase-papan {
+.lengkung {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem 0.5rem 0.75rem;
-  background: var(--papan);
-  color: var(--tinta);
-  border: var(--tebal) solid var(--garis);
-  border-radius: var(--sudut);
+  gap: 0.3rem;
   text-decoration: none;
-  transform: rotate(var(--miring, 0deg));
-  transition: transform 0.35s var(--ease-out);
+  color: var(--ink);
+  transition: transform 0.4s var(--ease-out);
 }
-.etalase-papan:hover {
-  transform: rotate(0deg) translateY(-4px);
+.lengkung:nth-child(1) .lengkung-foto {
+  aspect-ratio: 3 / 5.2;
 }
-.etalase-foto {
+.lengkung:nth-child(2) .lengkung-foto {
+  aspect-ratio: 3 / 4.2;
+}
+.lengkung:nth-child(3) .lengkung-foto {
+  aspect-ratio: 3 / 4.7;
+}
+.lengkung:hover {
+  transform: translateY(-6px);
+}
+.lengkung-foto {
   width: 100%;
-  aspect-ratio: 4 / 3;
   object-fit: cover;
-  border: 2px solid var(--tinta);
-  border-radius: 4px;
-  background: var(--dinding);
+  border-radius: 999px 999px 22px 22px;
+  background: var(--sage);
+  box-shadow: var(--bayang);
+  margin-bottom: 0.4rem;
 }
-.etalase-papan:first-child .etalase-foto {
-  aspect-ratio: 16 / 10;
-}
-.etalase-nama {
+.lengkung-nama {
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   line-height: 1.25;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.etalase-papan .plat-harga {
-  align-self: flex-start;
-  font-size: 0.85rem;
+.lengkung-harga {
+  font-size: 0.9rem;
+  color: var(--sungai);
+  font-weight: 700;
+}
+.lengkung-kerangka {
+  aspect-ratio: 3 / 4.6;
+  border-radius: 999px 999px 22px 22px;
+  background: linear-gradient(100deg, var(--sage) 30%, #f0f4f0 50%, var(--sage) 70%);
+  background-size: 200% 100%;
+  animation: kilau 1.6s ease-in-out infinite;
+}
+@keyframes kilau {
+  to {
+    background-position: -200% 0;
+  }
 }
 @media (max-width: 560px) {
-  .etalase-papan {
-    padding: 0.35rem 0.35rem 0.55rem;
-  }
-  .etalase-nama {
+  .lengkung-nama {
     font-size: 0.8rem;
   }
-  .etalase-papan .plat-harga {
-    font-size: 0.72rem;
+  .lengkung-harga {
+    font-size: 0.78rem;
   }
-}
-.kerangka-papan {
-  transform: none;
 }
 
 /* ── Bagian umum ───────────────────────────────────────────── */
 .bagian {
   padding: 3.5rem 0;
-  background: var(--papan);
+  background: var(--kabut);
+}
+.bagian-sage {
+  background: var(--sage);
+  border-radius: 36px;
 }
 @media (min-width: 768px) {
   .bagian {
     padding: 5rem 0;
   }
-}
-.bagian-dinding {
-  background: var(--dinding);
-  border-top: 3px solid var(--tinta);
-}
-.bagian-kuning {
-  background: var(--kuning);
-  border-top: 3px solid var(--tinta);
-}
-.bagian-hijau {
-  background: var(--hijau);
-  color: #fff;
-  border-top: 3px solid var(--tinta);
+  .bagian-sage {
+    border-radius: 56px;
+  }
 }
 .judul-bagian {
-  font-size: clamp(1.6rem, 4.6vw, 2.5rem);
+  font-family: var(--font-judul);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 4.4vw, 2.5rem);
+  line-height: 1.15;
+  color: var(--sungai);
 }
 .sub-bagian {
-  margin-top: 0.45rem;
-  color: var(--tinta-2);
-  font-size: 1.05rem;
-}
-.bagian-kuning .sub-bagian {
-  color: #3a2f00;
+  margin-top: 0.5rem;
+  color: var(--ink-2);
+  font-size: 1.06rem;
 }
 .kepala-bagian {
   display: flex;
@@ -568,63 +527,158 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
 }
 
-/* Kategori */
+/* ── Kategori ──────────────────────────────────────────────── */
 .kategori-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
-  margin-top: 1.75rem;
+  margin-top: 2rem;
 }
 @media (min-width: 720px) {
   .kategori-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
+    gap: 1.1rem;
   }
 }
-.papan-kategori {
+.kat {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  min-height: 128px;
-  padding: 1.1rem 1rem 1rem;
+  gap: 1.1rem;
+  min-height: 132px;
+  padding: 1.15rem;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: var(--bayang);
   text-decoration: none;
-  transform-origin: 50% 0;
-  transition: transform 0.4s var(--ease-out);
+  color: var(--ink);
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s ease;
 }
-.papan-kategori:nth-child(odd) {
-  transform: rotate(-0.8deg);
-}
-.papan-kategori:nth-child(even) {
-  transform: rotate(0.6deg);
-}
-.papan-kategori:hover {
-  transform: rotate(0deg) translateY(-3px);
+.kat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--bayang-naik);
 }
 .kat-ikon {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  background: var(--papan);
-  color: var(--tinta);
-  border: var(--tebal) solid var(--garis);
-  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: var(--sage);
+  color: var(--sungai);
+}
+.kat:nth-child(4n + 2) .kat-ikon {
+  background: var(--langit-muda);
+}
+.kat:nth-child(4n + 3) .kat-ikon {
+  background: var(--aprikot-muda);
+  color: #8a4f22;
+}
+.kat:nth-child(4n) .kat-ikon {
+  background: var(--mawar-muda);
+  color: #8a3b30;
 }
 .kat-nama {
-  font-family: var(--font-papan);
-  font-size: 1rem;
-  line-height: 1.15;
   margin-top: auto;
+  font-weight: 700;
+  font-size: 1.02rem;
+  line-height: 1.25;
 }
 
-/* Cara kerja */
+/* ── Kartu produk terbaru ──────────────────────────────────── */
+.grid-baru {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+@media (min-width: 720px) {
+  .grid-baru {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+.kartu {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--bayang);
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s ease;
+}
+.kartu:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--bayang-naik);
+}
+.kartu-foto {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: var(--sage);
+  color: var(--sungai);
+  overflow: hidden;
+}
+.kartu-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out);
+}
+.kartu:hover .kartu-foto img {
+  transform: scale(1.04);
+}
+.kartu-isi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem 1.1rem;
+}
+.kartu-nama {
+  font-weight: 700;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kartu-toko {
+  font-size: 0.88rem;
+  color: var(--ink-2);
+}
+.kartu-harga {
+  margin-top: 0.35rem;
+  font-weight: 800;
+  color: var(--sungai);
+  font-size: 1.05rem;
+}
+.kosong-lembut {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  background: #fff;
+  border-radius: 28px;
+  color: var(--sungai);
+}
+.kosong-lembut p {
+  color: var(--ink-2);
+  margin-bottom: 0.6rem;
+}
+
+/* ── Cara kerja ────────────────────────────────────────────── */
 .cara-grid {
   display: grid;
-  gap: 1rem;
-  margin-top: 1.75rem;
+  gap: 1.1rem;
+  margin-top: 2rem;
 }
 @media (min-width: 820px) {
   .cara-grid {
@@ -632,138 +686,156 @@ onMounted(async () => {
     gap: 1.5rem;
   }
 }
-.cara-papan {
-  padding: 1.5rem 1.4rem;
+.cara {
+  padding: 1.75rem 1.5rem;
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: var(--bayang);
 }
 .cara-peran {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-family: var(--font-papan);
+  gap: 0.75rem;
+  font-family: var(--font-judul);
   font-weight: 400;
-  font-size: 1.2rem;
-  padding-bottom: 1rem;
-  border-bottom: var(--tebal) solid var(--garis);
+  font-size: 1.3rem;
+  color: var(--sungai);
+}
+.cara-ikon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--sage);
 }
 .cara-langkah {
   list-style: none;
   display: flex;
   flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1.4rem;
 }
 .cara-langkah li {
   display: flex;
   gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--garis-lembut);
-}
-.cara-langkah li:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
 }
 .langkah-no {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  background: var(--merah);
-  color: #fff;
-  border: var(--tebal) solid var(--garis);
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  font-size: 1.05rem;
+  background: var(--aprikot-muda);
+  color: #7a4a24;
+  font-weight: 800;
+  font-size: 0.95rem;
 }
 .langkah-judul {
   display: block;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.04rem;
 }
 .langkah-ket {
   display: block;
-  color: var(--tinta-2);
   margin-top: 0.1rem;
+  color: var(--ink-2);
 }
 
-/* Ajakan penjual */
+/* ── Ajakan penjual ────────────────────────────────────────── */
+.ajakan-bagian {
+  padding: 1rem 0 4rem;
+  background: var(--kabut);
+}
 .ajakan {
   display: grid;
-  gap: 2.5rem;
+  gap: 2rem;
   align-items: center;
+  padding: 2.25rem 1.5rem;
+  background: var(--sungai);
+  color: #fff;
+  border-radius: 36px;
 }
 @media (min-width: 900px) {
   .ajakan {
-    grid-template-columns: 1.3fr 0.7fr;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 3rem;
+    padding: 3.5rem;
+    border-radius: 48px;
   }
 }
 .ajakan-judul {
-  color: #fff;
+  font-family: var(--font-judul);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 4.6vw, 2.6rem);
+  line-height: 1.15;
   max-width: 16ch;
 }
 .ajakan-ket {
-  margin-top: 1rem;
+  margin: 1rem 0 1.75rem;
+  max-width: 50ch;
   font-size: 1.08rem;
-  max-width: 52ch;
-  color: #e6f4ea;
+  line-height: 1.65;
+  color: #d5e5dc;
 }
 .ajakan-daftar {
   list-style: none;
-  margin: 1.5rem 0 2rem;
   display: grid;
-  gap: 0.65rem;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
 }
 .ajakan-daftar li {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  font-weight: 700;
-  font-size: 1.05rem;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  font-weight: 600;
+  font-size: 1.03rem;
 }
-.ajakan-daftar svg {
+.cek {
   flex-shrink: 0;
-  color: var(--kuning);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--aprikot);
+  color: var(--sungai-dalam);
 }
 
-.ajakan-papan {
-  display: flex;
-  justify-content: center;
-}
-.ajakan-papan .gantung {
-  width: min(300px, 80vw);
-}
-.ajakan-papan .tali {
-  height: 44px;
-  width: 70%;
-}
-.papan-buka {
-  width: 100%;
-  padding: 1.5rem 1rem 1.25rem;
-  background: var(--papan);
-  color: var(--merah);
-  border: 3px solid var(--tinta);
-  border-radius: 10px;
-  box-shadow:
-    inset 0 0 0 6px var(--papan),
-    inset 0 0 0 9px var(--merah),
-    0 18px 30px rgba(0, 0, 0, 0.25);
-  text-align: center;
-}
-.buka-kata {
-  display: block;
-  font-size: clamp(3.2rem, 9vw, 4.6rem);
-  line-height: 1;
-}
-.buka-ket {
-  display: block;
-  margin-top: 0.5rem;
-  color: var(--tinta);
-  font-weight: 700;
-  font-size: 1rem;
-}
-@media (max-width: 899px) {
-  .ajakan-papan {
-    order: -1;
+/* ── Gerak halus saat muncul ───────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .depan-teks > *,
+  .etalase {
+    animation: muncul 0.8s var(--ease-out) both;
   }
-  .ajakan-papan .gantung {
-    width: 220px;
+  .depan-teks > :nth-child(2) {
+    animation-delay: 0.06s;
+  }
+  .depan-teks > :nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  .depan-teks > :nth-child(4) {
+    animation-delay: 0.18s;
+  }
+  .depan-teks > :nth-child(5) {
+    animation-delay: 0.24s;
+  }
+  .etalase {
+    animation-delay: 0.2s;
+  }
+}
+@keyframes muncul {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 </style>
