@@ -537,9 +537,9 @@ onMounted(async () => {
   grid-template-rows: auto 1fr 1fr;
   gap: 0.6rem;
   padding: 0.6rem;
-  background: var(--sungai);
+  background: linear-gradient(160deg, #7db5a0 0%, #5f9d86 100%);
   border-radius: 30px;
-  box-shadow: 0 14px 32px rgba(22, 58, 50, 0.18);
+  box-shadow: 0 14px 32px rgba(63, 127, 108, 0.22);
 }
 @media (min-width: 980px) {
   .etalase {
@@ -1112,7 +1112,7 @@ onMounted(async () => {
   gap: 2rem;
   align-items: center;
   padding: 2.25rem 1.5rem;
-  background: var(--sungai);
+  background: #3f7f6c;
   color: #fff;
   border-radius: 36px;
 }
@@ -1136,7 +1136,7 @@ onMounted(async () => {
   max-width: 50ch;
   font-size: 1.08rem;
   line-height: 1.65;
-  color: #d5e5dc;
+  color: #ecf5ef;
 }
 .ajakan-daftar {
   list-style: none;
