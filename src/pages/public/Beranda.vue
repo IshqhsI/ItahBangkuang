@@ -114,16 +114,29 @@
               :key="p.id"
               :to="`/produk/${p.id}`"
               class="kartu"
-              :class="{ 'kartu-besar': i === 0 }"
+              :class="{ 'kartu-besar': i === 0, 'kartu-habis': totalStok(p) === 0 }"
             >
               <span class="kartu-foto">
                 <img v-if="p.foto_url" :src="p.foto_url" :alt="p.nama_produk" loading="lazy" />
                 <Store v-else :size="36" :stroke-width="1.5" />
+                <span v-if="i === 0" class="tag tag-baru">Terbaru</span>
+                <span v-else-if="punyaVarian(p)" class="tag">{{ p.varian.length }} varian</span>
+                <span v-if="totalStok(p) === 0" class="habis">Habis</span>
+                <span class="panah" aria-hidden="true"><ArrowUpRight :size="20" :stroke-width="2" /></span>
               </span>
               <span class="kartu-isi">
+                <span v-if="p.kategori" class="kartu-kat">{{ labelKategori(p.kategori) }}</span>
                 <span class="kartu-nama">{{ p.nama_produk }}</span>
-                <span class="kartu-toko">{{ p.toko?.nama_toko }}</span>
-                <span class="kartu-harga">{{ formatHargaProduk(p) }}</span>
+                <span class="kartu-toko">
+                  <Store :size="14" :stroke-width="2" />
+                  {{ p.toko?.nama_toko }}
+                </span>
+                <span class="kartu-kaki">
+                  <span class="kartu-harga">{{ formatHargaProduk(p) }}</span>
+                  <span v-if="totalStok(p) > 0" class="kartu-stok" :class="{ sedikit: totalStok(p) <= 5 }">
+                    {{ totalStok(p) <= 5 ? `Sisa ${totalStok(p)}` : `Stok ${totalStok(p)}` }}
+                  </span>
+                </span>
               </span>
             </RouterLink>
           </div>
@@ -230,12 +243,13 @@ import {
   ArrowRight,
   Check,
   MapPin,
+  ArrowUpRight,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import { formatHargaProduk } from '@/lib/utils';
+import { formatHargaProduk, punyaVarian, totalStok } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
-import { KATEGORI } from '@/lib/kategori';
+import { KATEGORI, labelKategori } from '@/lib/kategori';
 
 const authStore = useAuthStore();
 const loadingProduk = ref(true);
@@ -251,7 +265,11 @@ const etalase = computed(() => produkTerbaru.value.filter((p) => p.foto_url).sli
 
 // Produk di bagian "Baru dipajang": yang belum tampil di lengkung hero
 const sisaProduk = computed(() =>
-  produkTerbaru.value.filter((p) => !etalase.value.includes(p)).slice(0, 5),
+  produkTerbaru.value
+    .filter((p) => !etalase.value.includes(p))
+    // yang masih ada stok tampil duluan; yang habis di belakang
+    .sort((a, b) => Number(totalStok(a) === 0) - Number(totalStok(b) === 0))
+    .slice(0, 5),
 );
 
 const caraKerja = [
@@ -529,17 +547,26 @@ onMounted(async () => {
   grid-template-rows: auto 1fr 1fr;
   gap: 0.75rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1.5px solid #fff;
+  background: linear-gradient(160deg, #2a6354 0%, var(--sungai) 55%, var(--sungai-dalam) 100%);
   border-radius: 40px 40px 28px 28px;
-  box-shadow: var(--bayang);
-  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 4px rgba(22, 58, 50, 0.12), 0 28px 60px rgba(22, 58, 50, 0.28);
+}
+.etalase::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 34px 34px 22px 22px;
+  pointer-events: none;
 }
 @media (min-width: 980px) {
   .etalase {
     gap: 1rem;
     padding: 1.25rem;
     border-radius: 56px 56px 32px 32px;
+  }
+  .etalase::before {
+    border-radius: 50px 50px 26px 26px;
   }
 }
 .etalase-lencana {
@@ -548,10 +575,10 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.35rem 0.9rem;
-  background: #fff;
+  padding: 0.4rem 1rem;
+  background: var(--aprikot);
   border-radius: 999px;
-  color: var(--sungai);
+  color: var(--sungai-dalam);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -561,8 +588,8 @@ onMounted(async () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #e0884e;
-  box-shadow: 0 0 0 4px rgba(224, 136, 78, 0.2);
+  background: var(--sungai-dalam);
+  box-shadow: 0 0 0 4px rgba(22, 58, 50, 0.18);
 }
 .lengkung {
   position: relative;
@@ -811,29 +838,11 @@ onMounted(async () => {
     grid-row: span 2;
   }
 }
-.kartu-besar .kartu-foto {
-  aspect-ratio: auto;
-  flex: 1;
-  min-height: 260px;
-}
-.kartu-besar .kartu-isi {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-.kartu-besar .kartu-nama {
-  font-family: var(--font-judul);
-  font-weight: 400;
-  font-size: 2rem;
-  line-height: 1.1;
-  color: var(--sungai);
-}
-.kartu-besar .kartu-harga {
-  font-size: 1.2rem;
-}
 .kartu {
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 24px;
+  border-radius: 26px;
   overflow: hidden;
   box-shadow: var(--bayang);
   text-decoration: none;
@@ -847,6 +856,7 @@ onMounted(async () => {
   box-shadow: var(--bayang-naik);
 }
 .kartu-foto {
+  position: relative;
   display: grid;
   place-items: center;
   aspect-ratio: 1;
@@ -855,22 +865,86 @@ onMounted(async () => {
   overflow: hidden;
 }
 .kartu-foto img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s var(--ease-out);
+  transition: transform 0.7s var(--ease-out);
 }
 .kartu:hover .kartu-foto img {
-  transform: scale(1.04);
+  transform: scale(1.05);
+}
+.tag {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  padding: 0.25rem 0.7rem;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.tag-baru {
+  background: var(--aprikot);
+  color: var(--sungai-dalam);
+}
+.panah {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 50%;
+  color: var(--sungai);
+  box-shadow: 0 4px 14px rgba(29, 42, 38, 0.18);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.3s var(--ease-out);
+}
+.kartu:hover .panah {
+  background: var(--sungai);
+  color: #fff;
+  transform: translate(2px, -2px);
+}
+.habis {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(244, 246, 242, 0.72);
+  color: var(--ink);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.kartu-habis .kartu-harga {
+  color: var(--ink-2);
 }
 .kartu-isi {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.9rem 1rem 1.1rem;
+  gap: 0.3rem;
+  padding: 0.95rem 1.05rem 1.15rem;
+}
+.kartu-kat {
+  align-self: flex-start;
+  padding: 0.15rem 0.6rem;
+  background: var(--sage);
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 .kartu-nama {
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.02rem;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -878,14 +952,73 @@ onMounted(async () => {
   overflow: hidden;
 }
 .kartu-toko {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.88rem;
   color: var(--ink-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.kartu-kaki {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 0.6rem;
+  margin-top: 0.45rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--sage);
 }
 .kartu-harga {
-  margin-top: 0.35rem;
   font-weight: 800;
   color: var(--sungai);
   font-size: 1.05rem;
+}
+.kartu-stok {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.kartu-stok.sedikit {
+  color: #a8481f;
+}
+/* Sorotan besar */
+.kartu-besar .kartu-foto {
+  aspect-ratio: auto;
+  flex: 1;
+  min-height: 280px;
+}
+@media (min-width: 900px) {
+  .kartu-besar .kartu-foto {
+    min-height: 360px;
+  }
+}
+.kartu-besar .kartu-isi {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+.kartu-besar .kartu-nama {
+  font-family: var(--font-judul);
+  font-weight: 400;
+  font-size: 2.1rem;
+  line-height: 1.08;
+  color: var(--sungai);
+  letter-spacing: -0.01em;
+}
+.kartu-besar .kartu-harga {
+  font-size: 1.3rem;
+}
+@media (max-width: 560px) {
+  .kartu-isi {
+    padding: 0.8rem 0.85rem 1rem;
+  }
+  .kartu-nama {
+    font-size: 0.95rem;
+  }
+  .kartu-besar .kartu-nama {
+    font-size: 1.7rem;
+  }
 }
 .kosong-lembut {
   display: grid;
