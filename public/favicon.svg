@@ -1,11 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#C8202B"/>
+  <defs>
+    <linearGradient id="latar" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2F6A59"/>
+      <stop offset="1" stop-color="#163A32"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#latar)"/>
   
-<g transform="translate(256 256) scale(1) rotate(-4) translate(-256 -256)">
-  <rect x="86" y="160" width="340" height="192" rx="26" fill="#F2C230" stroke="#141414" stroke-width="16"/>
-  <rect x="110" y="184" width="292" height="144" rx="12" fill="none" stroke="#C8202B" stroke-width="7"/>
-  <path d="M190 204 V308" stroke="#C8202B" stroke-width="26" stroke-linecap="butt" fill="none"/>
-  <path d="M262 204 H294 a26 26 0 0 1 0 52 H262 M262 256 H300 a26 26 0 0 1 0 52 H262 M262 204 V308"
-        stroke="#141414" stroke-width="24" stroke-linejoin="round" stroke-linecap="butt" fill="none"/>
+<g transform="translate(256 256) scale(1.12) translate(-256 -256)">
+  <!-- lengkung -->
+  <path d="M142 380 V226 A114 114 0 0 1 370 226 V380 Q370 404 346 404 H166 Q142 404 142 380 Z" fill="#F4B98A"/>
+  <!-- kanopi bergerigi -->
+  <path d="M184 230 H328 V260 A24 24 0 0 1 280 260 A24 24 0 0 1 232 260 A24 24 0 0 1 184 260 Z" fill="#1F4D42"/>
+  <!-- badan toko -->
+  <rect x="198" y="304" width="116" height="66" rx="6" fill="#1F4D42"/>
+  <!-- pintu -->
+  <rect x="240" y="326" width="32" height="44" rx="5" fill="#F4B98A"/>
 </g>
 </svg>

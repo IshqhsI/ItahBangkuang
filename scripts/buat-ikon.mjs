@@ -1,8 +1,8 @@
-// Membuat ikon PWA dan favicon dari bentuk papan "IB".
+// Membuat ikon PWA dan favicon dari bentuk lengkung dan toko.
 // Jalankan: node scripts/buat-ikon.mjs
 import { writeFileSync } from 'node:fs';
 import sharp from 'sharp';
-import { svgIkon } from './ikon-papan.mjs';
+import { svgIkon } from './ikon-lengkung.mjs';
 
 const biasa = Buffer.from(svgIkon());
 const maskable = Buffer.from(svgIkon({ maskable: true }));

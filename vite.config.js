@@ -19,8 +19,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        theme_color: '#C8202B',
-        background_color: '#ECEEF0',
+        theme_color: '#1F4D42',
+        background_color: '#F4F6F2',
         categories: ['shopping', 'food'],
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
