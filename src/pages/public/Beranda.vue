@@ -13,11 +13,11 @@
       <section class="depan">
         <div class="wadah depan-dalam">
           <div class="depan-teks">
-            <p class="sapa">Uluh Itah Kia</p>
+            <p class="sapa">Dari warga, untuk warga</p>
 
             <h1 class="depan-judul">
-              Bapapili mangat,
-              <span class="depan-judul-2">Bajualan mangat kia.</span>
+              Belanja dari tetangga,
+              <span class="depan-judul-2">Jualan untuk tetangga.</span>
             </h1>
 
             <p class="depan-sub">

@@ -33,13 +33,13 @@ Bukan marketplace nasional: cakupannya satu kelurahan (Bangkuang, Kalimantan Ten
 
 - Vue 3 + Vite + Vue Router + Pinia; backend Supabase (Auth, DB, Storage, RPC `handle_create_order_v2`). Deploy di Vercel.
 - Styling CSS custom (global `src/style.css` + scoped per halaman); belum ada library komponen.
-- Bahasa antarmuka: Bahasa Indonesia, dengan sapaan/tagline bahasa daerah.
+- Bahasa antarmuka: Bahasa Indonesia yang umum.
 - Kategori produk didefinisikan di `src/lib/kategori.js`.
 
 ## Brand Commitments
 
 - Nama: **ItahBangkuang** (juga ditulis itah-bangkuang di domain/meta).
-- Tagline bahasa daerah wajib dipertahankan: **"Bapapili mangat, Bajualan mangat kia."** dan **"Uluh Itah Kia"**.
+- Tagline: **"Belanja dari tetangga, jualan untuk tetangga."** dan **"Dari warga, untuk warga"** (menggantikan tagline bahasa daerah atas permintaan pemilik).
 - Warna, font, dan tampilan lain boleh diganti total (dikonfirmasi pengguna).
 
 ### Suara & bahasa (dikonfirmasi pengguna, direvisi)
@@ -47,7 +47,7 @@ Bukan marketplace nasional: cakupannya satu kelurahan (Bangkuang, Kalimantan Ten
 - Gaya **ngobrol santai khas warung**: pendek, lugas, seperti pedagang menyapa pembeli. Contoh: "Mau jajan apa hari ini?"
 - Menyapa **"kamu"** hanya bila perlu; lebih sering cukup kalimat perintah atau pertanyaan pendek. Jangan sok akrab, jangan lebay, jangan terdengar seperti aplikasi ("Silakan", "Mohon", "Berhasil!").
 - Judul dan tombol memakai kata kerja konkret dan kosakata warung secukupnya: etalase, dipajang, mampir, diantar.
-- Bahasa daerah **hanya** di tagline yang sudah ada (dikonfirmasi ulang). Jangan menambah kosakata Dayak/Banjar lain tanpa persetujuan pemilik.
+- Tidak memakai bahasa daerah; gunakan bahasa Indonesia yang umum.
 - Istilah baku di seluruh aplikasi: **produk**, **toko**, **pesanan** (bukan "order"), **pembeli**, **penjual**, **pesan** (kata kerja), **Masuk** / **Daftar** / **Keluar** (bukan Login/Logout), **WA** atau **WhatsApp**.
 - Tombol menyebut hasilnya ("Kirim pesanan", "Simpan produk"), bukan "Submit"/"OK".
 - Pesan error: apa yang gagal + apa yang bisa dilakukan. Tanpa emoji.

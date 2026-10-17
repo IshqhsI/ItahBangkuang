@@ -5,8 +5,8 @@
         <RouterLink to="/" class="kaki-papan" aria-label="ItahBangkuang — Beranda">
           <span class="itah">Itah</span><span>Bangkuang</span>
         </RouterLink>
-        <p class="kaki-semboyan huruf-papan">Bapapili mangat, Bajualan mangat kia.</p>
-        <p class="kaki-ket">Pasar online warga Kelurahan Bangkuang. Uluh Itah Kia.</p>
+        <p class="kaki-semboyan huruf-papan">Belanja dari tetangga, jualan untuk tetangga.</p>
+        <p class="kaki-ket">Pasar online warga Kelurahan Bangkuang.</p>
       </div>
 
       <nav class="kaki-tautan" aria-label="Tautan kaki">

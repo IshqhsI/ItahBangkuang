@@ -5,8 +5,8 @@
         <span class="itah">Itah</span><span>Bangkuang</span>
       </RouterLink>
       <p class="auth-semboyan huruf-papan berbayang">
-        <span>Bapapili mangat,</span>
-        <span class="kuning">Bajualan mangat kia.</span>
+        <span>Belanja dari tetangga,</span>
+        <span class="kuning">Jualan untuk tetangga.</span>
       </p>
       <p class="auth-ket">Pasar online warga Kelurahan Bangkuang.</p>
     </aside>
