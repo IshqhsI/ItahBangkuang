@@ -410,8 +410,7 @@ const handleSubmit = async () => {
 .peran-kartu.dipilih {
   background: var(--kuning);
   box-shadow:
-    inset 0 0 0 3px var(--kuning),
-    inset 0 0 0 5px var(--tinta);
+    0 0 0 4px rgba(63, 127, 108, 0.22);
 }
 .peran-kartu:has(input:focus-visible) {
   outline: 3px solid var(--biru);
@@ -419,6 +418,7 @@ const handleSubmit = async () => {
 }
 .peran-nama {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1.1rem;
   margin-top: 0.2rem;
 }
@@ -468,7 +468,7 @@ const handleSubmit = async () => {
   place-items: center;
   padding: 0 0.8rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-right: 0;
   border-radius: var(--sudut-kecil) 0 0 var(--sudut-kecil);
   font-weight: 700;

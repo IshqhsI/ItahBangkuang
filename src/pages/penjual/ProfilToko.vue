@@ -316,16 +316,16 @@ onMounted(async () => {
   max-width: 720px;
 }
 .kepala {
-  background: var(--hijau);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.5rem 0 1.75rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kepala .sub-halaman {
-  color: #cfe8d7;
+  color: var(--ink-2);
 }
 .isi {
   display: flex;
@@ -366,7 +366,7 @@ onMounted(async () => {
 }
 .bagian-judul {
   font-family: var(--font-papan);
-  font-weight: 400;
+  font-weight: 600;
   font-size: 1.15rem;
   margin-bottom: 1rem;
 }
@@ -413,7 +413,7 @@ onMounted(async () => {
   place-items: center;
   padding: 0 0.8rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-right: 0;
   border-radius: var(--sudut-kecil) 0 0 var(--sudut-kecil);
   font-weight: 700;

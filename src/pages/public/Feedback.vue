@@ -171,13 +171,14 @@ const kirimLagi = () => {
   max-width: 760px;
 }
 .kepala {
-  background: var(--kuning);
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 2rem 0 2.25rem;
 }
 .kepala-sub {
   margin-top: 0.5rem;
-  color: #3a2f00;
+  color: var(--ink-2);
   font-size: 1.05rem;
   max-width: 56ch;
 }
@@ -243,8 +244,7 @@ const kirimLagi = () => {
 .jenis-kartu.dipilih {
   background: var(--kuning);
   box-shadow:
-    inset 0 0 0 3px var(--kuning),
-    inset 0 0 0 5px var(--tinta);
+    0 0 0 4px rgba(63, 127, 108, 0.22);
 }
 .jenis-kartu:has(input:focus-visible) {
   outline: 3px solid var(--biru);
@@ -252,6 +252,7 @@ const kirimLagi = () => {
 }
 .jenis-nama {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1rem;
 }
 .jenis-ket {
@@ -278,7 +279,7 @@ const kirimLagi = () => {
   font-size: 1.75rem;
 }
 .terkirim p {
-  color: #e6f4ea;
+  color: #f4faf6;
   max-width: 48ch;
 }
 .terkirim-aksi {

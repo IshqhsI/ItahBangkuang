@@ -288,16 +288,16 @@ onMounted(async () => {
 
 <style scoped>
 .kepala {
-  background: var(--biru);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.5rem 0 1.75rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kepala-sapa {
-  color: #c9d8f2;
+  color: var(--ink-2);
   font-weight: 700;
   margin-bottom: 0.2rem;
 }
@@ -333,6 +333,7 @@ onMounted(async () => {
 }
 .ringkasan dd {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1.7rem;
 }
 
@@ -445,7 +446,7 @@ onMounted(async () => {
   padding: 0;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 10px;
 }
 .dialog::backdrop {

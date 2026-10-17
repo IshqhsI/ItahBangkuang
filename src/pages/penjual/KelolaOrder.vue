@@ -227,16 +227,16 @@ onMounted(async () => {
 
 <style scoped>
 .kepala {
-  background: var(--hijau);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.5rem 0 1.75rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kepala .sub-halaman {
-  color: #cfe8d7;
+  color: var(--ink-2);
 }
 .isi {
   padding-top: 1.25rem;
@@ -263,7 +263,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 0.75rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px dashed var(--tinta-3);
+  border-bottom: 1px solid var(--sage-2);
 }
 .nota-status {
   display: flex;
@@ -304,7 +304,7 @@ onMounted(async () => {
   margin-top: 0.15rem;
   padding: 0 0.45rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 4px;
   font-size: 0.82rem;
   font-weight: 700;
@@ -315,6 +315,7 @@ onMounted(async () => {
 }
 .nota-total {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1.15rem;
   white-space: nowrap;
 }
@@ -363,7 +364,7 @@ onMounted(async () => {
   padding: 0;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 10px;
 }
 .dialog::backdrop {

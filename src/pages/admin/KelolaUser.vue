@@ -214,16 +214,16 @@ onMounted(async () => {
 
 <style scoped>
 .kepala {
-  background: var(--biru);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.5rem 0 1.75rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kepala .sub-halaman {
-  color: #c9d8f2;
+  color: var(--ink-2);
 }
 .isi {
   padding-top: 1.25rem;
@@ -243,7 +243,7 @@ onMounted(async () => {
   gap: 0.5rem;
   padding: 0.35rem 0.8rem;
   background: var(--papan);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 999px;
 }
 .ringkasan span {
@@ -253,7 +253,7 @@ onMounted(async () => {
 }
 .ringkasan strong {
   font-family: var(--font-papan);
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .alat {
@@ -279,7 +279,7 @@ onMounted(async () => {
   padding: 0 2.9rem;
   background: var(--papan);
   color: var(--tinta);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: var(--sudut-kecil);
   font-family: var(--font-teks);
   font-size: 1rem;
@@ -328,9 +328,10 @@ onMounted(async () => {
   width: 38px;
   height: 38px;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 50%;
   font-family: var(--font-papan);
+  font-weight: 600;
 }
 .user-nama {
   font-weight: 700;
@@ -359,7 +360,7 @@ onMounted(async () => {
   padding: 0;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 10px;
 }
 .dialog::backdrop {

@@ -193,16 +193,16 @@ onMounted(async () => {
 
 <style scoped>
 .kepala {
-  background: var(--biru);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.5rem 0 1.75rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kepala .sub-halaman {
-  color: #c9d8f2;
+  color: var(--ink-2);
 }
 .isi {
   padding-top: 1.25rem;
@@ -231,7 +231,7 @@ onMounted(async () => {
   padding: 0 2.9rem;
   background: var(--papan);
   color: var(--tinta);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: var(--sudut-kecil);
   font-family: var(--font-teks);
   font-size: 1rem;
@@ -289,7 +289,7 @@ onMounted(async () => {
   width: 44px;
   height: 44px;
   object-fit: cover;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 6px;
   background: var(--dinding);
 }

@@ -500,20 +500,20 @@ onMounted(async () => {
   max-width: 760px;
 }
 .kepala {
-  background: var(--hijau);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1rem 0 1.5rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kembali {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   min-height: 40px;
-  color: #fff;
+  color: var(--sungai-dalam);
   font-weight: 700;
   text-decoration: none;
 }
@@ -534,7 +534,7 @@ onMounted(async () => {
 }
 .bagian-judul {
   font-family: var(--font-papan);
-  font-weight: 400;
+  font-weight: 600;
   font-size: 1.15rem;
 }
 .bagian-ket {
@@ -605,7 +605,7 @@ onMounted(async () => {
   margin-top: 0.9rem;
   padding: 0.9rem 1rem 1.1rem;
   background: var(--dinding);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: var(--sudut);
 }
 .varian-kepala {
@@ -647,7 +647,7 @@ onMounted(async () => {
 .progres-bar {
   height: 10px;
   background: var(--garis-lembut);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -673,7 +673,7 @@ onMounted(async () => {
   padding: 0;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 10px;
 }
 .dialog::backdrop {

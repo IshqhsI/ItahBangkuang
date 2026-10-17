@@ -378,8 +378,9 @@ onMounted(async () => {
   max-width: 980px;
 }
 .kepala {
-  background: var(--kuning);
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1rem 0 1.5rem;
 }
 .kembali {
@@ -466,7 +467,7 @@ onMounted(async () => {
   margin-top: 0.3rem;
   padding: 0.05rem 0.5rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 700;
@@ -518,8 +519,8 @@ onMounted(async () => {
   font-size: 1.1rem;
   font-weight: 700;
   border: 0;
-  border-left: 2px solid var(--tinta);
-  border-right: 2px solid var(--tinta);
+  border-left: 1.5px solid var(--garis);
+  border-right: 1.5px solid var(--garis);
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -550,6 +551,7 @@ onMounted(async () => {
 }
 .total strong {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1.45rem;
   font-weight: 400;
 }
@@ -563,7 +565,7 @@ onMounted(async () => {
   place-items: center;
   padding: 0 0.8rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-right: 0;
   border-radius: var(--sudut-kecil) 0 0 var(--sudut-kecil);
   font-weight: 700;
@@ -605,8 +607,7 @@ onMounted(async () => {
 .metode-kartu.dipilih {
   background: var(--kuning);
   box-shadow:
-    inset 0 0 0 3px var(--kuning),
-    inset 0 0 0 5px var(--tinta);
+    0 0 0 4px rgba(63, 127, 108, 0.22);
 }
 .metode-kartu:has(input:focus-visible) {
   outline: 3px solid var(--biru);
@@ -614,6 +615,7 @@ onMounted(async () => {
 }
 .metode-nama {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1.05rem;
 }
 .metode-ket {
@@ -652,7 +654,7 @@ onMounted(async () => {
   font-size: 1.9rem;
 }
 .berhasil > p {
-  color: #e6f4ea;
+  color: #f4faf6;
 }
 .rincian {
   width: 100%;

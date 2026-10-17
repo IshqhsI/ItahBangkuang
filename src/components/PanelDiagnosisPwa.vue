@@ -148,7 +148,7 @@ const kesimpulan = computed(() => {
   padding: 0.9rem 1rem 1rem;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 10px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
   font-size: 0.9rem;
@@ -190,7 +190,7 @@ const kesimpulan = computed(() => {
   place-items: center;
   width: 22px;
   height: 22px;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 50%;
   font-weight: 700;
   font-size: 0.8rem;
@@ -209,7 +209,7 @@ const kesimpulan = computed(() => {
 .kesimpulan {
   margin-top: 0.8rem;
   padding: 0.6rem 0.7rem;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 6px;
   font-weight: 700;
 }
@@ -230,7 +230,7 @@ const kesimpulan = computed(() => {
   min-height: 40px;
   padding: 0 0.9rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 6px;
   font-weight: 700;
   cursor: pointer;

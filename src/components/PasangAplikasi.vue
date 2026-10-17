@@ -125,7 +125,7 @@ const salinTautan = async () => {
   padding: 0;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 10px;
 }
 .dialog::backdrop {
@@ -163,7 +163,7 @@ const salinTautan = async () => {
   height: 30px;
   background: var(--merah);
   color: #fff;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 50%;
   font-size: 0.9rem;
 }

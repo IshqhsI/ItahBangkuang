@@ -322,13 +322,14 @@ const panduan = computed(() => (tab.value === 'penjual' ? penjual : pembeli));
 }
 
 .kepala {
-  background: var(--kuning);
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 2rem 0 0;
 }
 .kepala-sub {
   margin-top: 0.5rem;
-  color: #3a2f00;
+  color: var(--ink-2);
   font-size: 1.05rem;
 }
 .tab {
@@ -508,7 +509,7 @@ const panduan = computed(() => (tab.value === 'penjual' ? penjual : pembeli));
 
 .bantuan {
   background: var(--dinding);
-  border-top: 3px solid var(--tinta);
+  border-top: 1px solid var(--sage-2);
   padding: 2.5rem 0 3rem;
 }
 .bantuan-dalam {

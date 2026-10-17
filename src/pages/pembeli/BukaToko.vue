@@ -237,7 +237,7 @@ const handleSubmit = async () => {
   place-items: center;
   padding: 0 0.8rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-right: 0;
   border-radius: var(--sudut-kecil) 0 0 var(--sudut-kecil);
   font-weight: 700;
@@ -264,6 +264,6 @@ const handleSubmit = async () => {
   font-size: 1.9rem;
 }
 .berhasil p {
-  color: #e6f4ea;
+  color: #f4faf6;
 }
 </style>

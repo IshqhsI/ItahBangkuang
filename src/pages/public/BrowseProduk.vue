@@ -3,7 +3,7 @@
     <!-- KEPALA -->
     <section class="kepala">
       <div class="wadah">
-        <h1 class="kepala-judul huruf-papan berbayang">Semua produk</h1>
+        <h1 class="kepala-judul huruf-papan">Semua produk</h1>
         <p class="kepala-sub">Dagangan tetangga se-Bangkuang. Dari jajanan sampai jasa tukang.</p>
 
         <form class="cari" role="search" @submit.prevent="fetchProduk">
@@ -206,21 +206,19 @@ onMounted(fetchProduk);
 
 <style scoped>
 .kepala {
-  background: var(--kuning);
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 2rem 0 2.25rem;
 }
 .kepala-judul {
-  --bayang: var(--merah);
   font-size: clamp(2rem, 6vw, 3.2rem);
-  color: var(--papan);
-  -webkit-text-stroke: 1.5px var(--tinta);
-  paint-order: stroke fill;
+  color: var(--sungai-dalam);
 }
 .kepala-sub {
   margin-top: 0.5rem;
   font-size: 1.05rem;
-  color: #3a2f00;
+  color: var(--ink-2);
   max-width: 52ch;
 }
 
@@ -242,7 +240,7 @@ onMounted(fetchProduk);
   padding: 0 3.25rem;
   background: var(--papan);
   color: var(--tinta);
-  border: var(--tebal) solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   font-family: var(--font-teks);
   font-size: 1.05rem;
@@ -282,7 +280,7 @@ onMounted(fetchProduk);
   top: var(--nav-h);
   z-index: 20;
   background: var(--papan);
-  border-bottom: 2px solid var(--tinta);
+  border-bottom: 1px solid var(--sage-2);
 }
 .saring-dalam {
   display: flex;
@@ -306,9 +304,9 @@ onMounted(fetchProduk);
   min-height: 42px;
   padding: 0 2.2rem 0 0.75rem;
   background: var(--papan)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23141414' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 7 5 5 5-5'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%231d2a26' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 7 5 5 5-5'/%3E%3C/svg%3E")
     no-repeat right 0.6rem center;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 999px;
   font-family: var(--font-teks);
   font-size: 0.92rem;

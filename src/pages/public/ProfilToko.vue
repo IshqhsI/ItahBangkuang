@@ -179,10 +179,9 @@ onMounted(async () => {
 }
 
 .depan-toko {
-  background: var(--hijau);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
-  box-shadow: inset 0 -5px 0 var(--kuning);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 2rem 0 2.5rem;
 }
 .depan-dalam {
@@ -200,12 +199,9 @@ onMounted(async () => {
   padding: 1rem 1.25rem 1rem 1rem;
   background: var(--papan);
   color: var(--tinta);
-  border: 3px solid var(--tinta);
-  border-radius: 10px;
-  box-shadow:
-    inset 0 0 0 5px var(--papan),
-    inset 0 0 0 8px var(--merah);
-  transform: rotate(-0.8deg);
+  border: 1.5px solid var(--garis-lembut);
+  border-radius: 28px;
+  box-shadow: var(--bayang);
 }
 .toko-foto {
   flex-shrink: 0;
@@ -213,8 +209,8 @@ onMounted(async () => {
   place-items: center;
   width: 76px;
   height: 76px;
-  background: var(--kuning);
-  border: var(--tebal) solid var(--garis);
+  background: var(--aprikot-muda);
+  border: 1.5px solid var(--garis-lembut);
   border-radius: 50%;
   overflow: hidden;
 }
@@ -243,7 +239,7 @@ onMounted(async () => {
   max-width: 62ch;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: #e6f4ea;
+  color: var(--ink-2);
   white-space: pre-line;
 }
 .toko-aksi {
@@ -252,10 +248,10 @@ onMounted(async () => {
   gap: 0.6rem;
 }
 .tombol-terang {
-  --t-bg: transparent;
-  --t-bg-hover: rgba(0, 0, 0, 0.18);
-  --t-fg: #fff;
-  border-color: #fff;
+  --t-bg: #fff;
+  --t-bg-hover: var(--sage-2);
+  --t-fg: var(--sungai);
+  border-color: var(--sage-2);
 }
 @media (max-width: 520px) {
   .toko-aksi .tombol {

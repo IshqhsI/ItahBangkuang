@@ -53,43 +53,42 @@ const ikon = (type) =>
 }
 
 .toast {
-  --t-bg: var(--papan);
-  --t-list: var(--tinta);
+  --t-bg: #fff;
+  --t-fg: var(--ink);
+  --t-aksen: var(--sungai-sedang);
   display: flex;
   align-items: flex-start;
   gap: 0.7rem;
-  padding: 0.85rem 0.9rem;
+  padding: 0.9rem 0.9rem 0.9rem 1rem;
   background: var(--t-bg);
-  border: var(--tebal) solid var(--garis);
-  border-radius: var(--sudut);
-  box-shadow:
-    inset 0 0 0 4px var(--t-bg),
-    inset 0 0 0 6px var(--t-list),
-    0 10px 28px rgba(20, 20, 20, 0.22);
+  color: var(--t-fg);
+  border-left: 5px solid var(--t-aksen);
+  border-radius: 18px;
+  box-shadow: 0 2px 6px rgba(29, 42, 38, 0.08), 0 16px 36px rgba(29, 42, 38, 0.16);
   font-size: 0.98rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.45;
   cursor: pointer;
 }
 .toast-success {
-  --t-bg: var(--hijau);
-  --t-list: var(--kuning);
-  color: #fff;
+  --t-bg: #eef5f0;
+  --t-fg: var(--sungai);
+  --t-aksen: var(--sungai-sedang);
 }
 .toast-error {
-  --t-bg: var(--merah);
-  --t-list: var(--kuning);
-  color: #fff;
+  --t-bg: #fbeceb;
+  --t-fg: var(--merah-tua);
+  --t-aksen: var(--merah);
 }
 .toast-info {
-  --t-bg: var(--biru);
-  --t-list: #fff;
-  color: #fff;
+  --t-bg: var(--langit-muda);
+  --t-fg: var(--biru-tua);
+  --t-aksen: var(--biru);
 }
 .toast-warning {
-  --t-bg: var(--kuning);
-  --t-list: var(--tinta);
-  color: var(--tinta);
+  --t-bg: var(--aprikot-muda);
+  --t-fg: #7a4a24;
+  --t-aksen: #e0884e;
 }
 
 .toast-icon {
@@ -107,12 +106,12 @@ const ikon = (type) =>
   margin: -2px -2px 0 0;
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%;
   color: inherit;
   cursor: pointer;
 }
 .toast-close:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(29, 42, 38, 0.08);
 }
 
 .toast-enter-active {
@@ -127,7 +126,7 @@ const ikon = (type) =>
 }
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(16px) rotate(-2deg);
+  transform: translateY(16px);
 }
 .toast-leave-to {
   opacity: 0;

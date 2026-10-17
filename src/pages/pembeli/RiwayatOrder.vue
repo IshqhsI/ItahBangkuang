@@ -153,12 +153,13 @@ onMounted(async () => {
 
 <style scoped>
 .kepala {
-  background: var(--kuning);
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.75rem 0 2rem;
 }
 .kepala .sub-halaman {
-  color: #3a2f00;
+  color: var(--ink-2);
 }
 .isi {
   padding-top: 1.25rem;
@@ -230,7 +231,7 @@ onMounted(async () => {
   align-self: flex-start;
   padding: 0 0.45rem;
   background: var(--kuning);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 4px;
   font-size: 0.82rem;
   font-weight: 700;
@@ -268,7 +269,7 @@ onMounted(async () => {
 }
 .nota-rincian .total dd {
   font-family: var(--font-papan);
-  font-weight: 400;
+  font-weight: 600;
   font-size: 1.25rem;
 }
 

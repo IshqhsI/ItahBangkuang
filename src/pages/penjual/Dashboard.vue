@@ -340,7 +340,7 @@ onMounted(async () => {
 .status-data {
   width: 100%;
   background: var(--papan);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: var(--sudut);
 }
 .status-data > div {
@@ -379,13 +379,13 @@ onMounted(async () => {
 
 /* Aktif */
 .kepala {
-  background: var(--hijau);
-  color: #fff;
-  border-bottom: 3px solid var(--tinta);
+  background: var(--sage);
+  color: var(--sungai-dalam);
+  border-radius: 0 0 32px 32px;
   padding: 1.75rem 0 2rem;
 }
 .kepala .judul-halaman {
-  color: #fff;
+  color: var(--sungai-dalam);
 }
 .kepala-dalam {
   display: flex;
@@ -395,7 +395,7 @@ onMounted(async () => {
   gap: 1.25rem;
 }
 .kepala-sapa {
-  color: #cfe8d7;
+  color: var(--ink-2);
   font-weight: 700;
   margin-bottom: 0.2rem;
 }
@@ -464,6 +464,7 @@ onMounted(async () => {
 .ringkasan dd {
   margin-top: 0.1rem;
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: clamp(1rem, 3.6vw, 1.5rem);
   overflow-wrap: anywhere;
 }
@@ -528,7 +529,7 @@ onMounted(async () => {
   width: 52px;
   height: 52px;
   object-fit: cover;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 6px;
   background: var(--dinding);
 }

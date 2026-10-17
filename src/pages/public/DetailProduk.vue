@@ -423,9 +423,9 @@ watch(() => route.params.id, fetchData);
 .foto-papan {
   position: relative;
   background: var(--dinding);
-  border: 3px solid var(--tinta);
-  border-radius: 10px;
+  border-radius: 28px;
   overflow: hidden;
+  box-shadow: var(--bayang);
 }
 .foto-utama {
   width: 100%;
@@ -444,17 +444,17 @@ watch(() => route.params.id, fetchData);
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(20, 20, 20, 0.5);
+  background: rgba(244, 246, 242, 0.78);
 }
 .foto-habis span {
   font-family: var(--font-papan);
-  font-size: 2rem;
-  color: #fff;
-  background: var(--merah);
-  border: 3px solid #fff;
-  border-radius: 6px;
-  padding: 0.3rem 1rem;
-  transform: rotate(-6deg);
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--ink);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 1.4rem;
+  box-shadow: var(--bayang);
 }
 
 /* Info */
@@ -511,7 +511,7 @@ watch(() => route.params.id, fetchData);
   min-height: 60px;
   padding: 0.55rem 0.8rem;
   background: var(--papan);
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: var(--sudut);
   text-align: left;
   cursor: pointer;
@@ -523,8 +523,7 @@ watch(() => route.params.id, fetchData);
 .varian-pilihan.aktif {
   background: var(--kuning);
   box-shadow:
-    inset 0 0 0 2px var(--kuning),
-    inset 0 0 0 4px var(--tinta);
+    0 0 0 4px rgba(63, 127, 108, 0.22);
 }
 .varian-pilihan:disabled {
   cursor: not-allowed;
@@ -581,8 +580,8 @@ watch(() => route.params.id, fetchData);
   min-width: 56px;
   font-weight: 700;
   font-size: 1.15rem;
-  border-left: 2px solid var(--tinta);
-  border-right: 2px solid var(--tinta);
+  border-left: 1.5px solid var(--garis);
+  border-right: 1.5px solid var(--garis);
 }
 
 /* Aksi */
@@ -625,7 +624,7 @@ watch(() => route.params.id, fetchData);
     z-index: 80;
     padding: 0.7rem 1.25rem calc(0.7rem + env(safe-area-inset-bottom));
     background: var(--papan);
-    border-top: 3px solid var(--tinta);
+    border-top: 1px solid var(--sage-2);
   }
   .detail {
     padding-bottom: 6rem;
@@ -635,7 +634,7 @@ watch(() => route.params.id, fetchData);
 .deskripsi {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 2px solid var(--tinta);
+  border-top: 1px solid var(--sage-2);
 }
 .deskripsi p {
   margin-top: 0.5rem;
@@ -667,7 +666,7 @@ watch(() => route.params.id, fetchData);
   height: 56px;
   background: var(--hijau);
   color: #fff;
-  border: 2px solid var(--tinta);
+  border: 1.5px solid var(--garis);
   border-radius: 50%;
   overflow: hidden;
 }
@@ -689,6 +688,7 @@ watch(() => route.params.id, fetchData);
 }
 .toko-nama {
   font-family: var(--font-papan);
+  font-weight: 600;
   font-size: 1.05rem;
   line-height: 1.2;
 }
@@ -717,7 +717,7 @@ watch(() => route.params.id, fetchData);
 /* Produk lain */
 .lain {
   background: var(--dinding);
-  border-top: 3px solid var(--tinta);
+  border-top: 1px solid var(--sage-2);
   padding: 2.5rem 0 3.5rem;
 }
 .lain-judul {
