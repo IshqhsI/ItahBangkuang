@@ -425,6 +425,7 @@ onMounted(async () => {
 }
 .depan-dalam {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.75rem;
   align-items: center;
 }
@@ -436,6 +437,10 @@ onMounted(async () => {
     grid-template-columns: 1.1fr 0.9fr;
     gap: 4rem;
   }
+}
+.depan-teks,
+.cari-kartu {
+  min-width: 0;
 }
 .sapa {
   display: inline-flex;
@@ -638,7 +643,7 @@ onMounted(async () => {
 }
 .cari-hitung {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.75rem;
   margin-top: 1.4rem;
   padding-top: 1.1rem;
@@ -1000,6 +1005,7 @@ onMounted(async () => {
 .langkah {
   list-style: none;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.85rem;
   margin-top: 1.5rem;
 }
@@ -1053,6 +1059,7 @@ onMounted(async () => {
 }
 .ajakan {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2rem;
   align-items: center;
   padding: 2.25rem 1.5rem;
