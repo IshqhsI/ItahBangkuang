@@ -2,7 +2,7 @@
   <LayoutPublic>
     <!--
       THESIS: Beranda yang tenang dan resmi tapi hangat: lengkung pintu, hijau sungai, ruang napas. Menolak papan warung bersudut keras.
-      OWN-WORLD: kabut sage #F4F6F2, hijau sungai #1F4D42, aprikot #F4B98A hanya untuk sorotan kecil, huruf Young Serif + Figtree, bingkai foto berbentuk lengkung, kartu putih bersudut 24-28px, bayangan sangat tipis.
+      OWN-WORLD: kabut sage #F4F6F2, hijau sungai #1F4D42, aprikot #F4B98A hanya untuk sorotan kecil, huruf Instrument Serif + Hanken Grotesk, bingkai foto berbentuk lengkung, kartu putih bersudut 24-28px, bayangan sangat tipis.
       STORY: pembeli paham ini etalase tetangga satu kelurahan, lalu memilih belanja atau jualan.
       FIRST VIEWPORT: kiri tagline serif besar + dua tombol pil + hitungan nyata; kanan tiga lengkung foto produk asli terbaru.
       FORM: lengkung pintu / etalase lembut.
@@ -66,6 +66,7 @@
       <!-- KATEGORI: deret pil yang bisa digeser -->
       <section class="bagian bagian-rapat">
         <div class="wadah">
+          <p class="kicker"><span>01</span>Kategori</p>
           <h2 class="judul-bagian">Lagi cari apa hari ini?</h2>
           <div class="rel" role="list">
             <RouterLink
@@ -87,7 +88,8 @@
         <div class="wadah">
           <div class="kepala-bagian">
             <div>
-              <h2 class="judul-bagian">Baru dipajang</h2>
+              <p class="kicker"><span>02</span>Etalase</p>
+          <h2 class="judul-bagian">Baru dipajang</h2>
               <p class="sub-bagian">Dagangan yang baru masuk etalase.</p>
             </div>
             <RouterLink to="/produk" class="btn btn-garis">
@@ -131,6 +133,7 @@
       <!-- TETANGGA: toko aktif yang asli -->
       <section v-if="tokoAktif.length" class="bagian">
         <div class="wadah">
+          <p class="kicker"><span>03</span>Toko</p>
           <h2 class="judul-bagian">Kenalan sama tetangga</h2>
           <p class="sub-bagian">Mereka yang sudah buka toko di sini.</p>
           <div class="tetangga">
@@ -155,6 +158,7 @@
       <!-- CARA KERJA: pilih peran, tiga langkah mendatar -->
       <section class="bagian bagian-rapat">
         <div class="wadah">
+          <p class="kicker"><span>04</span>Cara pakai</p>
           <h2 class="judul-bagian">Alurnya sederhana</h2>
           <p class="sub-bagian">Tiga langkah, cukup dari HP.</p>
 
@@ -332,8 +336,8 @@ onMounted(async () => {
   --ink-2: #4a5a54;
   --bayang: 0 1px 2px rgba(29, 42, 38, 0.05), 0 8px 24px rgba(29, 42, 38, 0.06);
   --bayang-naik: 0 2px 4px rgba(29, 42, 38, 0.06), 0 16px 36px rgba(29, 42, 38, 0.1);
-  --font-judul: 'Young Serif', Georgia, serif;
-  --font-badan: 'Figtree', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-judul: 'Instrument Serif', Georgia, serif;
+  --font-badan: 'Hanken Grotesk', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
   font-family: var(--font-badan);
   color: var(--ink);
   background: var(--kabut);
@@ -420,28 +424,35 @@ onMounted(async () => {
   }
 }
 .sapa {
-  display: inline-block;
-  padding: 0.4rem 1rem;
-  background: var(--aprikot-muda);
-  color: #7a4a24;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--sungai);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.sapa::before {
+  content: '';
+  width: 2.5rem;
+  height: 1.5px;
+  background: var(--sungai);
 }
 .depan-judul {
   margin-top: 1.25rem;
   font-family: var(--font-judul);
   font-weight: 400;
-  font-size: clamp(2.3rem, 7vw, 4.1rem);
-  line-height: 1.08;
-  letter-spacing: -0.01em;
+  font-size: clamp(2.9rem, 9vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
   color: var(--sungai);
   text-wrap: balance;
 }
 .depan-judul-2 {
   display: block;
-  color: var(--ink);
+  font-style: italic;
+  color: #3f7f6c;
 }
 .depan-sub {
   margin-top: 1.4rem;
@@ -469,8 +480,44 @@ onMounted(async () => {
   font-size: 1.1rem;
 }
 
+/* Hiasan latar hero */
+.depan {
+  position: relative;
+  overflow: hidden;
+}
+.depan::before {
+  content: '';
+  position: absolute;
+  right: -6%;
+  bottom: -30%;
+  width: min(620px, 80vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid var(--sage-2);
+  box-shadow: 0 0 0 36px rgba(207, 220, 210, 0.22), 0 0 0 72px rgba(207, 220, 210, 0.12);
+  pointer-events: none;
+}
+.depan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 200px;
+  background-image: radial-gradient(var(--sage-2) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+  opacity: 0.7;
+  pointer-events: none;
+  mask-image: linear-gradient(135deg, #000, transparent 70%);
+}
+.depan-dalam {
+  position: relative;
+  z-index: 1;
+}
+
 /* Lengkung pintu: foto produk asli */
 .etalase {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
@@ -544,6 +591,28 @@ onMounted(async () => {
   }
 }
 
+/* ── Kicker bernomor ───────────────────────────────────────── */
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.kicker span {
+  color: #b5683a;
+}
+.kicker::after {
+  content: '';
+  width: 3rem;
+  height: 1.5px;
+  background: var(--sage-2);
+}
+
 /* ── Bagian umum ───────────────────────────────────────────── */
 .bagian {
   padding: 3.5rem 0;
@@ -564,8 +633,9 @@ onMounted(async () => {
 .judul-bagian {
   font-family: var(--font-judul);
   font-weight: 400;
-  font-size: clamp(1.7rem, 4.4vw, 2.5rem);
-  line-height: 1.15;
+  font-size: clamp(2.2rem, 5.6vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
   color: var(--sungai);
 }
 .sub-bagian {
@@ -680,8 +750,8 @@ onMounted(async () => {
 .kartu-besar .kartu-nama {
   font-family: var(--font-judul);
   font-weight: 400;
-  font-size: 1.5rem;
-  line-height: 1.2;
+  font-size: 2rem;
+  line-height: 1.1;
   color: var(--sungai);
 }
 .kartu-besar .kartu-harga {
@@ -763,7 +833,7 @@ onMounted(async () => {
 /* ── Tetangga ──────────────────────────────────────────────── */
 .tetangga {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 0.85rem;
   margin-top: 1.75rem;
 }
@@ -905,7 +975,7 @@ onMounted(async () => {
   background: var(--aprikot-muda);
   color: #7a4a24;
   font-family: var(--font-judul);
-  font-size: 1.15rem;
+  font-size: 1.3rem;
 }
 .langkah-judul {
   font-weight: 800;
@@ -941,9 +1011,9 @@ onMounted(async () => {
 .ajakan-judul {
   font-family: var(--font-judul);
   font-weight: 400;
-  font-size: clamp(1.8rem, 4.6vw, 2.6rem);
-  line-height: 1.15;
-  max-width: 16ch;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  line-height: 1.02;
+  max-width: 14ch;
 }
 .ajakan-ket {
   margin: 1rem 0 1.75rem;
