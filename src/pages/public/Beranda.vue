@@ -4,8 +4,8 @@
       THESIS: Beranda yang tenang dan resmi tapi hangat: lengkung pintu, hijau sungai, ruang napas. Menolak papan warung bersudut keras.
       OWN-WORLD: kabut sage #F4F6F2, hijau sungai #1F4D42, aprikot #F4B98A hanya untuk sorotan kecil, huruf Instrument Serif + Hanken Grotesk, bingkai foto berbentuk lengkung, kartu putih bersudut 24-28px, bayangan sangat tipis.
       STORY: pembeli paham ini etalase tetangga satu kelurahan, lalu memilih belanja atau jualan.
-      FIRST VIEWPORT: kiri tagline serif besar + dua tombol pil + hitungan nyata; kanan tiga lengkung foto produk asli terbaru.
-      FORM: lengkung pintu / etalase lembut.
+      FIRST VIEWPORT: kiri tagline serif besar + dua tombol pil; kanan kartu pencarian hijau sage (cari, kategori, hitungan nyata).
+      FORM: beranda marketplace yang tenang, pencarian di depan.
       FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
     -->
     <div class="beranda">
@@ -36,55 +36,50 @@
                 Buka toko gratis
               </RouterLink>
             </div>
-
-            <p v-if="statsSiap" class="depan-hitung">
-              Sekarang ada <strong>{{ stats.produk }}</strong> produk dari
-              <strong>{{ stats.toko }}</strong> toko tetangga.
-            </p>
           </div>
 
-          <!-- Etalase: produk asli terbaru -->
-          <div v-if="loadingProduk || etalase.length" class="etalase" aria-label="Baru dipajang">
-            <span class="etalase-lencana">
-              <span class="titik"></span>
-              Baru dipajang
-            </span>
-            <template v-if="loadingProduk">
-              <div v-for="n in 3" :key="n" class="lengkung lengkung-kerangka"></div>
-            </template>
-            <RouterLink
-              v-for="p in etalase"
-              v-else
-              :key="p.id"
-              :to="`/produk/${p.id}`"
-              class="lengkung"
-            >
-              <img :src="p.foto_url" :alt="p.nama_produk" class="lengkung-foto" />
-              <span class="lengkung-info">
-                <span class="lengkung-nama">{{ p.nama_produk }}</span>
-                <span class="lengkung-harga">{{ formatHargaProduk(p) }}</span>
-              </span>
-            </RouterLink>
-          </div>
-        </div>
-      </section>
+          <!-- Kartu pencarian -->
+          <div class="cari-kartu">
+            <p class="cari-judul">Mau jajan apa hari ini?</p>
 
-      <!-- KATEGORI: deret pil yang bisa digeser -->
-      <section class="bagian bagian-rapat">
-        <div class="wadah">
-          <p class="kicker"><span>01</span>Kategori</p>
-          <h2 class="judul-bagian">Lagi cari apa hari ini?</h2>
-          <div class="rel" role="list">
-            <RouterLink
-              v-for="kat in kategori"
-              :key="kat.slug"
-              :to="`/produk?kategori=${kat.slug}`"
-              class="pil"
-              role="listitem"
-            >
-              <span class="pil-ikon"><component :is="kat.icon" :size="20" :stroke-width="1.75" /></span>
-              {{ kat.label }}
-            </RouterLink>
+            <form class="cari-form" role="search" @submit.prevent="cariProduk">
+              <label for="cari-beranda" class="sr-only">Cari produk</label>
+              <Search class="cari-ikon" :size="22" :stroke-width="2" aria-hidden="true" />
+              <input
+                id="cari-beranda"
+                v-model="kataCari"
+                type="search"
+                class="cari-input"
+                placeholder="Cari kue, lauk pauk, jasa tukang"
+                enterkeyhint="search"
+                autocomplete="off"
+              />
+              <button type="submit" class="cari-tombol">Cari</button>
+            </form>
+
+            <p class="cari-label">Atau pilih jenisnya</p>
+            <div class="cari-chip-deret">
+              <RouterLink
+                v-for="kat in kategori"
+                :key="kat.slug"
+                :to="`/produk?kategori=${kat.slug}`"
+                class="cari-chip"
+              >
+                <component :is="kat.icon" :size="16" :stroke-width="2" />
+                {{ kat.label }}
+              </RouterLink>
+            </div>
+
+            <dl v-if="statsSiap" class="cari-hitung">
+              <div>
+                <dt>Produk</dt>
+                <dd>{{ stats.produk }}</dd>
+              </div>
+              <div>
+                <dt>Toko tetangga</dt>
+                <dd>{{ stats.toko }}</dd>
+              </div>
+            </dl>
           </div>
         </div>
       </section>
@@ -94,7 +89,7 @@
         <div class="wadah">
           <div class="kepala-bagian">
             <div>
-              <p class="kicker"><span>02</span>Etalase</p>
+              <p class="kicker"><span>01</span>Etalase</p>
           <h2 class="judul-bagian">Baru dipajang</h2>
               <p class="sub-bagian">Dagangan yang baru masuk etalase.</p>
             </div>
@@ -143,7 +138,7 @@
       <!-- TETANGGA: toko aktif yang asli -->
       <section v-if="tokoAktif.length" class="bagian">
         <div class="wadah">
-          <p class="kicker"><span>03</span>Toko</p>
+          <p class="kicker"><span>02</span>Toko</p>
           <h2 class="judul-bagian">Kenalan sama tetangga</h2>
           <p class="sub-bagian">Mereka yang sudah buka toko di sini.</p>
           <div class="tetangga">
@@ -168,7 +163,7 @@
       <!-- CARA KERJA: pilih peran, tiga langkah mendatar -->
       <section class="bagian bagian-rapat">
         <div class="wadah">
-          <p class="kicker"><span>04</span>Cara pakai</p>
+          <p class="kicker"><span>03</span>Cara pakai</p>
           <h2 class="judul-bagian">Alurnya sederhana</h2>
           <p class="sub-bagian">Tiga langkah, cukup dari HP.</p>
 
@@ -228,12 +223,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import {
   ShoppingBasket,
   Store,
   ArrowRight,
   Check,
   MapPin,
+  Search,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { formatHargaProduk, totalStok } from '@/lib/utils';
@@ -242,6 +239,13 @@ import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { KATEGORI } from '@/lib/kategori';
 
 const authStore = useAuthStore();
+const router = useRouter();
+const kataCari = ref('');
+
+const cariProduk = () => {
+  const q = kataCari.value.trim();
+  router.push(q ? { path: '/produk', query: { q } } : '/produk');
+};
 const loadingProduk = ref(true);
 const produkTerbaru = ref([]);
 const stats = ref({ produk: 0, toko: 0, alamat: 0 });
@@ -250,14 +254,9 @@ const tokoAktif = ref([]);
 const peranAktif = ref(0);
 const kategori = KATEGORI;
 
-// Tiga produk terbaru yang punya foto, untuk etalase di bagian depan
-const etalase = computed(() => produkTerbaru.value.filter((p) => p.foto_url).slice(0, 3));
-
-// Produk di bagian "Baru dipajang": yang belum tampil di panel hero
+// Produk di bagian "Baru dipajang": yang masih ada stok tampil duluan, yang habis di belakang
 const sisaProduk = computed(() =>
-  produkTerbaru.value
-    .filter((p) => !etalase.value.includes(p))
-    // yang masih ada stok tampil duluan; yang habis di belakang
+  [...produkTerbaru.value]
     .sort((a, b) => Number(totalStok(a) === 0) - Number(totalStok(b) === 0))
     .slice(0, 8),
 );
@@ -302,7 +301,7 @@ onMounted(async () => {
     .select('*, toko(nama_toko, alamat, status)')
     .eq('status', 'AKTIF')
     .order('created_at', { ascending: false })
-    .limit(11);
+    .limit(8);
 
   produkTerbaru.value = produk?.filter((p) => p.toko?.status === 'AKTIF') ?? [];
   loadingProduk.value = false;
@@ -484,15 +483,6 @@ onMounted(async () => {
   gap: 0.85rem;
   margin-top: 2rem;
 }
-.depan-hitung {
-  margin-top: 1.5rem;
-  color: var(--ink-2);
-  font-size: 1rem;
-}
-.depan-hitung strong {
-  color: var(--sungai);
-  font-size: 1.1rem;
-}
 
 /* Hiasan latar hero */
 .depan {
@@ -529,144 +519,143 @@ onMounted(async () => {
   z-index: 1;
 }
 
-/* Etalase hero: satu lengkung tinggi + dua lengkung pendek, keterangan menempel di foto */
-.etalase {
+/* Kartu pencarian hero */
+.cari-kartu {
   position: relative;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  grid-template-rows: auto 1fr 1fr;
-  gap: 0.6rem;
-  padding: 0.6rem;
+  padding: 1.5rem 1.25rem 1.25rem;
   background: linear-gradient(160deg, #7db5a0 0%, #5f9d86 100%);
-  border-radius: 30px;
+  border-radius: 32px;
+  color: var(--sungai-dalam);
   box-shadow: 0 14px 32px rgba(63, 127, 108, 0.22);
 }
 @media (min-width: 980px) {
-  .etalase {
-    gap: 0.7rem;
-    padding: 0.7rem;
-    border-radius: 34px;
+  .cari-kartu {
+    padding: 2rem 1.9rem 1.6rem;
+    border-radius: 36px;
   }
 }
-.etalase-lencana {
-  grid-column: 1 / -1;
-  justify-self: start;
+.cari-judul {
+  font-family: var(--font-judul);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.cari-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+  padding: 0.4rem 0.4rem 0.4rem 1rem;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(22, 58, 50, 0.16);
+  transition: box-shadow 0.25s ease;
+}
+.cari-form:focus-within {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px var(--sungai),
+    0 6px 18px rgba(22, 58, 50, 0.16);
+}
+.cari-ikon {
+  flex-shrink: 0;
+  color: var(--ink-2);
+}
+.cari-input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-badan);
+  font-size: 1.02rem;
+}
+.cari-input::placeholder {
+  color: #6b7a74;
+}
+.cari-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+.cari-tombol {
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 1.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sungai);
+  color: #fff;
+  font-family: var(--font-badan);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    transform 0.2s var(--ease-out);
+}
+.cari-tombol:hover {
+  background: var(--sungai-dalam);
+}
+.cari-tombol:active {
+  transform: scale(0.97);
+}
+.cari-label {
+  margin-top: 1.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sungai-dalam);
+}
+.cari-chip-deret {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+.cari-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  margin: 0.15rem 0 0.1rem 0.2rem;
-  padding: 0.28rem 0.8rem;
-  background: var(--aprikot);
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0 0.95rem;
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 999px;
   color: var(--sungai-dalam);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.titik {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--sungai-dalam);
-  box-shadow: 0 0 0 4px rgba(22, 58, 50, 0.18);
-}
-.lengkung {
-  position: relative;
-  display: block;
-  min-height: 150px;
-  overflow: hidden;
-  text-decoration: none;
-  color: var(--ink);
-  background: var(--sage);
-  border-radius: 999px 999px 20px 20px;
-  transition: transform 0.4s var(--ease-out);
-}
-.lengkung:nth-of-type(1) {
-  grid-row: 2 / 4;
-  min-height: 340px;
-}
-@media (min-width: 980px) {
-  .lengkung:nth-of-type(1) {
-    min-height: 400px;
-  }
-}
-.lengkung:nth-of-type(2) {
-  border-radius: 28px 28px 22px 22px;
-}
-.lengkung:nth-of-type(3) {
-  border-radius: 28px 28px 22px 22px;
-}
-.lengkung:hover {
-  transform: translateY(-4px);
-}
-.lengkung-foto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.7s var(--ease-out);
-}
-.lengkung:hover .lengkung-foto {
-  transform: scale(1.05);
-}
-.lengkung-info {
-  position: absolute;
-  left: 0.55rem;
-  right: 0.55rem;
-  bottom: 0.55rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.55rem 0.8rem;
-  background: rgba(255, 255, 255, 0.93);
-  border-radius: 16px;
-  backdrop-filter: blur(4px);
-}
-.lengkung-nama {
+  font-size: 0.88rem;
   font-weight: 700;
-  font-size: 0.9rem;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.25s var(--ease-out);
 }
-.lengkung-harga {
-  font-size: 0.85rem;
-  color: var(--sungai);
-  font-weight: 800;
+.cari-chip:hover {
+  background: #fff;
+  transform: translateY(-2px);
 }
-.lengkung-kerangka {
-  background: linear-gradient(100deg, var(--sage) 30%, #f0f4f0 50%, var(--sage) 70%);
-  background-size: 200% 100%;
-  animation: kilau 1.6s ease-in-out infinite;
+.cari-hitung {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid rgba(22, 58, 50, 0.18);
 }
-@keyframes kilau {
-  to {
-    background-position: -200% 0;
-  }
+.cari-hitung dt {
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0.85;
 }
-@media (max-width: 560px) {
-  .etalase {
-    padding: 0.5rem;
-    border-radius: 26px;
-  }
-  .lengkung:nth-of-type(1) {
-    min-height: 300px;
-  }
-  .lengkung-info {
-    left: 0.4rem;
-    right: 0.4rem;
-    bottom: 0.4rem;
-    padding: 0.4rem 0.6rem;
-  }
-  .lengkung-nama {
-    font-size: 0.78rem;
-  }
-  .lengkung-harga {
-    font-size: 0.76rem;
+.cari-hitung dd {
+  font-family: var(--font-judul);
+  font-size: 2.2rem;
+  line-height: 1.05;
+}
+@media (max-width: 420px) {
+  .cari-tombol {
+    padding: 0 1.05rem;
   }
 }
 
@@ -731,74 +720,10 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
-/* ── Kategori: deret pil ───────────────────────────────────── */
+/* ── Bagian rapat ─────────────────────────────────────────── */
 .bagian-rapat {
   padding: 2.5rem 0;
 }
-.rel {
-  display: flex;
-  gap: 0.65rem;
-  margin: 1.25rem -1.25rem 0;
-  padding: 0.25rem 1.25rem 0.75rem;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-}
-.rel::-webkit-scrollbar {
-  display: none;
-}
-@media (min-width: 1200px) {
-  .rel {
-    flex-wrap: wrap;
-    margin: 1.25rem 0 0;
-    padding: 0.25rem 0;
-    overflow: visible;
-  }
-}
-.pil {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  min-height: 52px;
-  padding: 0.35rem 1.25rem 0.35rem 0.4rem;
-  background: #fff;
-  border-radius: 999px;
-  box-shadow: var(--bayang);
-  color: var(--ink);
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  scroll-snap-align: start;
-  transition:
-    transform 0.25s var(--ease-out),
-    box-shadow 0.25s ease;
-}
-.pil:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--bayang-naik);
-}
-.pil-ikon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--sage);
-  color: var(--sungai);
-}
-.pil:nth-child(4n + 2) .pil-ikon {
-  background: var(--langit-muda);
-}
-.pil:nth-child(4n + 3) .pil-ikon {
-  background: var(--aprikot-muda);
-  color: #8a4f22;
-}
-.pil:nth-child(4n) .pil-ikon {
-  background: var(--mawar-muda);
-  color: #8a3b30;
-}
-
 /* ── Kartu produk: pola marketplace (foto, nama, harga, toko) ── */
 .grid-produk {
   display: grid;
@@ -1168,7 +1093,7 @@ onMounted(async () => {
 /* ── Gerak halus saat muncul ───────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
   .depan-teks > *,
-  .etalase {
+  .cari-kartu {
     animation: muncul 0.8s var(--ease-out) both;
   }
   .depan-teks > :nth-child(2) {
@@ -1183,7 +1108,7 @@ onMounted(async () => {
   .depan-teks > :nth-child(5) {
     animation-delay: 0.24s;
   }
-  .etalase {
+  .cari-kartu {
     animation-delay: 0.2s;
   }
 }
