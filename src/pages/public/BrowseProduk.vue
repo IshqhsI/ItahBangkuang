@@ -60,6 +60,7 @@
             <label for="urutan" class="sr-only">Urutkan</label>
             <ArrowDownUp :size="18" :stroke-width="2" aria-hidden="true" />
             <select id="urutan" v-model="sortBy" class="urut-pilih">
+              <option value="beragam">Pilihan beragam</option>
               <option value="terbaru">Paling baru</option>
               <option value="termurah">Harga termurah</option>
               <option value="termahal">Harga termahal</option>
@@ -146,7 +147,7 @@ import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import KartuProduk from '@/components/KartuProduk.vue';
 import { useSeo } from '@/lib/useSeo';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
-import { totalStok, punyaVarian } from '@/lib/utils';
+import { totalStok, punyaVarian, beragamkan } from '@/lib/utils';
 
 // Daftar disimpan di tingkat modul: saat kembali dari halaman detail,
 // daftar langsung tampil dan posisi gulir dapat dipulihkan oleh router.
@@ -164,7 +165,7 @@ const gagal = ref(false);
 
 const keyword = ref(String(route.query.q ?? ''));
 const kategoriAktif = ref(String(route.query.kategori ?? 'semua'));
-const sortBy = ref(String(route.query.urut ?? 'terbaru'));
+const sortBy = ref(String(route.query.urut ?? 'beragam'));
 const sembunyikanHabis = ref(route.query.habis !== '1');
 const tampilBatas = ref(LANGKAH);
 
@@ -246,8 +247,16 @@ const hasil = computed(() => {
   const daftar = dasar.value.filter(
     (p) => kategoriAktif.value === 'semua' || p.kategori === kategoriAktif.value,
   );
+  const terbaru = (a, b) => new Date(b.created_at) - new Date(a.created_at);
+  // "Pilihan beragam": terbaru, tetapi toko dan kategori digilir supaya tidak
+  // didominasi satu toko atau satu jenis produk
+  if (sortBy.value === 'beragam') {
+    const ada = daftar.filter((p) => !habis(p)).sort(terbaru);
+    const kosong = daftar.filter((p) => habis(p)).sort(terbaru);
+    return [...beragamkan(ada), ...beragamkan(kosong)];
+  }
   const urut = {
-    terbaru: (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    terbaru,
     termurah: (a, b) => hargaTerendah(a) - hargaTerendah(b),
     termahal: (a, b) => hargaTertinggi(b) - hargaTertinggi(a),
   }[sortBy.value] ?? (() => 0);
@@ -269,7 +278,7 @@ const bangunQuery = () => {
   const q = {};
   if (kategoriAktif.value !== 'semua') q.kategori = kategoriAktif.value;
   if (keyword.value.trim()) q.q = keyword.value.trim();
-  if (sortBy.value !== 'terbaru') q.urut = sortBy.value;
+  if (sortBy.value !== 'beragam') q.urut = sortBy.value;
   if (!sembunyikanHabis.value) q.habis = '1';
   return q;
 };
@@ -287,7 +296,7 @@ watch(
   (qr) => {
     const k = String(qr.kategori ?? 'semua');
     const q = String(qr.q ?? '');
-    const u = String(qr.urut ?? 'terbaru');
+    const u = String(qr.urut ?? 'beragam');
     const h = qr.habis !== '1';
     if (k !== kategoriAktif.value) kategoriAktif.value = k;
     if (q.trim() !== keyword.value.trim()) keyword.value = q;

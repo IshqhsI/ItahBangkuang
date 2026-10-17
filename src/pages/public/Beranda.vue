@@ -233,7 +233,7 @@ import {
   Search,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
-import { formatHargaProduk, totalStok } from '@/lib/utils';
+import { formatHargaProduk, totalStok, beragamkan } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { KATEGORI } from '@/lib/kategori';
@@ -255,11 +255,12 @@ const peranAktif = ref(0);
 const kategori = KATEGORI;
 
 // Produk di bagian "Produk terbaru": yang masih ada stok tampil duluan, yang habis di belakang
-const sisaProduk = computed(() =>
-  [...produkTerbaru.value]
-    .sort((a, b) => Number(totalStok(a) === 0) - Number(totalStok(b) === 0))
-    .slice(0, 8),
-);
+const sisaProduk = computed(() => {
+  const ada = produkTerbaru.value.filter((p) => totalStok(p) > 0);
+  const kosong = produkTerbaru.value.filter((p) => totalStok(p) === 0);
+  // Digilir antar toko dan kategori supaya satu toko tidak mendominasi
+  return [...beragamkan(ada), ...beragamkan(kosong)].slice(0, 8);
+});
 
 const caraKerja = [
   {
@@ -301,7 +302,7 @@ onMounted(async () => {
     .select('*, toko(nama_toko, alamat, status)')
     .eq('status', 'AKTIF')
     .order('created_at', { ascending: false })
-    .limit(8);
+    .limit(30);
 
   produkTerbaru.value = produk?.filter((p) => p.toko?.status === 'AKTIF') ?? [];
   loadingProduk.value = false;

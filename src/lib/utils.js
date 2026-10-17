@@ -66,3 +66,25 @@ export const tujuanAman = (tujuan) =>
   typeof tujuan === 'string' && tujuan.startsWith('/') && !tujuan.startsWith('//')
     ? tujuan
     : null
+
+/**
+ * Menyusun ulang daftar produk (yang sudah terurut) supaya beragam:
+ * produk dari toko atau kategori yang sama tidak menumpuk berdekatan.
+ * Urutan asal tetap dihormati selama tidak melanggar keberagaman.
+ * @param {Array} daftar produk dengan `toko_id` dan `kategori`
+ * @param {number} jendela jumlah produk terakhir yang dibandingkan
+ */
+export const beragamkan = (daftar, jendela = 4) => {
+  const sisa = [...daftar]
+  const hasil = []
+  while (sisa.length) {
+    const terakhir = hasil.slice(-jendela)
+    let i = sisa.findIndex(
+      (p) => !terakhir.some((t) => t.toko_id === p.toko_id || t.kategori === p.kategori),
+    )
+    if (i === -1) i = sisa.findIndex((p) => !terakhir.some((t) => t.toko_id === p.toko_id))
+    if (i === -1) i = 0
+    hasil.push(sisa.splice(i, 1)[0])
+  }
+  return hasil
+}
