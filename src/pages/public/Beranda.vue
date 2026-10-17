@@ -45,8 +45,12 @@
 
           <!-- Etalase: produk asli terbaru -->
           <div v-if="loadingProduk || etalase.length" class="etalase" aria-label="Baru dipajang">
+            <span class="etalase-lencana">
+              <span class="titik"></span>
+              Baru dipajang
+            </span>
             <template v-if="loadingProduk">
-              <div v-for="n in 3" :key="n" class="lengkung-kerangka"></div>
+              <div v-for="n in 3" :key="n" class="lengkung lengkung-kerangka"></div>
             </template>
             <RouterLink
               v-for="p in etalase"
@@ -56,8 +60,10 @@
               class="lengkung"
             >
               <img :src="p.foto_url" :alt="p.nama_produk" class="lengkung-foto" />
-              <span class="lengkung-nama">{{ p.nama_produk }}</span>
-              <span class="lengkung-harga">{{ formatHargaProduk(p) }}</span>
+              <span class="lengkung-info">
+                <span class="lengkung-nama">{{ p.nama_produk }}</span>
+                <span class="lengkung-harga">{{ formatHargaProduk(p) }}</span>
+              </span>
             </RouterLink>
           </div>
         </div>
@@ -443,7 +449,7 @@ onMounted(async () => {
   margin-top: 1.25rem;
   font-family: var(--font-judul);
   font-weight: 400;
-  font-size: clamp(2.9rem, 9vw, 5.4rem);
+  font-size: clamp(2.6rem, 7.4vw, 4.6rem);
   line-height: 0.98;
   letter-spacing: -0.015em;
   color: var(--sungai);
@@ -515,64 +521,117 @@ onMounted(async () => {
   z-index: 1;
 }
 
-/* Lengkung pintu: foto produk asli */
+/* Etalase hero: satu lengkung tinggi + dua lengkung pendek, keterangan menempel di foto */
 .etalase {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-rows: auto 1fr 1fr;
   gap: 0.75rem;
-  align-items: end;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1.5px solid #fff;
+  border-radius: 40px 40px 28px 28px;
+  box-shadow: var(--bayang);
+  backdrop-filter: blur(6px);
 }
 @media (min-width: 980px) {
   .etalase {
     gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 56px 56px 32px 32px;
   }
 }
+.etalase-lencana {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.9rem;
+  background: #fff;
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.titik {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e0884e;
+  box-shadow: 0 0 0 4px rgba(224, 136, 78, 0.2);
+}
 .lengkung {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  position: relative;
+  display: block;
+  min-height: 150px;
+  overflow: hidden;
   text-decoration: none;
   color: var(--ink);
+  background: var(--sage);
+  border-radius: 999px 999px 22px 22px;
   transition: transform 0.4s var(--ease-out);
 }
-.lengkung:nth-child(1) .lengkung-foto {
-  aspect-ratio: 3 / 5.2;
+.lengkung:nth-of-type(1) {
+  grid-row: 2 / 4;
+  min-height: 340px;
 }
-.lengkung:nth-child(2) .lengkung-foto {
-  aspect-ratio: 3 / 4.2;
+@media (min-width: 980px) {
+  .lengkung:nth-of-type(1) {
+    min-height: 420px;
+  }
 }
-.lengkung:nth-child(3) .lengkung-foto {
-  aspect-ratio: 3 / 4.7;
+.lengkung:nth-of-type(2) {
+  border-radius: 28px 28px 22px 22px;
+}
+.lengkung:nth-of-type(3) {
+  border-radius: 28px 28px 22px 22px;
 }
 .lengkung:hover {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
 }
 .lengkung-foto {
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 999px 999px 22px 22px;
-  background: var(--sage);
-  box-shadow: var(--bayang);
-  margin-bottom: 0.4rem;
+  transition: transform 0.7s var(--ease-out);
+}
+.lengkung:hover .lengkung-foto {
+  transform: scale(1.05);
+}
+.lengkung-info {
+  position: absolute;
+  left: 0.55rem;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.55rem 0.8rem;
+  background: rgba(255, 255, 255, 0.93);
+  border-radius: 16px;
+  backdrop-filter: blur(4px);
 }
 .lengkung-nama {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.25;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .lengkung-harga {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--sungai);
-  font-weight: 700;
+  font-weight: 800;
 }
 .lengkung-kerangka {
-  aspect-ratio: 3 / 4.6;
-  border-radius: 999px 999px 22px 22px;
   background: linear-gradient(100deg, var(--sage) 30%, #f0f4f0 50%, var(--sage) 70%);
   background-size: 200% 100%;
   animation: kilau 1.6s ease-in-out infinite;
@@ -583,11 +642,24 @@ onMounted(async () => {
   }
 }
 @media (max-width: 560px) {
+  .etalase {
+    padding: 0.75rem;
+    border-radius: 32px 32px 24px 24px;
+  }
+  .lengkung:nth-of-type(1) {
+    min-height: 300px;
+  }
+  .lengkung-info {
+    left: 0.4rem;
+    right: 0.4rem;
+    bottom: 0.4rem;
+    padding: 0.4rem 0.6rem;
+  }
   .lengkung-nama {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
   .lengkung-harga {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
   }
 }
 
