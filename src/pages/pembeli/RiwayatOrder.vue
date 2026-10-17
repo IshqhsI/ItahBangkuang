@@ -3,7 +3,7 @@
     <section class="kepala">
       <div class="wadah">
         <h1 class="judul-halaman">Pesanan saya</h1>
-        <p class="sub-halaman">Semua pesananmu dan statusnya.</p>
+        <p class="sub-halaman">Semua pesanan beserta statusnya.</p>
       </div>
     </section>
 
@@ -24,7 +24,7 @@
 
       <div v-if="loading" class="memuat">
         <div class="spinner"></div>
-        <p>Mengambil pesananmu…</p>
+        <p>Mengambil pesanan Anda…</p>
       </div>
 
       <ul v-else-if="orderFiltered.length" class="daftar">
@@ -75,7 +75,7 @@
       <div v-else class="kosong">
         <ReceiptText :size="44" :stroke-width="2" />
         <h3>{{ filterAktif === 'semua' ? 'Belum ada pesanan' : `Tidak ada pesanan yang ${labelStatus(filterAktif).toLowerCase()}` }}</h3>
-        <p v-if="filterAktif === 'semua'">Pesananmu muncul di sini.</p>
+        <p v-if="filterAktif === 'semua'">Pesanan akan tampil di sini.</p>
         <p v-else>Coba lihat status lainnya.</p>
         <RouterLink v-if="filterAktif === 'semua'" to="/produk" class="tombol tombol-merah">Lihat produk</RouterLink>
         <button v-else type="button" class="tombol" @click="filterAktif = 'semua'">Lihat semua pesanan</button>

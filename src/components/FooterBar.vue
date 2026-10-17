@@ -6,8 +6,8 @@
           <span class="kaki-tanda" aria-hidden="true"><Store :size="16" :stroke-width="2.25" /></span>
           <span class="kaki-nama"><span class="itah">Itah</span>Bangkuang</span>
         </RouterLink>
-        <p class="kaki-semboyan">Belanja dari tetangga, jualan untuk tetangga.</p>
-        <p class="kaki-ket">Pasar online warga Kelurahan Bangkuang.</p>
+        <p class="kaki-semboyan">Marketplace produk lokal Kelurahan Bangkuang.</p>
+        <p class="kaki-ket">Belanja dan berjualan produk lokal secara daring.</p>
       </div>
 
       <nav class="kaki-tautan" aria-label="Tautan kaki">

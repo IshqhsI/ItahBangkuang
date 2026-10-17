@@ -4,8 +4,8 @@
       <div class="wadah sempit">
         <h1 class="judul-halaman kepala-judul">Saran &amp; keluhan</h1>
         <p class="kepala-sub">
-          Ada yang bingung, rusak, atau kurang? Ceritakan. Pesanmu
-          dibaca langsung oleh pengelola.
+          Sampaikan kendala, kesalahan, atau usulan Anda. Pesan dibaca
+          langsung oleh pengelola.
         </p>
       </div>
     </section>
@@ -14,8 +14,8 @@
       <!-- Belum masuk -->
       <div v-if="!authStore.user" class="kosong">
         <LogIn :size="44" :stroke-width="2" />
-        <h3>Masuk dulu, ya</h3>
-        <p>Biar kami bisa membalas kalau perlu.</p>
+        <h3>Masuk terlebih dahulu</h3>
+        <p>Agar kami dapat membalas bila diperlukan.</p>
         <RouterLink :to="{ path: '/login', query: { redirect: '/feedback' } }" class="tombol tombol-merah">
           Masuk
         </RouterLink>
@@ -25,7 +25,7 @@
       <div v-else-if="success" class="papan papan-hijau papan-bingkai terkirim">
         <CircleCheck :size="44" :stroke-width="2.25" />
         <h2 class="huruf-papan">Terima kasih!</h2>
-        <p>Pesanmu sudah sampai. Masukan seperti ini bikin ItahBangkuang makin baik.</p>
+        <p>Pesan Anda telah kami terima. Terima kasih atas masukannya.</p>
         <div class="terkirim-aksi">
           <button type="button" class="tombol tombol-kuning" @click="kirimLagi">Kirim pesan lain</button>
           <RouterLink to="/" class="tombol">Ke beranda</RouterLink>
@@ -35,7 +35,7 @@
       <!-- Formulir -->
       <form v-else class="papan formulir" novalidate @submit.prevent="handleSubmit">
         <fieldset class="jenis">
-          <legend class="label">Pesanmu tentang apa?</legend>
+          <legend class="label">Topik pesan</legend>
           <div class="jenis-pilihan">
             <label
               v-for="k in kategoriList"
@@ -112,7 +112,7 @@ const kategoriList = [
     label: 'Saran',
     icon: markRaw(Lightbulb),
     desc: 'Ide supaya lebih enak dipakai',
-    placeholder: 'Contoh: Akan lebih gampang kalau di halaman produk ada…',
+    placeholder: 'Contoh: Akan lebih mudah jika halaman produk memiliki…',
   },
   {
     slug: 'keluhan',
@@ -125,7 +125,7 @@ const kategoriList = [
     slug: 'fitur',
     label: 'Minta fitur',
     icon: markRaw(Wrench),
-    desc: 'Fitur baru yang kamu butuhkan',
+    desc: 'Fitur baru yang Anda butuhkan',
     placeholder: 'Contoh: Saya butuh fitur … supaya bisa …',
   },
 ];
@@ -136,7 +136,7 @@ const placeholder = computed(
 
 const handleSubmit = async () => {
   if (!form.value.isi.trim()) {
-    errorMsg.value = 'Tulis dulu pesanmu sebelum dikirim.';
+    errorMsg.value = 'Tulis pesan sebelum dikirim.';
     return;
   }
   loading.value = true;
@@ -150,7 +150,7 @@ const handleSubmit = async () => {
   });
 
   if (error) {
-    errorMsg.value = 'Pesanmu belum terkirim. Cek internetmu, lalu coba lagi.';
+    errorMsg.value = 'Pesan Anda belum terkirim. Periksa koneksi internet Anda, lalu coba lagi.';
     loading.value = false;
     return;
   }

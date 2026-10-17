@@ -216,7 +216,7 @@ onUnmounted(() => {
 const handleLogout = () => {
   menuOpen.value = false;
   authStore.logout(router);
-  toast.success('Sudah keluar. Sampai ketemu lagi.');
+  toast.success('Anda telah keluar.');
 };
 </script>
 

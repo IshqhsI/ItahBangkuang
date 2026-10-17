@@ -4,7 +4,7 @@
       <div class="wadah kepala-dalam">
         <div>
           <h1 class="judul-halaman">Produk saya</h1>
-          <p class="sub-halaman">Ubah, sembunyikan, atau hapus produk tokomu.</p>
+          <p class="sub-halaman">Ubah, sembunyikan, atau hapus produk toko Anda.</p>
         </div>
         <RouterLink to="/toko/produk/tambah" class="tombol tombol-merah">
           <Plus :size="20" :stroke-width="2.75" />
@@ -85,7 +85,7 @@
       <div v-else class="kosong">
         <PackageOpen :size="44" :stroke-width="2" />
         <h3>{{ filterAktif === 'semua' ? 'Belum ada produk' : 'Tidak ada produk di sini' }}</h3>
-        <p v-if="filterAktif === 'semua'">Pajang produk pertamamu supaya bisa dilihat pembeli.</p>
+        <p v-if="filterAktif === 'semua'">Tambahkan produk pertama agar dapat dilihat pembeli.</p>
         <p v-else>Coba lihat kelompok lain.</p>
         <RouterLink v-if="filterAktif === 'semua'" to="/toko/produk/tambah" class="tombol tombol-merah">Tambah produk pertama</RouterLink>
         <button v-else type="button" class="tombol" @click="filterAktif = 'semua'">Lihat semua produk</button>
@@ -97,7 +97,7 @@
       <form method="dialog" class="dialog-isi" @submit.prevent>
         <Trash2 :size="32" :stroke-width="2.25" class="dialog-ikon" />
         <h2 class="huruf-papan">Hapus “{{ hapusTarget?.nama_produk }}”?</h2>
-        <p>Produk ini hilang permanen dan tidak bisa dikembalikan. Kalau cuma mau berhenti menjual sementara, pilih <strong>Sembunyikan</strong>.</p>
+        <p>Produk ini hilang permanen dan tidak bisa dikembalikan. Jika hanya ingin berhenti menjual sementara, pilih <strong>Sembunyikan</strong>.</p>
         <div class="dialog-aksi">
           <button type="button" class="tombol" @click="dialogHapus.close()">Batal</button>
           <button type="button" class="tombol tombol-merah" :disabled="!!prosesId" @click="konfirmasiHapus">
@@ -151,7 +151,7 @@ const toggleStatus = async (p) => {
   const statusBaru = p.status === 'DISEMBUNYIKAN' ? 'AKTIF' : 'DISEMBUNYIKAN';
   const { error } = await supabase.from('produk').update({ status: statusBaru }).eq('id', p.id);
   if (error) {
-    toast.error('Statusnya belum berubah. Cek internetmu, lalu coba lagi.');
+    toast.error('Statusnya belum berubah. Periksa koneksi internet Anda, lalu coba lagi.');
   } else {
     p.status = statusBaru;
     toast.success(statusBaru === 'AKTIF' ? `“${p.nama_produk}” tampil lagi.` : `“${p.nama_produk}” disembunyikan.`);

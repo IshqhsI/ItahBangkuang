@@ -44,9 +44,9 @@ Bukan marketplace nasional: cakupannya satu kelurahan (Bangkuang, Kalimantan Ten
 
 ### Suara & bahasa (dikonfirmasi pengguna, direvisi)
 
-- Gaya **ngobrol santai khas warung**: pendek, lugas, seperti pedagang menyapa pembeli. Contoh: "Mau jajan apa hari ini?"
-- Menyapa **"kamu"** hanya bila perlu; lebih sering cukup kalimat perintah atau pertanyaan pendek. Jangan sok akrab, jangan lebay, jangan terdengar seperti aplikasi ("Silakan", "Mohon", "Berhasil!").
-- Judul dan tombol memakai kata kerja konkret dan kosakata warung secukupnya: etalase, dipajang, mampir, diantar.
+- Gaya **profesional dan netral**: kalimat singkat, jelas, sopan, tanpa slang dan tanpa seruan. Contoh: "Cari produk", "Produk terbaru", "Toko di Bangkuang".
+- Menyapa pengguna dengan **"Anda"** hanya bila perlu; sering kali cukup label atau kalimat perintah tanpa kata ganti. Jangan sok akrab, jangan lebay, tanpa tanda seru.
+- Hindari kosakata warung yang terlalu gaya (etalase, dipajang, mampir, dagangan, tetangga). Gunakan: produk, toko, ditambahkan, warga.
 - Tidak memakai bahasa daerah; gunakan bahasa Indonesia yang umum.
 - Istilah baku di seluruh aplikasi: **produk**, **toko**, **pesanan** (bukan "order"), **pembeli**, **penjual**, **pesan** (kata kerja), **Masuk** / **Daftar** / **Keluar** (bukan Login/Logout), **WA** atau **WhatsApp**.
 - Tombol menyebut hasilnya ("Kirim pesanan", "Simpan produk"), bukan "Submit"/"OK".

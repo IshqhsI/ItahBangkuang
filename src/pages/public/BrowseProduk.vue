@@ -4,7 +4,7 @@
     <section class="kepala">
       <div class="wadah">
         <h1 class="kepala-judul huruf-papan">Semua produk</h1>
-        <p class="kepala-sub">Dagangan tetangga se-Bangkuang. Dari jajanan sampai jasa tukang.</p>
+        <p class="kepala-sub">Produk dan jasa dari warga Kelurahan Bangkuang.</p>
 
         <form class="cari" role="search" @submit.prevent="fetchProduk">
           <Search class="cari-ikon" :size="22" :stroke-width="2.5" aria-hidden="true" />
@@ -64,12 +64,12 @@
       <div class="wadah">
         <p v-if="!loadingProduk && produkList.length" class="hasil-info" aria-live="polite">
           <template v-if="keyword || kategoriAktif !== 'semua'">
-            Ketemu <strong>{{ produkList.length }}</strong> produk
+            Ditemukan <strong>{{ produkList.length }}</strong> produk
             <template v-if="keyword"> untuk “{{ keyword }}”</template>
             <template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>
           </template>
           <template v-else>
-            <strong>{{ produkList.length }}</strong> produk dari tetangga
+            <strong>{{ produkList.length }}</strong> produk
           </template>
         </p>
 
@@ -84,7 +84,7 @@
         <div v-else class="kosong">
           <SearchX :size="44" :stroke-width="2" />
           <template v-if="keyword || kategoriAktif !== 'semua'">
-            <h3>Belum ketemu</h3>
+            <h3>Tidak ditemukan</h3>
             <p v-if="keyword">
               Tidak ada produk dengan nama “{{ keyword }}”<template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>. Coba kata lain yang lebih pendek.
             </p>
@@ -94,8 +94,8 @@
             </button>
           </template>
           <template v-else>
-            <h3>Etalase masih kosong</h3>
-            <p>Belum ada tetangga yang memajang produk.</p>
+            <h3>Belum ada produk</h3>
+            <p>Belum ada penjual yang menambahkan produk.</p>
           </template>
         </div>
       </div>
@@ -116,7 +116,7 @@ import { KATEGORI, labelKategori } from '@/lib/kategori';
 useSeo({
   title: 'Semua Produk',
   description:
-    'Lihat semua produk warga Kelurahan Bangkuang: jajanan, lauk, minuman, jahitan, sampai jasa tukang.',
+    'Daftar produk dan jasa warga Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa.',
 });
 
 const route = useRoute();

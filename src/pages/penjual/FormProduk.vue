@@ -6,7 +6,7 @@
           <ArrowLeft :size="18" :stroke-width="2.5" />
           Kembali ke produk
         </RouterLink>
-        <h1 class="judul-halaman">{{ isEdit ? 'Ubah produk' : 'Pajang produk baru' }}</h1>
+        <h1 class="judul-halaman">{{ isEdit ? 'Ubah produk' : 'Tambah produk baru' }}</h1>
       </div>
     </section>
 
@@ -174,7 +174,7 @@
           <RouterLink to="/toko/produk" class="tombol tombol-besar">Batal</RouterLink>
           <button type="submit" class="tombol tombol-merah tombol-besar aksi-utama" :disabled="loading || uploading">
             <span v-if="loading || uploading" class="spinner-sm"></span>
-            {{ loading || uploading ? 'Menyimpan…' : isEdit ? 'Simpan perubahan' : 'Pajang produk' }}
+            {{ loading || uploading ? 'Menyimpan…' : isEdit ? 'Simpan perubahan' : 'Simpan produk' }}
           </button>
         </div>
       </form>
@@ -395,7 +395,7 @@ const handleSubmit = async () => {
   if (fotoFile.value) {
     fotoUrl = await uploadFoto();
     if (!fotoUrl) {
-      errorMsg.value = 'Fotonya belum terunggah. Cek internetmu, lalu coba lagi.';
+      errorMsg.value = 'Fotonya belum terunggah. Periksa koneksi internet Anda, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -422,7 +422,7 @@ const handleSubmit = async () => {
       .eq('toko_id', tokoId.value);
 
     if (error) {
-      errorMsg.value = 'Perubahan belum tersimpan. Cek internetmu, lalu coba lagi.';
+      errorMsg.value = 'Perubahan belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -432,11 +432,11 @@ const handleSubmit = async () => {
     const { error } = await supabase.from('produk').insert(payload);
 
     if (error) {
-      errorMsg.value = 'Produk belum tersimpan. Cek internetmu, lalu coba lagi.';
+      errorMsg.value = 'Produk belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
       loading.value = false;
       return;
     }
-    successMsg.value = 'Produk sudah dipajang.';
+    successMsg.value = 'Produk berhasil ditambahkan.';
     setTimeout(() => router.push('/toko/produk'), 1000);
   }
 

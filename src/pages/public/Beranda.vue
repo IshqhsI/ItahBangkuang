@@ -13,22 +13,22 @@
       <section class="depan">
         <div class="wadah depan-dalam">
           <div class="depan-teks">
-            <p class="sapa">Dari warga, untuk warga</p>
+            <p class="sapa">Marketplace Kelurahan Bangkuang</p>
 
             <h1 class="depan-judul">
-              Belanja dari tetangga,
-              <span class="depan-judul-2">Jualan untuk tetangga.</span>
+              Belanja produk lokal,
+              <span class="depan-judul-2">langsung dari warga.</span>
             </h1>
 
             <p class="depan-sub">
-              Etalase online warga <strong>Kelurahan Bangkuang</strong>. Pilih dagangan
-              tetangga, pesan di sini, lalu urus pengantarannya lewat WhatsApp.
+              Telusuri produk dan jasa dari warga <strong>Kelurahan Bangkuang</strong>. Pilih produk,
+              pesan di sini, lalu selesaikan transaksi melalui WhatsApp.
             </p>
 
             <div class="depan-aksi">
               <RouterLink to="/produk" class="btn btn-utama">
                 <ShoppingBasket :size="22" :stroke-width="2" />
-                Lihat dagangan
+                Lihat produk
                 <ArrowRight :size="20" :stroke-width="2" />
               </RouterLink>
               <RouterLink :to="bukaTokoDest" class="btn btn-lembut">
@@ -40,7 +40,7 @@
 
           <!-- Kartu pencarian -->
           <div class="cari-kartu">
-            <p class="cari-judul">Mau jajan apa hari ini?</p>
+            <p class="cari-judul">Cari produk</p>
 
             <form class="cari-form" role="search" @submit.prevent="cariProduk">
               <label for="cari-beranda" class="sr-only">Cari produk</label>
@@ -50,14 +50,14 @@
                 v-model="kataCari"
                 type="search"
                 class="cari-input"
-                placeholder="Cari kue, lauk pauk, jasa tukang"
+                placeholder="Cari produk atau jasa"
                 enterkeyhint="search"
                 autocomplete="off"
               />
               <button type="submit" class="cari-tombol">Cari</button>
             </form>
 
-            <p class="cari-label">Atau pilih jenisnya</p>
+            <p class="cari-label">Atau telusuri kategori</p>
             <div class="cari-chip-deret">
               <RouterLink
                 v-for="kat in kategori"
@@ -76,7 +76,7 @@
                 <dd>{{ stats.produk }}</dd>
               </div>
               <div>
-                <dt>Toko tetangga</dt>
+                <dt>Toko aktif</dt>
                 <dd>{{ stats.toko }}</dd>
               </div>
             </dl>
@@ -89,9 +89,9 @@
         <div class="wadah">
           <div class="kepala-bagian">
             <div>
-              <p class="kicker"><span>01</span>Etalase</p>
-          <h2 class="judul-bagian">Baru dipajang</h2>
-              <p class="sub-bagian">Dagangan yang baru masuk etalase.</p>
+              <p class="kicker"><span>01</span>Produk</p>
+          <h2 class="judul-bagian">Produk terbaru</h2>
+              <p class="sub-bagian">Produk yang baru ditambahkan penjual.</p>
             </div>
             <RouterLink to="/produk" class="btn btn-garis">
               Lihat semua produk
@@ -128,8 +128,8 @@
           </div>
           <div v-else class="kosong-lembut">
             <Store :size="40" :stroke-width="1.5" />
-            <h3>Etalase masih kosong</h3>
-            <p>Belum ada yang jualan. Jadi yang pertama?</p>
+            <h3>Belum ada produk</h3>
+            <p>Belum ada penjual yang menambahkan produk. Daftarkan toko Anda sekarang.</p>
             <RouterLink :to="bukaTokoDest" class="btn btn-utama">Buka toko gratis</RouterLink>
           </div>
         </div>
@@ -139,8 +139,8 @@
       <section v-if="tokoAktif.length" class="bagian">
         <div class="wadah">
           <p class="kicker"><span>02</span>Toko</p>
-          <h2 class="judul-bagian">Kenalan sama tetangga</h2>
-          <p class="sub-bagian">Mereka yang sudah buka toko di sini.</p>
+          <h2 class="judul-bagian">Toko di Bangkuang</h2>
+          <p class="sub-bagian">Toko yang sudah terdaftar dan aktif.</p>
           <div class="tetangga">
             <RouterLink v-for="t in tokoAktif" :key="t.id" :to="`/toko/${t.id}`" class="tetangga-kartu">
               <span class="tetangga-foto">
@@ -164,8 +164,8 @@
       <section class="bagian bagian-rapat">
         <div class="wadah">
           <p class="kicker"><span>03</span>Cara pakai</p>
-          <h2 class="judul-bagian">Alurnya sederhana</h2>
-          <p class="sub-bagian">Tiga langkah, cukup dari HP.</p>
+          <h2 class="judul-bagian">Cara menggunakan</h2>
+          <p class="sub-bagian">Tiga langkah, dapat dilakukan dari HP.</p>
 
           <div class="peran" role="tablist" aria-label="Pilih peran">
             <button
@@ -198,10 +198,10 @@
         <div class="wadah">
           <div class="ajakan">
             <div class="ajakan-teks">
-              <h2 class="ajakan-judul">Dagangan kamu layak dipajang.</h2>
+              <h2 class="ajakan-judul">Jual produk Anda di sini.</h2>
               <p class="ajakan-ket">
-                Selama ini jualan lewat status WA atau grup Facebook? Pajang juga di sini
-                supaya lebih mudah ditemukan tetangga. Gratis.
+                Buka toko gratis dan jangkau pembeli di Kelurahan Bangkuang.
+                Pembeli menghubungi Anda langsung lewat WhatsApp.
               </p>
               <RouterLink :to="bukaTokoDest" class="btn btn-terang">
                 Buka toko gratis
@@ -254,7 +254,7 @@ const tokoAktif = ref([]);
 const peranAktif = ref(0);
 const kategori = KATEGORI;
 
-// Produk di bagian "Baru dipajang": yang masih ada stok tampil duluan, yang habis di belakang
+// Produk di bagian "Produk terbaru": yang masih ada stok tampil duluan, yang habis di belakang
 const sisaProduk = computed(() =>
   [...produkTerbaru.value]
     .sort((a, b) => Number(totalStok(a) === 0) - Number(totalStok(b) === 0))
@@ -266,27 +266,27 @@ const caraKerja = [
     peran: 'Saya pembeli',
     icon: ShoppingBasket,
     langkah: [
-      { judul: 'Pilih produk', ket: 'Telusuri kategori, atau cari langsung nama produknya.' },
-      { judul: 'Isi pesanan', ket: 'Tulis nama dan alamat, lalu pilih COD atau transfer.' },
-      { judul: 'Lanjut di WhatsApp', ket: 'Penjual mengonfirmasi, lalu kalian atur pengantarannya langsung.' },
+      { judul: 'Pilih produk', ket: 'Telusuri kategori atau cari berdasarkan nama produk.' },
+      { judul: 'Isi pesanan', ket: 'Lengkapi nama dan alamat, lalu pilih COD atau transfer.' },
+      { judul: 'Lanjut di WhatsApp', ket: 'Penjual mengonfirmasi, lalu pengantaran diatur langsung dengan penjual.' },
     ],
   },
   {
     peran: 'Saya penjual',
     icon: Store,
     langkah: [
-      { judul: 'Daftarkan toko', ket: 'Gratis. Admin memeriksa dulu sebelum tokomu tampil.' },
-      { judul: 'Pajang produk', ket: 'Foto, nama, harga, stok. Beda ukuran atau rasa? Pakai varian.' },
-      { judul: 'Terima pesanan', ket: 'Pesanan baru masuk ke WA-mu. Konfirmasi, lalu atur pengantarannya.' },
+      { judul: 'Daftarkan toko', ket: 'Gratis. Admin memeriksa toko sebelum ditampilkan.' },
+      { judul: 'Tambah produk', ket: 'Isi foto, nama, harga, dan stok. Gunakan varian untuk ukuran atau rasa berbeda.' },
+      { judul: 'Terima pesanan', ket: 'Pesanan baru tampil di halaman Pesanan. Konfirmasi, lalu atur pengantaran.' },
     ],
   },
 ];
 
 const untung = [
-  'Pajang produk sebanyak yang kamu mau',
-  'Pesanan langsung masuk ke WA-mu',
-  'COD atau transfer, kamu yang atur',
-  'Cukup bisa pakai HP',
+  'Tambah produk tanpa batas',
+  'Pesanan tercatat di halaman Pesanan',
+  'COD atau transfer, sesuai pilihan Anda',
+  'Cukup menggunakan HP',
 ];
 
 const bukaTokoDest = computed(() => {

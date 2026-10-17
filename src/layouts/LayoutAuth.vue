@@ -5,10 +5,10 @@
         <span class="itah">Itah</span><span>Bangkuang</span>
       </RouterLink>
       <p class="auth-semboyan huruf-papan">
-        <span>Belanja dari tetangga,</span>
-        <span class="kuning">Jualan untuk tetangga.</span>
+        <span>Belanja produk lokal,</span>
+        <span class="kuning">langsung dari warga.</span>
       </p>
-      <p class="auth-ket">Pasar online warga Kelurahan Bangkuang.</p>
+      <p class="auth-ket">Belanja dan berjualan produk lokal secara daring.</p>
     </aside>
 
     <main class="auth-isi">

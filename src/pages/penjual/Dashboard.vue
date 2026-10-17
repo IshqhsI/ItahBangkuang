@@ -2,7 +2,7 @@
   <LayoutPenjual :statusToko="toko?.status" :tokoId="toko?.id">
     <div v-if="loading" class="memuat">
       <div class="spinner"></div>
-      <p>Membuka tokomu…</p>
+      <p>Membuka toko Anda…</p>
     </div>
 
     <template v-else>
@@ -44,7 +44,7 @@
         <section class="kepala">
           <div class="wadah kepala-dalam">
             <div>
-              <p class="kepala-sapa">Halo, ini tokomu hari ini</p>
+              <p class="kepala-sapa">Ringkasan toko</p>
               <h1 class="judul-halaman">{{ toko?.nama_toko }}</h1>
             </div>
             <div class="kepala-aksi">
@@ -69,20 +69,20 @@
           >
             <BellRing :size="30" :stroke-width="2.25" />
             <span class="perlu-teks">
-              <strong class="huruf-papan">{{ stats.orderMenunggu }} pesanan menunggu konfirmasimu</strong>
-              <span>Balas cepat, biar pembeli tidak batal.</span>
+              <strong class="huruf-papan">{{ stats.orderMenunggu }} pesanan menunggu konfirmasi</strong>
+              <span>Konfirmasi segera agar pembeli tidak membatalkan.</span>
             </span>
             <ArrowRight :size="24" :stroke-width="2.5" />
           </RouterLink>
           <p v-else class="perlu-tenang">
             <CircleCheck :size="20" :stroke-width="2.5" />
-            Tidak ada pesanan yang menunggu. Mantap.
+            Tidak ada pesanan yang menunggu konfirmasi.
           </p>
 
           <!-- Ringkasan -->
           <dl class="ringkasan papan">
             <div>
-              <dt>Produk dipajang</dt>
+              <dt>Produk aktif</dt>
               <dd>{{ stats.totalProduk }}</dd>
             </div>
             <div>
@@ -119,14 +119,14 @@
               <div v-else class="kosong">
                 <Inbox :size="36" :stroke-width="2" />
                 <h3>Belum ada pesanan</h3>
-                <p>Bagikan tautan tokomu ke grup WA supaya tetangga tahu.</p>
+                <p>Bagikan tautan toko ke grup WhatsApp agar warga mengetahuinya.</p>
               </div>
             </section>
 
             <!-- Produk -->
             <section aria-labelledby="judul-produk">
               <div class="kepala-bagian">
-                <h2 id="judul-produk" class="huruf-papan">Produkmu</h2>
+                <h2 id="judul-produk" class="huruf-papan">Produk</h2>
                 <RouterLink to="/toko/produk" class="lihat">Kelola</RouterLink>
               </div>
 
@@ -147,7 +147,7 @@
               <div v-else class="kosong">
                 <PackageOpen :size="36" :stroke-width="2" />
                 <h3>Belum ada produk</h3>
-                <p>Pajang produk pertamamu supaya bisa dilihat pembeli.</p>
+                <p>Tambahkan produk pertama agar dapat dilihat pembeli.</p>
                 <RouterLink to="/toko/produk/tambah" class="tombol tombol-merah">Tambah produk pertama</RouterLink>
               </div>
             </section>
@@ -156,7 +156,7 @@
           <!-- Tautan toko -->
           <div class="bagikan papan papan-bingkai">
             <div class="bagikan-teks">
-              <p class="label">Tautan tokomu</p>
+              <p class="label">Tautan toko</p>
               <p class="bagikan-url">{{ baseUrl }}/toko/{{ toko?.id }}</p>
             </div>
             <button type="button" class="tombol" @click="copyLink">
@@ -219,24 +219,24 @@ const INFO_STATUS = {
   PENDING: {
     icon: markRaw(Hourglass),
     label: 'Menunggu pemeriksaan',
-    judul: 'Tokomu sedang diperiksa',
-    teks: 'Terima kasih sudah mendaftar. Admin sedang memeriksa info tokomu, biasanya kurang dari 24 jam. Setelah disetujui, kamu bisa memajang produk.',
+    judul: 'Toko sedang diperiksa',
+    teks: 'Terima kasih telah mendaftar. Admin sedang memeriksa informasi toko, biasanya kurang dari 24 jam. Setelah disetujui, Anda dapat menambahkan produk.',
   },
   DITOLAK: {
     icon: markRaw(CircleX),
     label: 'Ditolak',
-    judul: 'Tokomu belum bisa disetujui',
-    teks: 'Info tokomu perlu diperbaiki dulu. Setelah diperbaiki, hubungi admin supaya diperiksa lagi.',
+    judul: 'Toko belum dapat disetujui',
+    teks: 'Info toko Anda perlu diperbaiki dulu. Setelah diperbaiki, hubungi admin supaya diperiksa lagi.',
   },
   DIBLOKIR: {
     icon: markRaw(Ban),
     label: 'Diblokir',
-    judul: 'Tokomu diblokir',
-    teks: 'Admin memblokir tokomu. Hubungi admin untuk tahu penyebabnya dan apa yang bisa dilakukan.',
+    judul: 'Toko diblokir',
+    teks: 'Toko diblokir oleh admin. Hubungi admin untuk mengetahui penyebab dan langkah selanjutnya.',
   },
 };
 const statusInfo = computed(() => INFO_STATUS[statusToko.value] ?? INFO_STATUS.PENDING);
-const tautanAdmin = tautanWa('6282253158560', 'Halo admin, saya penjual di ItahBangkuang dan mau tanya soal status toko saya.');
+const tautanAdmin = tautanWa('6282253158560', 'Halo admin, saya penjual di ItahBangkuang. Saya ingin menanyakan status toko saya.');
 
 const copyLink = async () => {
   await navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.id}`);

@@ -2,7 +2,7 @@
   <Transition name="turun">
     <div v-if="!online" class="offline" role="status">
       <WifiOff :size="18" :stroke-width="2.5" />
-      <span>Kamu sedang offline. Produk dan pesanan baru muncul setelah internetnya kembali.</span>
+      <span>Anda sedang offline. Data terbaru akan tampil setelah koneksi internet kembali.</span>
     </div>
   </Transition>
 </template>

@@ -4,7 +4,7 @@
       <div class="wadah sempit">
         <h1 class="judul-halaman">Profil toko</h1>
         <p class="sub-halaman">
-          {{ mode === 'edit' ? 'Ubah info tokomu, lalu simpan.' : 'Beginilah tokomu terlihat oleh pembeli.' }}
+          {{ mode === 'edit' ? 'Ubah informasi toko, lalu simpan.' : 'Tampilan toko di mata pembeli.' }}
         </p>
       </div>
     </section>
@@ -77,7 +77,7 @@
                 @input="rapikanWa"
               />
             </div>
-            <span id="wa-bantuan" class="bantuan">Pembeli menghubungimu lewat nomor ini. Pesanan baru juga muncul di halaman Pesanan. Tulis tanpa 0 di depan.</span>
+            <span id="wa-bantuan" class="bantuan">Pembeli menghubungi Anda lewat nomor ini. Pesanan baru juga muncul di halaman Pesanan. Tulis tanpa 0 di depan.</span>
           </div>
 
           <div class="isian">
@@ -86,7 +86,7 @@
           </div>
 
           <div class="isian">
-            <label for="deskripsi">Cerita singkat tokomu <span class="opsional">(boleh dikosongkan)</span></label>
+            <label for="deskripsi">Deskripsi singkat toko <span class="opsional">(boleh dikosongkan)</span></label>
             <textarea id="deskripsi" v-model="form.deskripsi" rows="4" maxlength="300" aria-describedby="desk-hitung" :disabled="loading"></textarea>
             <span id="desk-hitung" class="bantuan">{{ form.deskripsi.length }} dari 300 karakter</span>
           </div>
@@ -160,10 +160,10 @@ const form = ref({ nama_toko: '', nomor_wa: '', alamat: '', deskripsi: '', foto_
 let snapshot = null;
 
 const INFO_STATUS = {
-  AKTIF: { icon: markRaw(CircleCheck), teks: 'Tokomu aktif dan bisa menerima pesanan.' },
-  PENDING: { icon: markRaw(Hourglass), teks: 'Tokomu sedang diperiksa admin.' },
-  DITOLAK: { icon: markRaw(CircleX), teks: 'Pendaftaran tokomu belum disetujui.' },
-  DIBLOKIR: { icon: markRaw(Ban), teks: 'Tokomu diblokir admin.' },
+  AKTIF: { icon: markRaw(CircleCheck), teks: 'Toko Anda aktif dan bisa menerima pesanan.' },
+  PENDING: { icon: markRaw(Hourglass), teks: 'Toko sedang diperiksa admin.' },
+  DITOLAK: { icon: markRaw(CircleX), teks: 'Pendaftaran toko Anda belum disetujui.' },
+  DIBLOKIR: { icon: markRaw(Ban), teks: 'Toko diblokir admin.' },
 };
 const statusInfo = computed(() => INFO_STATUS[toko.value.status] ?? INFO_STATUS.PENDING);
 
@@ -211,11 +211,11 @@ const handleSubmit = async () => {
   successMsg.value = '';
 
   if (!form.value.nama_toko.trim()) {
-    errorMsg.value = 'Isi nama tokomu dulu.';
+    errorMsg.value = 'Lengkapi nama toko.';
     return;
   }
   if (!form.value.nomor_wa) {
-    errorMsg.value = 'Isi nomor WhatsApp-mu dulu.';
+    errorMsg.value = 'Lengkapi nomor WhatsApp.';
     return;
   }
   if (form.value.nomor_wa.length < 9 || form.value.nomor_wa.length > 13) {
@@ -223,7 +223,7 @@ const handleSubmit = async () => {
     return;
   }
   if (!form.value.alamat.trim()) {
-    errorMsg.value = 'Isi alamat tokomu dulu.';
+    errorMsg.value = 'Lengkapi alamat toko.';
     return;
   }
 
@@ -234,7 +234,7 @@ const handleSubmit = async () => {
   if (fotoFile.value) {
     fotoUrl = await uploadFoto();
     if (!fotoUrl) {
-      errorMsg.value = 'Fotonya belum terunggah. Cek internetmu, lalu coba lagi.';
+      errorMsg.value = 'Fotonya belum terunggah. Periksa koneksi internet Anda, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -253,12 +253,12 @@ const handleSubmit = async () => {
     .eq('id', tokoId.value);
 
   if (error) {
-    errorMsg.value = 'Perubahan belum tersimpan. Cek internetmu, lalu coba lagi.';
+    errorMsg.value = 'Perubahan belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
     loading.value = false;
     return;
   }
 
-  successMsg.value = 'Profil tokomu tersimpan.';
+  successMsg.value = 'Profil toko tersimpan.';
   fotoFile.value = null;
   mode.value = 'view';
   await muatData();

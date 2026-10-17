@@ -5,12 +5,12 @@
     </div>
 
     <div v-else-if="!success" class="papan formulir">
-      <h1 class="judul-halaman">Buka tokomu</h1>
-      <p class="sub-halaman">Gratis. Tokomu diperiksa admin dulu sebelum tampil.</p>
+      <h1 class="judul-halaman">Buka toko</h1>
+      <p class="sub-halaman">Gratis. Toko diperiksa admin sebelum ditampilkan.</p>
 
       <p class="pesan pesan-info catatan">
         <ShieldCheck :size="20" :stroke-width="2.5" />
-        <span>Kamu tetap bisa belanja seperti biasa setelah punya toko.</span>
+        <span>Anda tetap dapat berbelanja setelah memiliki toko.</span>
       </p>
 
       <form class="isi-form" novalidate @submit.prevent="handleSubmit">
@@ -57,7 +57,7 @@
         </div>
 
         <div class="isian">
-          <label for="deskripsi">Cerita singkat tokomu <span class="opsional">(boleh dikosongkan)</span></label>
+          <label for="deskripsi">Deskripsi singkat toko <span class="opsional">(boleh dikosongkan)</span></label>
           <textarea
             id="deskripsi"
             v-model="form.deskripsi"
@@ -87,8 +87,8 @@
 
     <div v-else class="papan papan-hijau papan-bingkai berhasil">
       <CircleCheck :size="48" :stroke-width="2.25" />
-      <h2 class="huruf-papan">Tokomu terdaftar!</h2>
-      <p>Admin akan memeriksanya dulu. Sambil menunggu, kamu sudah bisa melengkapi profil tokomu.</p>
+      <h2 class="huruf-papan">Toko berhasil didaftarkan</h2>
+      <p>Admin akan memeriksa toko terlebih dahulu. Sambil menunggu, Anda dapat melengkapi profil toko.</p>
       <button type="button" class="tombol tombol-kuning tombol-besar" @click="keDashboard">
         Ke dashboard toko
         <ArrowRight :size="20" :stroke-width="2.5" />
@@ -183,7 +183,7 @@ const handleSubmit = async () => {
   });
 
   if (tokoError) {
-    errorMsg.value = 'Tokomu belum tersimpan. Cek internetmu, lalu coba lagi.';
+    errorMsg.value = 'Toko belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
     loading.value = false;
     return;
   }
@@ -194,7 +194,7 @@ const handleSubmit = async () => {
     .eq('id', session.user.id);
 
   if (profileError) {
-    errorMsg.value = 'Tokomu sudah tersimpan, tapi statusmu sebagai penjual belum berubah. Hubungi admin lewat menu Cara Pakai.';
+    errorMsg.value = 'Toko tersimpan, tetapi status penjual belum berubah. Hubungi admin melalui menu Cara Pakai.';
     loading.value = false;
     return;
   }

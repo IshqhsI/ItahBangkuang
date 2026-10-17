@@ -3,7 +3,7 @@
     <section class="kepala">
       <div class="wadah sempit">
         <h1 class="judul-halaman kepala-judul">Cara pakai ItahBangkuang</h1>
-        <p class="kepala-sub">Langkah demi langkah. Pilih yang kamu perlu.</p>
+        <p class="kepala-sub">Panduan langkah demi langkah sesuai peran Anda.</p>
 
         <div class="tab" role="tablist" aria-label="Panduan untuk">
           <button
@@ -127,8 +127,8 @@ const route = useRoute();
 const tab = ref(route.query.untuk === 'penjual' ? 'penjual' : 'pembeli');
 
 const tabList = [
-  { id: 'pembeli', label: 'Mau belanja', icon: markRaw(ShoppingBasket) },
-  { id: 'penjual', label: 'Mau jualan', icon: markRaw(Store) },
+  { id: 'pembeli', label: 'Sebagai pembeli', icon: markRaw(ShoppingBasket) },
+  { id: 'penjual', label: 'Sebagai penjual', icon: markRaw(Store) },
 ];
 
 const ikonCatatan = {
@@ -147,20 +147,20 @@ const pembeli = {
     },
     {
       judul: 'Buat akun (cukup sekali)',
-      ket: 'Akun dibutuhkan supaya kamu bisa memesan. Melihat-lihat produk tidak perlu akun.',
+      ket: 'Akun dibutuhkan agar Anda dapat memesan. Melihat produk tidak memerlukan akun.',
       butir: [
         'Tekan <strong>Daftar</strong> di pojok kanan atas.',
         'Pilih <strong>Belanja</strong>, lalu isi nama, email, dan kata sandi (minimal 8 karakter).',
         'Tekan <strong>Buat akun</strong>. Selesai.',
       ],
-      catatan: { jenis: 'awas', teks: 'Catat email dan kata sandimu di tempat yang aman supaya tidak lupa.' },
+      catatan: { jenis: 'awas', teks: 'Catat email dan kata sandi Anda di tempat yang aman supaya tidak lupa.' },
     },
     {
-      judul: 'Cari yang kamu mau',
+      judul: 'Cari produk',
       butir: [
         'Pilih <strong>kategori</strong>, misalnya Makanan &amp; Jajanan atau Aneka Minuman.',
         'Atau ketik nama produk di kotak <strong>pencarian</strong>, contoh: “klepon”.',
-        'Tekan nama toko untuk melihat semua dagangan toko itu.',
+        'Tekan nama toko untuk melihat semua produk toko tersebut.',
       ],
     },
     {
@@ -180,17 +180,17 @@ const pembeli = {
         '<strong>Jumlah</strong> dan cara bayar: <strong>COD</strong> (bayar di tempat) atau <strong>transfer</strong>.',
         '<strong>Catatan</strong> kalau perlu, misalnya “jangan terlalu manis”.',
       ],
-      catatan: { jenis: 'sukses', teks: 'Tekan <strong>Kirim pesanan</strong>. Pesananmu langsung masuk ke penjual.' },
+      catatan: { jenis: 'sukses', teks: 'Tekan <strong>Kirim pesanan</strong>. Pesanan Anda langsung masuk ke penjual.' },
     },
     {
       judul: 'Lanjut ngobrol di WhatsApp',
       butir: [
-        'Penjual mengonfirmasi pesananmu lewat WhatsApp.',
+        'Penjual mengonfirmasi pesanan Anda lewat WhatsApp.',
         'Atur waktu pengantaran atau tempat COD bersama penjual.',
         'Kalau transfer, penjual mengirim nomor rekeningnya.',
         'Barang sampai, selesai.',
       ],
-      catatan: { jenis: 'info', teks: 'Status pesananmu bisa dilihat kapan saja di menu <strong>Pesanan Saya</strong>.' },
+      catatan: { jenis: 'info', teks: 'Status pesanan Anda bisa dilihat kapan saja di menu <strong>Pesanan Saya</strong>.' },
     },
   ],
   tanya: [
@@ -200,11 +200,11 @@ const pembeli = {
     },
     {
       t: 'Bayarnya bagaimana?',
-      j: 'Ada dua pilihan: COD (bayar langsung ke penjual saat barang diterima) atau transfer bank/e-wallet. Kamu memilihnya di formulir pesanan.',
+      j: 'Ada dua pilihan: COD (bayar langsung ke penjual saat barang diterima) atau transfer bank/e-wallet. Anda memilihnya di formulir pesanan.',
     },
     {
       t: 'Berapa lama barangnya sampai?',
-      j: 'Tergantung kesepakatan dengan penjual. Biasanya diatur lewat WhatsApp setelah pesananmu dikonfirmasi.',
+      j: 'Tergantung kesepakatan dengan penjual. Biasanya diatur lewat WhatsApp setelah pesanan Anda dikonfirmasi.',
     },
     {
       t: 'Pesananku belum dikonfirmasi penjual. Bagaimana?',
@@ -215,7 +215,7 @@ const pembeli = {
       j: 'Bisa, selama penjual belum mengonfirmasi. Kabari penjualnya lewat WhatsApp.',
     },
   ],
-  penutup: { teks: 'Sudah paham? Mampir ke etalase.', tombol: 'Lihat produk', ke: '/produk' },
+  penutup: { teks: 'Sudah paham? Mulai lihat produk.', tombol: 'Lihat produk', ke: '/produk' },
 };
 
 const penjual = {
@@ -228,29 +228,29 @@ const penjual = {
         'Isi nama, email, dan kata sandi, lalu lanjut ke info toko.',
         'Isi <strong>nama toko</strong>, <strong>nomor WhatsApp</strong>, dan <strong>alamat</strong>.',
       ],
-      catatan: { jenis: 'awas', teks: 'Pastikan <strong>nomor WhatsApp benar</strong>. Pembeli menghubungimu lewat nomor ini. Pesanan baru juga muncul di halaman Pesanan, jadi cek rutin ya.' },
+      catatan: { jenis: 'awas', teks: 'Pastikan <strong>nomor WhatsApp benar</strong>. Pembeli menghubungi Anda lewat nomor ini. Pesanan baru juga tampil di halaman Pesanan, sehingga perlu dicek secara rutin.' },
     },
     {
-      judul: 'Tunggu admin memeriksa tokomu',
-      ket: 'Tokomu belum tampil sebelum disetujui admin.',
+      judul: 'Tunggu admin memeriksa toko Anda',
+      ket: 'Toko Anda belum tampil sebelum disetujui admin.',
       butir: [
-        'Setelah daftar, statusmu <strong>Menunggu</strong>.',
-        'Setelah disetujui, statusnya <strong>Aktif</strong> dan kamu bisa memajang produk.',
+        'Setelah daftar, status Anda <strong>Menunggu</strong>.',
+        'Setelah disetujui, statusnya <strong>Aktif</strong> dan Anda dapat menambahkan produk.',
       ],
-      catatan: { jenis: 'info', teks: 'Biasanya kurang dari 24 jam. Kalau ditolak, alasannya akan dijelaskan dan kamu bisa memperbaikinya.' },
+      catatan: { jenis: 'info', teks: 'Biasanya kurang dari 24 jam. Kalau ditolak, alasannya akan dijelaskan dan Anda bisa memperbaikinya.' },
     },
     {
-      judul: 'Lengkapi profil tokomu',
+      judul: 'Lengkapi profil toko Anda',
       ket: 'Toko yang lengkap lebih dipercaya pembeli.',
       butir: [
-        'Pasang <strong>foto toko</strong>: logo, atau foto produk andalanmu.',
+        'Pasang <strong>foto toko</strong>: logo, atau foto produk andalan Anda.',
         'Tulis <strong>cerita singkat</strong>, misalnya “Terima pesanan kue basah, pesan H-1. Bisa antar area Bangkuang.”',
         'Pastikan <strong>alamat</strong> jelas.',
       ],
     },
     {
-      judul: 'Pajang produk pertamamu',
-      ket: 'Foto yang bagus bikin produk lebih cepat laku.',
+      judul: 'Tambahkan produk pertama',
+      ket: 'Foto yang jelas membantu pembeli memilih produk.',
       butir: [
         'Buka <strong>Produk</strong>, lalu tekan <strong>Tambah produk</strong>.',
         'Unggah <strong>foto</strong>, tulis <strong>nama</strong> yang jelas (contoh: “Kue Lapis Pandan isi 10”), dan pilih <strong>kategori</strong>.',
@@ -264,7 +264,7 @@ const penjual = {
       ket: 'Pesanan baru dikabarkan lewat WhatsApp dan muncul di menu Pesanan.',
       butir: [
         'Buka <strong>Pesanan</strong> dan lihat detailnya.',
-        'Tekan <strong>Konfirmasi</strong> kalau kamu bisa memenuhinya.',
+        'Tekan <strong>Konfirmasi</strong> kalau Anda bisa memenuhinya.',
         'Tekan <strong>Chat pembeli</strong> untuk mengatur pengantaran atau COD.',
         'Barang sudah diterima? Tekan <strong>Tandai selesai</strong>.',
       ],
@@ -279,35 +279,35 @@ const penjual = {
     },
   ],
   tips: {
-    judul: 'Biar dagangan cepat laku',
+    judul: 'Tips agar produk lebih diminati',
     daftar: [
       'Balas pesanan dalam 1–2 jam.',
       'Foto terang dan rapi, sesuai barang aslinya.',
       'Balas WhatsApp dengan sopan dan jelas.',
-      'Pajang produk baru secara berkala.',
-      'Bagikan tautan tokomu ke grup WA dan Facebook.',
+      'Tambahkan produk baru secara berkala.',
+      'Bagikan tautan toko Anda ke grup WA dan Facebook.',
     ],
   },
   tanya: [
     {
       t: 'Berapa lama toko diperiksa?',
-      j: 'Biasanya kurang dari 24 jam. Admin memeriksa info tokomu, lalu mengaktifkannya kalau sudah sesuai.',
+      j: 'Biasanya kurang dari 24 jam. Admin memeriksa info toko Anda, lalu mengaktifkannya kalau sudah sesuai.',
     },
     {
       t: 'Tokoku ditolak. Apa yang harus dilakukan?',
-      j: 'Admin akan menyebutkan alasannya. Perbaiki info tokomu, lalu hubungi admin untuk diperiksa ulang.',
+      j: 'Admin akan menyebutkan alasannya. Perbaiki info toko Anda, lalu hubungi admin untuk diperiksa ulang.',
     },
     {
-      t: 'Berapa banyak produk yang boleh dipajang?',
-      j: 'Tidak dibatasi. Pajang sebanyak yang kamu jual.',
+      t: 'Berapa banyak produk yang boleh ditambahkan?',
+      j: 'Tidak dibatasi. Tambahkan sebanyak produk yang Anda jual.',
     },
     {
       t: 'Bagaimana menerima pembayaran transfer?',
-      j: 'Kamu atur sendiri dengan pembeli lewat WhatsApp. Kirim nomor rekening atau e-wallet-mu setelah pesanan dikonfirmasi.',
+      j: 'Anda atur sendiri dengan pembeli lewat WhatsApp. Kirim nomor rekening atau e-wallet Anda setelah pesanan dikonfirmasi.',
     },
     {
       t: 'Boleh menjual barang titipan orang lain?',
-      j: 'Boleh, selama kamu yang bertanggung jawab atas tokonya dan bisa dihubungi pembeli.',
+      j: 'Boleh, selama Anda yang bertanggung jawab atas tokonya dan bisa dihubungi pembeli.',
     },
   ],
   penutup: { teks: 'Siap buka toko? Mulai sekarang, gratis.', tombol: 'Buka toko gratis', ke: '/register?peran=penjual' },

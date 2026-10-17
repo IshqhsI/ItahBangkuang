@@ -28,8 +28,8 @@
     <div v-else-if="orderSuccess" class="wadah sempit berhasil-wrap">
       <div class="papan papan-hijau papan-bingkai berhasil">
         <CircleCheck :size="48" :stroke-width="2.25" />
-        <h2 class="huruf-papan">Pesananmu tercatat</h2>
-        <p>Satu langkah lagi: kirim pesanmu ke penjual lewat WhatsApp supaya cepat dikonfirmasi.</p>
+        <h2 class="huruf-papan">Pesanan tercatat</h2>
+        <p>Langkah terakhir: kirim detail pesanan ke penjual melalui WhatsApp agar segera dikonfirmasi.</p>
 
         <dl class="rincian">
           <div><dt>Produk</dt><dd>{{ produk.nama_produk }}<template v-if="varianNama"> ({{ varianNama }})</template></dd></div>
@@ -53,7 +53,7 @@
       <div class="tata">
         <!-- Ringkasan -->
         <section class="ringkasan papan" aria-labelledby="judul-ringkasan">
-          <h2 id="judul-ringkasan" class="label">Yang kamu pesan</h2>
+          <h2 id="judul-ringkasan" class="label">Ringkasan pesanan</h2>
           <div class="produk-baris">
             <img :src="produk.foto_url" :alt="produk.nama_produk" class="produk-foto" />
             <div class="produk-teks">
@@ -271,7 +271,7 @@ const chatPenjual = () => {
     `Total: ${formatRupiah(total.value)} (${form.value.metode === 'COD' ? 'COD' : 'transfer'}).`,
     `Nama: ${form.value.nama_pemesan.trim()}`,
     `Alamat: ${form.value.alamat.trim()}`,
-    'Mohon dikonfirmasi ya.',
+    'Mohon dikonfirmasi.',
   ].join('\n');
   window.open(tautanWa(produk.value?.toko?.nomor_wa, pesan), '_blank');
 };
@@ -311,11 +311,11 @@ const handleOrder = async () => {
   if (error) {
     console.error('Order Error:', error);
     if (error.message.includes('stok')) {
-      errorMsg.value = 'Stoknya tidak cukup untuk jumlah ini. Kurangi jumlahnya, atau tanya penjual kapan ada lagi.';
+      errorMsg.value = 'Stok tidak mencukupi. Kurangi jumlah, atau tanyakan ketersediaan kepada penjual.';
     } else if (error.message.includes('sendiri')) {
-      errorMsg.value = 'Kamu tidak bisa memesan dari tokomu sendiri.';
+      errorMsg.value = 'Anda tidak dapat memesan dari toko sendiri.';
     } else {
-      errorMsg.value = 'Pesananmu belum terkirim. Cek internetmu, lalu coba lagi.';
+      errorMsg.value = 'Pesanan Anda belum terkirim. Periksa koneksi internet Anda, lalu coba lagi.';
     }
     loading.value = false;
     return;

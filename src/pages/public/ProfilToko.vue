@@ -53,7 +53,7 @@
         <div class="wadah">
           <div class="kepala-produk">
             <h2 class="judul-produk huruf-papan">
-              {{ produkList.length }} produk dipajang
+              {{ produkList.length }} produk
             </h2>
           </div>
 
@@ -76,7 +76,7 @@
           </div>
           <div v-else class="kosong">
             <PackageOpen :size="44" :stroke-width="2" />
-            <h3>Etalasenya masih kosong</h3>
+            <h3>Belum ada produk</h3>
             <p>Toko ini belum memajang produk. Coba tanya langsung lewat WA.</p>
           </div>
         </div>
@@ -128,7 +128,7 @@ const produkFiltered = computed(() => {
 const tautanChat = computed(() =>
   tautanWa(
     toko.value?.nomor_wa,
-    `Halo ${toko.value?.nama_toko}, saya lihat tokomu di ItahBangkuang. Boleh tanya-tanya dulu?`,
+    `Halo ${toko.value?.nama_toko}, saya lihat toko Anda di ItahBangkuang. Boleh saya bertanya?`,
   ),
 );
 

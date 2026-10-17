@@ -9,7 +9,7 @@
 
       <p v-if="route.query.redirect" class="pesan pesan-info catatan-masuk">
         <Info :size="20" :stroke-width="2.5" />
-        <span>Masuk dulu supaya pesananmu bisa dikirim ke penjual.</span>
+        <span>Masuk terlebih dahulu agar pesanan dapat dikirim ke penjual.</span>
       </p>
 
       <form class="isi-form" novalidate @submit.prevent="handleLogin">
@@ -86,7 +86,7 @@ const errorMsg = ref('');
 const handleLogin = async () => {
   errorMsg.value = '';
   if (!form.value.email.trim() || !form.value.password) {
-    errorMsg.value = 'Isi email dan kata sandimu dulu.';
+    errorMsg.value = 'Lengkapi email dan kata sandi.';
     return;
   }
 

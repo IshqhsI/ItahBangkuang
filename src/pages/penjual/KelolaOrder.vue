@@ -95,7 +95,7 @@
       <div v-else class="kosong">
         <Inbox :size="44" :stroke-width="2" />
         <h3>{{ filterAktif === 'semua' ? 'Belum ada pesanan' : `Tidak ada pesanan yang ${labelStatus(filterAktif).toLowerCase()}` }}</h3>
-        <p v-if="filterAktif === 'semua'">Bagikan tautan tokomu ke grup WA supaya tetangga tahu.</p>
+        <p v-if="filterAktif === 'semua'">Bagikan tautan toko ke grup WhatsApp agar warga mengetahuinya.</p>
         <p v-else>Coba lihat status lainnya.</p>
         <button v-if="filterAktif !== 'semua'" type="button" class="tombol" @click="filterAktif = 'semua'">Lihat semua pesanan</button>
       </div>
@@ -165,7 +165,7 @@ const updateStatus = async (order, statusBaru) => {
   prosesId.value = order.id;
   const { error } = await supabase.from('orders').update({ status: statusBaru }).eq('id', order.id);
   if (error) {
-    toast.error('Statusnya belum berubah. Cek internetmu, lalu coba lagi.');
+    toast.error('Statusnya belum berubah. Periksa koneksi internet Anda, lalu coba lagi.');
   } else {
     order.status = statusBaru;
     toast.success(

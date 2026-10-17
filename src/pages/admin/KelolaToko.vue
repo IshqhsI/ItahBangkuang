@@ -140,7 +140,7 @@
     <dialog ref="dialogBlokir" class="dialog" @close="blokirTarget = null">
       <div class="dialog-isi">
         <h2 class="huruf-papan">Blokir {{ blokirTarget?.nama_toko }}?</h2>
-        <p>Toko ini dan semua produknya tidak akan tampil lagi, dan penjualnya tidak bisa menerima pesanan. Kamu bisa mengaktifkannya lagi nanti.</p>
+        <p>Toko ini dan semua produknya tidak akan tampil lagi, dan penjualnya tidak bisa menerima pesanan. Anda bisa mengaktifkannya lagi nanti.</p>
         <div class="dialog-aksi">
           <button type="button" class="tombol" @click="dialogBlokir.close()">Batal</button>
           <button type="button" class="tombol tombol-merah" @click="konfirmasiBlokir">Blokir toko</button>
@@ -208,7 +208,7 @@ const ubah = async (t, perubahan, pesanSukses) => {
   const { error } = await supabase.from('toko').update(perubahan).eq('id', t.id);
   prosesId.value = null;
   if (error) {
-    toast.error('Perubahannya belum tersimpan. Cek internetmu, lalu coba lagi.');
+    toast.error('Perubahannya belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.');
     return false;
   }
   Object.assign(t, perubahan);

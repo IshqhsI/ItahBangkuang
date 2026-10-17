@@ -9,7 +9,7 @@
       <div class="kosong">
         <PackageX :size="48" :stroke-width="2" />
         <h3>Produk ini sudah tidak ada</h3>
-        <p>Mungkin dihapus penjualnya, atau tokonya lagi tutup.</p>
+        <p>Produk mungkin telah dihapus penjual, atau toko sedang tidak aktif.</p>
         <RouterLink to="/produk" class="tombol tombol-merah">Lihat produk lain</RouterLink>
       </div>
     </div>
@@ -190,7 +190,7 @@
 
       <section v-if="produkLain.length" class="lain">
         <div class="wadah">
-          <h2 class="lain-judul huruf-papan">Dagangan lain dari {{ toko?.nama_toko }}</h2>
+          <h2 class="lain-judul huruf-papan">Produk lain dari {{ toko?.nama_toko }}</h2>
           <div class="grid-produk">
             <KartuProduk v-for="p in produkLain" :key="p.id" :produk="p" :tampil-toko="false" />
           </div>

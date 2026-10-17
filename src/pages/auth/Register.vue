@@ -1,12 +1,12 @@
 <template>
   <LayoutAuth>
     <div class="papan formulir">
-      <h1 class="judul-halaman">{{ step === 1 ? 'Buat akun' : 'Info tokomu' }}</h1>
+      <h1 class="judul-halaman">{{ step === 1 ? 'Buat akun' : 'Info toko' }}</h1>
       <p v-if="step === 1" class="sub-halaman">
         Sudah punya akun?
         <RouterLink :to="{ path: '/login', query: route.query }">Masuk di sini</RouterLink>
       </p>
-      <p v-else class="sub-halaman">Ini yang nanti dilihat pembeli di papan tokomu.</p>
+      <p v-else class="sub-halaman">Informasi ini akan ditampilkan kepada pembeli.</p>
 
       <!-- LANGKAH (khusus penjual) -->
       <ol v-if="form.role === 'penjual'" class="langkah" aria-label="Langkah pendaftaran">
@@ -28,13 +28,13 @@
         <!-- LANGKAH 1: AKUN -->
         <template v-if="step === 1">
           <fieldset class="peran">
-            <legend class="label">Kamu mau…</legend>
+            <legend class="label">Daftar sebagai</legend>
             <div class="peran-pilihan">
               <label class="peran-kartu" :class="{ dipilih: form.role === 'pembeli' }">
                 <input v-model="form.role" type="radio" value="pembeli" class="sr-only" />
                 <ShoppingBasket :size="28" :stroke-width="2.25" />
                 <span class="peran-nama">Belanja</span>
-                <span class="peran-ket">Cari dan pesan produk tetangga</span>
+                <span class="peran-ket">Cari dan pesan produk lokal</span>
               </label>
               <label class="peran-kartu" :class="{ dipilih: form.role === 'penjual' }">
                 <input v-model="form.role" type="radio" value="penjual" class="sr-only" />
@@ -93,7 +93,7 @@
         <template v-else>
           <div class="pesan pesan-info">
             <ShieldCheck :size="20" :stroke-width="2.5" />
-            <span>Admin akan memeriksa tokomu dulu. Setelah disetujui, produkmu langsung tampil.</span>
+            <span>Admin akan memeriksa toko terlebih dahulu. Setelah disetujui, produk langsung ditampilkan.</span>
           </div>
 
           <div class="isian">
@@ -139,7 +139,7 @@
           </div>
 
           <div class="isian">
-            <label for="deskripsi">Cerita singkat tokomu <span class="opsional">(boleh dikosongkan)</span></label>
+            <label for="deskripsi">Deskripsi singkat toko <span class="opsional">(boleh dikosongkan)</span></label>
             <textarea
               id="deskripsi"
               v-model="form.deskripsi"
@@ -278,7 +278,7 @@ const handleSubmit = async () => {
     errorMsg.value =
       error.message === 'User already registered'
         ? 'Email ini sudah terdaftar. Coba masuk, atau pakai email lain.'
-        : 'Pendaftaran belum berhasil. Cek internetmu, lalu coba lagi.';
+        : 'Pendaftaran belum berhasil. Periksa koneksi internet Anda, lalu coba lagi.';
     loading.value = false;
     return;
   }
@@ -299,14 +299,14 @@ const handleSubmit = async () => {
     });
 
     if (errToko) {
-      toast.warning('Akunmu sudah jadi, tapi info toko belum tersimpan. Lengkapi lewat menu Buka Toko.');
+      toast.warning('Akun berhasil dibuat, tetapi info toko belum tersimpan. Lengkapi melalui menu Buka Toko.');
       router.push('/buka-toko');
     } else {
-      toast.success('Tokomu terdaftar! Sekarang tunggu admin memeriksanya.');
+      toast.success('Toko berhasil didaftarkan. Menunggu pemeriksaan admin.');
       router.push('/toko/dashboard');
     }
   } else {
-    toast.success('Akunmu sudah jadi. Selamat belanja!');
+    toast.success('Akun berhasil dibuat.');
     router.push(tujuanAman(route.query.redirect) ?? '/');
   }
 

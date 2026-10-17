@@ -7,7 +7,7 @@
 
     <dialog ref="dialog" class="dialog" aria-labelledby="judul-pasang">
       <div class="dialog-isi">
-        <h2 id="judul-pasang" class="huruf-papan">Pasang di HP-mu</h2>
+        <h2 id="judul-pasang" class="huruf-papan">Pasang di HP Anda</h2>
         <p class="manfaat">Ikonnya muncul di layar utama dan terbuka seperti aplikasi biasa. Tanpa unduh dari Play Store.</p>
 
         <ol class="langkah">
@@ -57,7 +57,7 @@ const PETUNJUK = {
   },
   'android-aplikasi': {
     langkah: [
-      'Kamu sedang membuka lewat aplikasi lain (WhatsApp, Facebook, dan sejenisnya), yang tidak bisa memasang.',
+      'Anda sedang membuka lewat aplikasi lain (WhatsApp, Facebook, dan sejenisnya), yang tidak bisa memasang.',
       'Tekan <strong>Salin tautan</strong> di bawah.',
       'Buka <strong>Chrome</strong>, tempel tautannya, lalu tekan tombol Pasang di HP lagi.',
     ],
