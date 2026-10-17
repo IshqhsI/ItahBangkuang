@@ -44,13 +44,37 @@
               <h1 class="nama">{{ produk.nama_produk }}</h1>
 
               <div class="harga-baris">
-                <span class="plat-harga harga">{{ teksHarga }}</span>
+                <div class="harga-blok">
+                  <span v-if="adaRentang" class="harga-awalan">Mulai dari</span>
+                  <span class="plat-harga harga">{{ teksHarga }}</span>
+                </div>
                 <span class="stok" :class="kelasStok">
                   <template v-if="currentStok === 0">Stok habis</template>
                   <template v-else-if="currentStok <= 5">Tinggal {{ currentStok }}</template>
                   <template v-else>Stok {{ currentStok }}</template>
                 </span>
               </div>
+
+              <!-- TOKO: dinaikkan agar kepercayaan terlihat sebelum memesan -->
+              <RouterLink :to="`/toko/${toko?.id}`" class="papan-toko">
+                <span class="toko-foto">
+                  <img v-if="toko?.foto_toko" :src="toko.foto_toko" :alt="toko.nama_toko" />
+                  <Store v-else :size="24" :stroke-width="2" />
+                </span>
+                <span class="toko-teks">
+                  <span class="toko-label">Dijual oleh</span>
+                  <span class="toko-nama">{{ toko?.nama_toko }}</span>
+                  <span v-if="toko?.alamat" class="toko-alamat">
+                    <MapPin :size="14" :stroke-width="2" />
+                    {{ toko.alamat }}
+                  </span>
+                </span>
+                <span class="toko-terverifikasi">
+                  <BadgeCheck :size="16" :stroke-width="2" />
+                  Terverifikasi admin
+                </span>
+                <ChevronRight :size="20" :stroke-width="2" class="toko-panah" />
+              </RouterLink>
 
               <!-- VARIAN -->
               <fieldset v-if="punyaVarian(produk)" class="varian">
@@ -134,12 +158,29 @@
                   :href="tautanChat"
                   target="_blank"
                   rel="noopener"
-                  class="tombol tombol-hijau tombol-besar tombol-penuh"
+                  class="tombol tombol-besar tombol-penuh"
+                  :class="{ 'tombol-merah': currentStok === 0 }"
                 >
                   <IkonWa :size="22" />
-                  Tanya penjual di WA
+                  {{ currentStok === 0 ? 'Tanya ketersediaan di WhatsApp' : 'Tanya penjual di WhatsApp' }}
                 </a>
               </div>
+
+              <!-- INFO PENTING -->
+              <ul class="info-penting" aria-label="Informasi pemesanan">
+                <li>
+                  <Wallet :size="20" :stroke-width="2" />
+                  <span><strong>Pembayaran</strong> COD atau transfer, dipilih saat memesan.</span>
+                </li>
+                <li>
+                  <Truck :size="20" :stroke-width="2" />
+                  <span><strong>Pengantaran</strong> Diatur langsung dengan penjual lewat WhatsApp setelah pesanan dikonfirmasi.</span>
+                </li>
+                <li>
+                  <MessageCircle :size="20" :stroke-width="2" />
+                  <span><strong>Konfirmasi</strong> Penjual mengonfirmasi pesanan melalui WhatsApp.</span>
+                </li>
+              </ul>
 
               <!-- DESKRIPSI -->
               <section v-if="produk.deskripsi" class="deskripsi">
@@ -147,41 +188,17 @@
                 <p>{{ produk.deskripsi }}</p>
               </section>
 
-              <!-- TOKO -->
-              <RouterLink :to="`/toko/${toko?.id}`" class="papan-toko papan">
-                <span class="toko-foto">
-                  <img v-if="toko?.foto_toko" :src="toko.foto_toko" :alt="toko.nama_toko" />
-                  <Store v-else :size="28" :stroke-width="2.25" />
-                </span>
-                <span class="toko-teks">
-                  <span class="toko-label">Dijual oleh</span>
-                  <span class="toko-nama">{{ toko?.nama_toko }}</span>
-                  <span v-if="toko?.alamat" class="toko-alamat">
-                    <MapPin :size="15" :stroke-width="2.25" />
-                    {{ toko.alamat }}
-                  </span>
-                </span>
-                <ChevronRight :size="24" :stroke-width="2.5" class="toko-panah" />
-              </RouterLink>
-
               <!-- BAGIKAN -->
               <div class="bagikan">
-                <span class="label">Bagikan ke teman</span>
-                <div class="bagikan-tombol">
-                  <button type="button" class="tombol tombol-kecil" @click="shareWA">
-                    <IkonWa :size="18" />
-                    WhatsApp
-                  </button>
-                  <button type="button" class="tombol tombol-kecil" @click="shareFB">
-                    <IkonFb :size="18" />
-                    Facebook
-                  </button>
-                  <button type="button" class="tombol tombol-kecil" @click="copyLink">
-                    <Check v-if="copied" :size="18" :stroke-width="2.75" />
-                    <Link2 v-else :size="18" :stroke-width="2.5" />
-                    {{ copied ? 'Tautan disalin' : 'Salin tautan' }}
-                  </button>
-                </div>
+                <button type="button" class="tombol tombol-kecil" @click="bagikan">
+                  <Share2 :size="18" :stroke-width="2" />
+                  Bagikan
+                </button>
+                <button type="button" class="tombol tombol-kecil" @click="copyLink">
+                  <Check v-if="copied" :size="18" :stroke-width="2.5" />
+                  <Link2 v-else :size="18" :stroke-width="2" />
+                  {{ copied ? 'Tautan disalin' : 'Salin tautan' }}
+                </button>
               </div>
             </div>
           </div>
@@ -214,13 +231,17 @@ import {
   Check,
   Link2,
   TriangleAlert,
+  BadgeCheck,
+  Wallet,
+  Truck,
+  MessageCircle,
+  Share2,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import KartuProduk from '@/components/KartuProduk.vue';
 import IkonWa from '@/components/IkonWa.vue';
-import IkonFb from '@/components/IkonFb.vue';
 import {
   formatRupiah,
   formatHargaProduk,
@@ -246,10 +267,23 @@ const currentHarga = computed(() =>
   varianTerpilih.value ? Number(varianTerpilih.value.harga) || 0 : produk.value?.harga || 0,
 );
 
-// Sebelum memilih varian, tampilkan rentang harga
-const teksHarga = computed(() =>
-  varianTerpilih.value ? formatRupiah(currentHarga.value) : formatHargaProduk(produk.value),
+// Harga termurah dan termahal dari varian (bila ada)
+const hargaMin = computed(() =>
+  punyaVarian(produk.value) ? Math.min(...produk.value.varian.map((v) => Number(v.harga) || 0)) : 0,
 );
+const hargaMaks = computed(() =>
+  punyaVarian(produk.value) ? Math.max(...produk.value.varian.map((v) => Number(v.harga) || 0)) : 0,
+);
+// Sebelum varian dipilih dan harganya berbeda, tampilkan "Mulai dari"
+const adaRentang = computed(
+  () => punyaVarian(produk.value) && !varianTerpilih.value && hargaMin.value !== hargaMaks.value,
+);
+
+const teksHarga = computed(() => {
+  if (varianTerpilih.value) return formatRupiah(currentHarga.value);
+  if (adaRentang.value) return formatRupiah(hargaMin.value);
+  return formatHargaProduk(produk.value);
+});
 
 // Stok aktif: varian terpilih, total semua varian, atau stok produk
 const currentStok = computed(() => {
@@ -304,20 +338,20 @@ const tautanChat = computed(() => {
   return tautanWa(toko.value?.nomor_wa, pesan);
 });
 
-const shareWA = () => {
+// Di HP memakai lembar berbagi bawaan; di desktop jatuh ke WhatsApp Web
+const bagikan = async () => {
   const url = window.location.href;
-  const hargaSensor = formatRupiah(currentHarga.value).replace(/\d/g, '?');
-  const teks = `Coba lihat ini:\n\n*${produk.value.nama_produk}*\n${hargaSensor}\n\nHarganya ada di sini:\n${url}`;
+  const judul = produk.value.nama_produk;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: judul, text: `${judul} di ItahBangkuang`, url });
+    } catch {
+      /* dibatalkan pengguna */
+    }
+    return;
+  }
+  const teks = `${judul} di ItahBangkuang\n${url}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
-};
-
-const shareFB = () => {
-  const url = encodeURIComponent(window.location.href);
-  window.open(
-    `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-    '_blank',
-    'width=600,height=400',
-  );
 };
 
 const copyLink = async () => {
@@ -378,7 +412,7 @@ watch(() => route.params.id, fetchData);
 }
 
 .detail {
-  background: var(--papan);
+  background: var(--kabut);
   padding: 1.25rem 0 3rem;
 }
 
@@ -466,23 +500,40 @@ watch(() => route.params.id, fetchData);
 }
 .harga-baris {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.9rem;
+  gap: 0.6rem 1rem;
   margin-top: 1rem;
 }
+.harga-blok {
+  display: flex;
+  flex-direction: column;
+}
+.harga-awalan {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-2);
+}
 .harga {
-  font-size: clamp(1.35rem, 4vw, 1.7rem);
-  padding: 0.35rem 0.75rem 0.3rem;
+  font-size: clamp(1.7rem, 5vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 .stok {
-  font-weight: 700;
-  color: var(--hijau);
+  padding: 0.3rem 0.8rem;
+  background: var(--sage);
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.85rem;
+  font-weight: 800;
 }
 .stok.sedikit {
-  color: var(--merah-tua);
+  background: var(--aprikot-muda);
+  color: #8a4a1f;
 }
 .stok.habis {
+  background: var(--merah-muda);
   color: var(--merah-tua);
 }
 
@@ -509,21 +560,24 @@ watch(() => route.params.id, fetchData);
   align-items: flex-start;
   gap: 0.1rem;
   min-height: 60px;
-  padding: 0.55rem 0.8rem;
-  background: var(--papan);
-  border: 1.5px solid var(--garis);
-  border-radius: var(--sudut);
+  padding: 0.6rem 0.9rem;
+  background: #fff;
+  border: 1.5px solid var(--garis-lembut);
+  border-radius: 16px;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .varian-pilihan:hover:not(:disabled) {
-  background: var(--kuning-muda);
+  background: var(--sage);
 }
 .varian-pilihan.aktif {
-  background: var(--kuning);
-  box-shadow:
-    0 0 0 4px rgba(63, 127, 108, 0.22);
+  background: var(--sage);
+  border-color: var(--sungai-sedang);
+  box-shadow: 0 0 0 3px rgba(63, 127, 108, 0.22);
 }
 .varian-pilihan:disabled {
   cursor: not-allowed;
@@ -554,9 +608,10 @@ watch(() => route.params.id, fetchData);
 .jumlah-atur {
   display: inline-flex;
   align-items: stretch;
-  border: var(--tebal) solid var(--garis);
-  border-radius: var(--sudut);
+  border: 1.5px solid var(--garis);
+  border-radius: 999px;
   overflow: hidden;
+  background: #fff;
 }
 .jumlah-atur button {
   display: grid;
@@ -568,7 +623,7 @@ watch(() => route.params.id, fetchData);
   cursor: pointer;
 }
 .jumlah-atur button:hover:not(:disabled) {
-  background: var(--kuning-muda);
+  background: var(--sage);
 }
 .jumlah-atur button:disabled {
   color: #b5b5b5;
@@ -622,9 +677,13 @@ watch(() => route.params.id, fetchData);
     position: fixed;
     inset: auto 0 0;
     z-index: 80;
-    padding: 0.7rem 1.25rem calc(0.7rem + env(safe-area-inset-bottom));
-    background: var(--papan);
+    padding: 0.8rem 1.25rem calc(0.8rem + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--sage-2);
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -8px 28px rgba(29, 42, 38, 0.1);
   }
   .detail {
     padding-bottom: 6rem;
@@ -644,29 +703,33 @@ watch(() => route.params.id, fetchData);
   max-width: 65ch;
 }
 
-/* Papan toko */
+/* Kartu toko (dinaikkan, di bawah harga) */
 .papan-toko {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-  margin-top: 1.75rem;
-  padding: 0.85rem 1rem;
-  color: var(--tinta);
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+  padding: 0.8rem 1rem;
+  background: #fff;
+  border: 1.5px solid var(--garis-lembut);
+  border-radius: 20px;
+  color: var(--ink);
   text-decoration: none;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .papan-toko:hover {
-  background: var(--kuning-muda);
+  background: var(--sage);
 }
 .toko-foto {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
-  background: var(--hijau);
-  color: #fff;
-  border: 1.5px solid var(--garis);
+  width: 48px;
+  height: 48px;
+  background: var(--sage);
+  color: var(--sungai);
   border-radius: 50%;
   overflow: hidden;
 }
@@ -682,36 +745,81 @@ watch(() => route.params.id, fetchData);
   flex: 1;
 }
 .toko-label {
-  font-size: 0.82rem;
-  color: var(--tinta-3);
+  font-size: 0.78rem;
+  color: var(--ink-2);
   font-weight: 700;
 }
 .toko-nama {
-  font-family: var(--font-papan);
-  font-weight: 600;
-  font-size: 1.05rem;
-  line-height: 1.2;
+  font-weight: 800;
+  font-size: 1.02rem;
+  line-height: 1.25;
 }
 .toko-alamat {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.88rem;
-  color: var(--tinta-2);
-  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  margin-top: 0.1rem;
+}
+.toko-terverifikasi {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  background: var(--sage);
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.papan-toko:hover .toko-terverifikasi {
+  background: #fff;
 }
 .toko-panah {
   flex-shrink: 0;
+  color: var(--ink-2);
+}
+@media (max-width: 520px) {
+  .toko-terverifikasi {
+    display: none;
+  }
+}
+
+/* Info pemesanan */
+.info-penting {
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--sage);
+  border-radius: 20px;
+}
+.info-penting li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.info-penting svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--sungai);
+}
+.info-penting strong {
+  display: block;
+  color: var(--ink);
 }
 
 .bagikan {
-  margin-top: 1.5rem;
-}
-.bagikan-tombol {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
 }
 
 /* Produk lain */
