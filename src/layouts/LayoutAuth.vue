@@ -68,7 +68,7 @@ import { ArrowLeft } from 'lucide-vue-next';
   padding: 0.3rem 0.55rem 0.25rem;
   background: var(--kuning);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 6px;
   font-family: var(--font-papan);
   font-size: 1.05rem;

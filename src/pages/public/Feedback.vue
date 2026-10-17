@@ -4,8 +4,8 @@
       <div class="wadah sempit">
         <h1 class="judul-halaman kepala-judul">Saran &amp; keluhan</h1>
         <p class="kepala-sub">
-          Ada yang bikin bingung, rusak, atau kurang? Ceritakan saja. Semua pesan
-          dibaca langsung oleh pengelola ItahBangkuang.
+          Ada yang bingung, rusak, atau kurang? Ceritakan. Pesanmu
+          dibaca langsung oleh pengelola.
         </p>
       </div>
     </section>
@@ -15,7 +15,7 @@
       <div v-if="!authStore.user" class="kosong">
         <LogIn :size="44" :stroke-width="2" />
         <h3>Masuk dulu, ya</h3>
-        <p>Supaya kami bisa membalas kalau perlu, kirim pesan setelah masuk ke akunmu.</p>
+        <p>Biar kami bisa membalas kalau perlu.</p>
         <RouterLink :to="{ path: '/login', query: { redirect: '/feedback' } }" class="tombol tombol-merah">
           Masuk
         </RouterLink>
@@ -25,7 +25,7 @@
       <div v-else-if="success" class="papan papan-hijau papan-bingkai terkirim">
         <CircleCheck :size="44" :stroke-width="2.25" />
         <h2 class="huruf-papan">Terima kasih!</h2>
-        <p>Pesanmu sudah sampai. Kami pakai masukan seperti ini untuk memperbaiki ItahBangkuang.</p>
+        <p>Pesanmu sudah sampai. Masukan seperti ini bikin ItahBangkuang makin baik.</p>
         <div class="terkirim-aksi">
           <button type="button" class="tombol tombol-kuning" @click="kirimLagi">Kirim pesan lain</button>
           <RouterLink to="/" class="tombol">Ke beranda</RouterLink>
@@ -150,7 +150,7 @@ const handleSubmit = async () => {
   });
 
   if (error) {
-    errorMsg.value = 'Pesanmu belum terkirim. Periksa koneksi internetmu, lalu coba lagi.';
+    errorMsg.value = 'Pesanmu belum terkirim. Cek internetmu, lalu coba lagi.';
     loading.value = false;
     return;
   }
@@ -217,7 +217,7 @@ const kirimLagi = () => {
   align-items: center;
   padding: 0.8rem 0.9rem;
   background: var(--papan);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   cursor: pointer;
   transition: background-color 0.15s ease;

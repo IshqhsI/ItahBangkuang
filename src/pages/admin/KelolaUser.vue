@@ -173,7 +173,7 @@ const konfirmasiGanti = async () => {
   prosesId.value = t.user.id;
   const { error } = await supabase.from('profiles').update({ role: t.baru }).eq('id', t.user.id);
   if (error) {
-    toast.error('Perannya belum berubah. Periksa koneksi internetmu, lalu coba lagi.');
+    toast.error('Perannya belum berubah. Cek internetmu, lalu coba lagi.');
   } else {
     t.user.role = t.baru;
     toast.success(`${t.user.nama_lengkap || 'Pengguna'} sekarang ${labelPeran(t.baru)}.`);

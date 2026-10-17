@@ -29,7 +29,7 @@
       <div class="papan papan-hijau papan-bingkai berhasil">
         <CircleCheck :size="48" :stroke-width="2.25" />
         <h2 class="huruf-papan">Pesananmu terkirim!</h2>
-        <p>Penjual akan mengonfirmasi lewat WhatsApp. Kamu juga bisa menyapa duluan.</p>
+        <p>Penjual konfirmasi lewat WhatsApp. Mau menyapa duluan juga boleh.</p>
 
         <dl class="rincian">
           <div><dt>Produk</dt><dd>{{ produk.nama_produk }}<template v-if="varianNama"> ({{ varianNama }})</template></dd></div>
@@ -119,7 +119,7 @@
                 @input="sanitizeNomorWa"
               />
             </div>
-            <span id="wa-bantuan" class="bantuan">Penjual menghubungimu lewat nomor ini. Tulis tanpa 0 di depan.</span>
+            <span id="wa-bantuan" class="bantuan">Penjual menghubungi lewat nomor ini. Tulis tanpa 0 di depan.</span>
             <span v-if="nomorWaError" class="galat">{{ nomorWaError }}</span>
           </div>
 
@@ -136,7 +136,7 @@
           </div>
 
           <fieldset class="metode">
-            <legend class="label">Mau bayar bagaimana?</legend>
+            <legend class="label">Bayarnya gimana?</legend>
             <div class="metode-pilihan">
               <label class="metode-kartu" :class="{ dipilih: form.metode === 'COD' }">
                 <input v-model="form.metode" type="radio" value="COD" class="sr-only" />
@@ -174,7 +174,7 @@
             <Send v-else :size="20" :stroke-width="2.5" />
             {{ loading ? 'Mengirim…' : 'Kirim pesanan' }}
           </button>
-          <p class="catatan-kaki">Setelah terkirim, kamu dan penjual melanjutkan lewat WhatsApp untuk konfirmasi dan pengantaran.</p>
+          <p class="catatan-kaki">Habis ini, lanjut di WhatsApp untuk konfirmasi dan pengantaran.</p>
         </form>
       </div>
     </div>
@@ -309,7 +309,7 @@ const handleOrder = async () => {
     } else if (error.message.includes('sendiri')) {
       errorMsg.value = 'Kamu tidak bisa memesan dari tokomu sendiri.';
     } else {
-      errorMsg.value = 'Pesananmu belum terkirim. Periksa koneksi internetmu, lalu coba lagi.';
+      errorMsg.value = 'Pesananmu belum terkirim. Cek internetmu, lalu coba lagi.';
     }
     loading.value = false;
     return;
@@ -442,7 +442,7 @@ onMounted(async () => {
   width: 92px;
   height: 92px;
   object-fit: cover;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   background: var(--dinding);
 }
@@ -491,7 +491,7 @@ onMounted(async () => {
 }
 .jumlah-atur {
   display: inline-flex;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   overflow: hidden;
 }
@@ -544,7 +544,7 @@ onMounted(async () => {
   margin-top: 1.25rem;
   padding: 0.9rem 1rem;
   background: var(--kuning);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   font-weight: 700;
 }
@@ -594,7 +594,7 @@ onMounted(async () => {
   gap: 0.25rem;
   padding: 0.8rem 0.85rem;
   background: var(--papan);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -659,7 +659,7 @@ onMounted(async () => {
   margin: 0.5rem 0;
   background: var(--papan);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
 }
 .rincian > div {

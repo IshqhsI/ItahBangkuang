@@ -3,7 +3,7 @@
     <section class="kepala">
       <div class="wadah sempit">
         <h1 class="judul-halaman kepala-judul">Cara pakai ItahBangkuang</h1>
-        <p class="kepala-sub">Langkah demi langkah, cukup pakai HP. Pilih sesuai keperluanmu.</p>
+        <p class="kepala-sub">Langkah demi langkah. Pilih yang kamu perlu.</p>
 
         <div class="tab" role="tablist" aria-label="Panduan untuk">
           <button
@@ -88,7 +88,7 @@
       <div class="wadah sempit bantuan-dalam">
         <div>
           <h2 class="huruf-papan">Masih bingung?</h2>
-          <p>Tidak apa-apa. Tanya saja langsung ke admin lewat WhatsApp, nanti dibantu.</p>
+          <p>Tanya saja ke admin lewat WhatsApp.</p>
         </div>
         <a :href="tautanBantuan" target="_blank" rel="noopener" class="tombol tombol-hijau tombol-besar">
           <IkonWa :size="22" />
@@ -215,7 +215,7 @@ const pembeli = {
       j: 'Bisa, selama penjual belum mengonfirmasi. Kabari penjualnya lewat WhatsApp.',
     },
   ],
-  penutup: { teks: 'Sudah paham? Yuk lihat apa yang dijual tetangga.', tombol: 'Lihat produk', ke: '/produk' },
+  penutup: { teks: 'Sudah paham? Mampir ke etalase.', tombol: 'Lihat produk', ke: '/produk' },
 };
 
 const penjual = {
@@ -344,7 +344,7 @@ const panduan = computed(() => (tab.value === 'penjual' ? penjual : pembeli));
   padding: 0 1.2rem;
   background: #f7de7b;
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-bottom: 0;
   border-radius: var(--sudut) var(--sudut) 0 0;
   font-family: var(--font-teks);
@@ -387,7 +387,7 @@ const panduan = computed(() => (tab.value === 'penjual' ? penjual : pembeli));
   width: 44px;
   height: 44px;
   color: #fff;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 50%;
   font-size: 1.15rem;
 }
@@ -461,7 +461,7 @@ const panduan = computed(() => (tab.value === 'penjual' ? penjual : pembeli));
 }
 .tanya-item {
   background: var(--papan);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   margin-bottom: 0.6rem;
 }

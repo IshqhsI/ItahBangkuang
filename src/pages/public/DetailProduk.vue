@@ -8,8 +8,8 @@
     <div v-else-if="!produk" class="wadah tidak-ada">
       <div class="kosong">
         <PackageX :size="48" :stroke-width="2" />
-        <h3>Produk ini tidak ada</h3>
-        <p>Mungkin sudah dihapus penjualnya, atau tokonya sedang tutup.</p>
+        <h3>Produk ini sudah tidak ada</h3>
+        <p>Mungkin dihapus penjualnya, atau tokonya lagi tutup.</p>
         <RouterLink to="/produk" class="tombol tombol-merah">Lihat produk lain</RouterLink>
       </div>
     </div>
@@ -119,7 +119,7 @@
                   </button>
                 </div>
                 <p v-if="currentStok > 0 && !authStore.user" class="aksi-catatan">
-                  Kamu perlu masuk dulu sebelum memesan.
+                  Masuk dulu untuk memesan.
                 </p>
 
                 <div v-if="currentStok === 0" class="pesan pesan-awas">
@@ -143,7 +143,7 @@
 
               <!-- DESKRIPSI -->
               <section v-if="produk.deskripsi" class="deskripsi">
-                <h2 class="label">Tentang produk ini</h2>
+                <h2 class="label">Tentang produk</h2>
                 <p>{{ produk.deskripsi }}</p>
               </section>
 
@@ -555,7 +555,7 @@ watch(() => route.params.id, fetchData);
 .jumlah-atur {
   display: inline-flex;
   align-items: stretch;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   overflow: hidden;
 }

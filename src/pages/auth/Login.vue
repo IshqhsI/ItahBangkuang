@@ -98,7 +98,7 @@ const handleLogin = async () => {
 
   if (error) {
     errorMsg.value =
-      'Email atau kata sandi tidak cocok. Periksa lagi ejaannya, atau daftar kalau belum punya akun.';
+      'Email atau kata sandi salah. Coba lagi, atau daftar kalau belum punya akun.';
     loading.value = false;
     return;
   }

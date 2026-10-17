@@ -64,7 +64,7 @@ const tahun = new Date().getFullYear();
   padding: 0.35rem 0.6rem 0.3rem;
   background: var(--kuning);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 6px;
   font-family: var(--font-papan);
   font-size: 1.1rem;

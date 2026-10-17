@@ -395,7 +395,7 @@ const handleSubmit = async () => {
   if (fotoFile.value) {
     fotoUrl = await uploadFoto();
     if (!fotoUrl) {
-      errorMsg.value = 'Fotonya belum terunggah. Periksa koneksi internetmu, lalu coba lagi.';
+      errorMsg.value = 'Fotonya belum terunggah. Cek internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -422,7 +422,7 @@ const handleSubmit = async () => {
       .eq('toko_id', tokoId.value);
 
     if (error) {
-      errorMsg.value = 'Perubahan belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
+      errorMsg.value = 'Perubahan belum tersimpan. Cek internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -432,7 +432,7 @@ const handleSubmit = async () => {
     const { error } = await supabase.from('produk').insert(payload);
 
     if (error) {
-      errorMsg.value = 'Produk belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
+      errorMsg.value = 'Produk belum tersimpan. Cek internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -561,7 +561,7 @@ onMounted(async () => {
   place-items: center;
   min-height: 220px;
   background: var(--dinding);
-  border: 2.5px dashed var(--tinta-3);
+  border: var(--tebal) dashed var(--garis);
   border-radius: var(--sudut);
   cursor: pointer;
   overflow: hidden;

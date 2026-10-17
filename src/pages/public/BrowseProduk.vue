@@ -4,7 +4,7 @@
     <section class="kepala">
       <div class="wadah">
         <h1 class="kepala-judul huruf-papan berbayang">Semua produk</h1>
-        <p class="kepala-sub">Dagangan tetangga se-Kelurahan Bangkuang, dari jajanan sampai jasa.</p>
+        <p class="kepala-sub">Dagangan tetangga se-Bangkuang. Dari jajanan sampai jasa tukang.</p>
 
         <form class="cari" role="search" @submit.prevent="fetchProduk">
           <Search class="cari-ikon" :size="22" :stroke-width="2.5" aria-hidden="true" />

@@ -215,7 +215,7 @@ onUnmounted(() => {
 const handleLogout = () => {
   menuOpen.value = false;
   authStore.logout(router);
-  toast.success('Kamu sudah keluar. Sampai jumpa lagi!');
+  toast.success('Sudah keluar. Sampai ketemu lagi!');
 };
 </script>
 
@@ -261,7 +261,7 @@ const handleLogout = () => {
   align-items: baseline;
   padding: 0.3rem 0.55rem 0.25rem;
   background: var(--kuning);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 6px;
   font-family: var(--font-papan);
   font-size: 1.05rem;
@@ -341,7 +341,7 @@ const handleLogout = () => {
   justify-content: center;
   background: var(--kuning);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 8px;
   cursor: pointer;
 }
@@ -381,7 +381,7 @@ const handleLogout = () => {
   font-family: var(--font-papan);
   font-size: 1.2rem;
   padding: 0.25rem 0.5rem 1rem;
-  border-bottom: 2.5px solid var(--tinta);
+  border-bottom: var(--tebal) solid var(--garis);
   margin-bottom: 0.5rem;
 }
 .laci-tautan {

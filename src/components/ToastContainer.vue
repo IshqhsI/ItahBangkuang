@@ -60,7 +60,7 @@ const ikon = (type) =>
   gap: 0.7rem;
   padding: 0.85rem 0.9rem;
   background: var(--t-bg);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   box-shadow:
     inset 0 0 0 4px var(--t-bg),

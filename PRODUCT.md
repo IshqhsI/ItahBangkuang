@@ -42,10 +42,12 @@ Bukan marketplace nasional: cakupannya satu kelurahan (Bangkuang, Kalimantan Ten
 - Tagline bahasa daerah wajib dipertahankan: **"Bapapili mangat, Bajualan mangat kia."** dan **"Uluh Itah Kia"**.
 - Warna, font, dan tampilan lain boleh diganti total (dikonfirmasi pengguna).
 
-### Suara & bahasa (dikonfirmasi pengguna)
+### Suara & bahasa (dikonfirmasi pengguna, direvisi)
 
-- Bahasa Indonesia santai, menyapa **"kamu"** — seperti ngobrol dengan tetangga, tetap jelas dan tidak alay.
-- Bahasa daerah **hanya** di tagline yang sudah ada. Jangan menambah kosakata Dayak/Banjar lain tanpa persetujuan pemilik.
+- Gaya **ngobrol santai khas warung**: pendek, lugas, seperti pedagang menyapa pembeli. Contoh: "Mau jajan apa hari ini?"
+- Menyapa **"kamu"** hanya bila perlu; lebih sering cukup kalimat perintah atau pertanyaan pendek. Jangan sok akrab, jangan lebay, jangan terdengar seperti aplikasi ("Silakan", "Mohon", "Berhasil!").
+- Judul dan tombol memakai kata kerja konkret dan kosakata warung secukupnya: etalase, dipajang, mampir, diantar.
+- Bahasa daerah **hanya** di tagline yang sudah ada (dikonfirmasi ulang). Jangan menambah kosakata Dayak/Banjar lain tanpa persetujuan pemilik.
 - Istilah baku di seluruh aplikasi: **produk**, **toko**, **pesanan** (bukan "order"), **pembeli**, **penjual**, **pesan** (kata kerja), **Masuk** / **Daftar** / **Keluar** (bukan Login/Logout), **WA** atau **WhatsApp**.
 - Tombol menyebut hasilnya ("Kirim pesanan", "Simpan produk"), bukan "Submit"/"OK".
 - Pesan error: apa yang gagal + apa yang bisa dilakukan. Tanpa emoji.

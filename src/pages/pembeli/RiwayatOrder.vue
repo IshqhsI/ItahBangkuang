@@ -3,7 +3,7 @@
     <section class="kepala">
       <div class="wadah">
         <h1 class="judul-halaman">Pesanan saya</h1>
-        <p class="sub-halaman">Semua yang pernah kamu pesan, beserta statusnya.</p>
+        <p class="sub-halaman">Semua pesananmu dan statusnya.</p>
       </div>
     </section>
 
@@ -75,7 +75,7 @@
       <div v-else class="kosong">
         <ReceiptText :size="44" :stroke-width="2" />
         <h3>{{ filterAktif === 'semua' ? 'Belum ada pesanan' : `Tidak ada pesanan yang ${labelStatus(filterAktif).toLowerCase()}` }}</h3>
-        <p v-if="filterAktif === 'semua'">Pesanan yang kamu buat akan muncul di sini.</p>
+        <p v-if="filterAktif === 'semua'">Pesananmu muncul di sini.</p>
         <p v-else>Coba lihat status lainnya.</p>
         <RouterLink v-if="filterAktif === 'semua'" to="/produk" class="tombol tombol-merah">Lihat produk</RouterLink>
         <button v-else type="button" class="tombol" @click="filterAktif = 'semua'">Lihat semua pesanan</button>
@@ -201,7 +201,7 @@ onMounted(async () => {
   width: 80px;
   height: 80px;
   object-fit: cover;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   background: var(--dinding);
 }

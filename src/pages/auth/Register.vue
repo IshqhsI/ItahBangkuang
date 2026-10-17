@@ -278,7 +278,7 @@ const handleSubmit = async () => {
     errorMsg.value =
       error.message === 'User already registered'
         ? 'Email ini sudah terdaftar. Coba masuk, atau pakai email lain.'
-        : 'Pendaftaran belum berhasil. Periksa koneksi internetmu, lalu coba lagi.';
+        : 'Pendaftaran belum berhasil. Cek internetmu, lalu coba lagi.';
     loading.value = false;
     return;
   }
@@ -399,7 +399,7 @@ const handleSubmit = async () => {
   gap: 0.3rem;
   padding: 0.9rem 0.9rem 1rem;
   background: var(--papan);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   cursor: pointer;
   transition: background-color 0.15s ease;

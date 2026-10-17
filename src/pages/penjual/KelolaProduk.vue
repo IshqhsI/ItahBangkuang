@@ -151,7 +151,7 @@ const toggleStatus = async (p) => {
   const statusBaru = p.status === 'DISEMBUNYIKAN' ? 'AKTIF' : 'DISEMBUNYIKAN';
   const { error } = await supabase.from('produk').update({ status: statusBaru }).eq('id', p.id);
   if (error) {
-    toast.error('Statusnya belum berubah. Periksa koneksi internetmu, lalu coba lagi.');
+    toast.error('Statusnya belum berubah. Cek internetmu, lalu coba lagi.');
   } else {
     p.status = statusBaru;
     toast.success(statusBaru === 'AKTIF' ? `“${p.nama_produk}” tampil lagi.` : `“${p.nama_produk}” disembunyikan.`);

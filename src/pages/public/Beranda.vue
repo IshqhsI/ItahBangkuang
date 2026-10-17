@@ -18,9 +18,8 @@
           </h1>
 
           <p class="depan-sub">
-            Jajanan, lauk, jahitan, sampai jasa tukang — semuanya dari tetangga
-            sendiri di <strong>Kelurahan Bangkuang</strong>. Pesan di sini,
-            lanjut ngobrol dengan penjualnya lewat WhatsApp.
+            Tempat warga <strong>Kelurahan Bangkuang</strong> berjualan dan
+            berbelanja. Pesan di sini, selesaikan lewat WhatsApp.
           </p>
 
           <div class="depan-pintu">
@@ -28,7 +27,7 @@
               <ShoppingBasket class="pintu-ikon" :size="30" :stroke-width="2.25" />
               <span class="pintu-teks">
                 <span class="pintu-judul">Mau belanja</span>
-                <span class="pintu-ket">Lihat yang dijual tetangga hari ini</span>
+                <span class="pintu-ket">Lihat dagangan tetangga</span>
               </span>
               <ArrowRight class="pintu-panah" :size="24" :stroke-width="2.5" />
             </RouterLink>
@@ -36,14 +35,14 @@
               <Store class="pintu-ikon" :size="30" :stroke-width="2.25" />
               <span class="pintu-teks">
                 <span class="pintu-judul">Mau jualan</span>
-                <span class="pintu-ket">Buka toko gratis, pajang daganganmu</span>
+                <span class="pintu-ket">Buka toko, gratis</span>
               </span>
               <ArrowRight class="pintu-panah" :size="24" :stroke-width="2.5" />
             </RouterLink>
           </div>
 
           <p v-if="statsSiap" class="depan-hitung">
-            Sekarang ada <strong>{{ stats.produk }}</strong> produk dari
+            Sudah ada <strong>{{ stats.produk }}</strong> produk dari
             <strong>{{ stats.toko }}</strong> toko tetangga.
           </p>
         </div>
@@ -79,7 +78,7 @@
     <section class="bagian">
       <div class="wadah">
         <h2 class="judul-bagian huruf-papan">Mau cari apa?</h2>
-        <p class="sub-bagian">Pilih papannya, langsung kelihatan produknya.</p>
+        <p class="sub-bagian">Tinggal pilih papannya.</p>
         <div class="kategori-grid">
           <RouterLink
             v-for="kat in kategori"
@@ -101,10 +100,10 @@
         <div class="kepala-bagian">
           <div>
             <h2 class="judul-bagian huruf-papan">Baru dipajang</h2>
-            <p class="sub-bagian">Produk yang paling baru dipasang tetangga.</p>
+            <p class="sub-bagian">Yang paling baru dari tetangga.</p>
           </div>
           <RouterLink to="/produk" class="tombol">
-            Lihat semua produk
+            Lihat semua
             <ArrowRight :size="20" :stroke-width="2.5" />
           </RouterLink>
         </div>
@@ -118,7 +117,7 @@
         <div v-else class="kosong">
           <Store :size="40" :stroke-width="2" />
           <h3>Etalase masih kosong</h3>
-          <p>Belum ada tetangga yang jualan. Mau jadi yang pertama?</p>
+          <p>Belum ada yang jualan. Jadi yang pertama?</p>
           <RouterLink :to="bukaTokoDest" class="tombol tombol-merah">Buka toko gratis</RouterLink>
         </div>
       </div>
@@ -127,8 +126,8 @@
     <!-- CARA KERJA -->
     <section class="bagian bagian-kuning">
       <div class="wadah">
-        <h2 class="judul-bagian huruf-papan">Belanja dan jualan, sama gampangnya</h2>
-        <p class="sub-bagian">Tiga langkah, cukup pakai HP.</p>
+        <h2 class="judul-bagian huruf-papan">Caranya gampang</h2>
+        <p class="sub-bagian">Tiga langkah. Cukup pakai HP.</p>
         <div class="cara-grid">
           <div v-for="c in caraKerja" :key="c.peran" class="papan cara-papan">
             <h3 class="cara-peran">
@@ -158,8 +157,7 @@
           </h2>
           <p class="ajakan-ket">
             Biasa jualan lewat status WA atau grup Facebook? Pajang juga di
-            sini, biar tetangga gampang menemukan dan memesan. Gratis, tanpa
-            biaya apa pun.
+            sini, biar tetangga gampang nemu dan pesan. Gratis.
           </p>
           <ul class="ajakan-daftar">
             <li v-for="u in untung" :key="u">
@@ -181,7 +179,7 @@
             </svg>
             <div class="papan-buka">
               <span class="buka-kata huruf-papan">BUKA</span>
-              <span class="buka-ket">Silakan mampir</span>
+              <span class="buka-ket">Ayo mampir</span>
             </div>
           </div>
         </div>
@@ -217,29 +215,29 @@ const etalase = computed(() => produkTerbaru.value.filter((p) => p.foto_url).sli
 
 const caraKerja = [
   {
-    peran: 'Kalau mau belanja',
+    peran: 'Belanja',
     icon: ShoppingBasket,
     langkah: [
-      { judul: 'Cari yang kamu mau', ket: 'Pilih kategori atau ketik nama produknya.' },
-      { judul: 'Isi pesanan', ket: 'Tulis nama dan alamat, lalu pilih bayar COD atau transfer.' },
-      { judul: 'Lanjut di WhatsApp', ket: 'Penjual mengonfirmasi pesananmu dan mengatur pengantarannya lewat WA.' },
+      { judul: 'Cari', ket: 'Pilih kategori, atau ketik nama produknya.' },
+      { judul: 'Isi pesanan', ket: 'Nama, alamat, lalu pilih COD atau transfer.' },
+      { judul: 'Lanjut di WhatsApp', ket: 'Penjual konfirmasi, lalu kalian atur pengantarannya di WA.' },
     ],
   },
   {
-    peran: 'Kalau mau jualan',
+    peran: 'Jualan',
     icon: Store,
     langkah: [
-      { judul: 'Daftarkan tokomu', ket: 'Gratis. Admin memeriksa dulu sebelum tokomu tampil.' },
-      { judul: 'Pajang produk', ket: 'Foto, nama, harga, dan stok. Ukuran atau rasa berbeda bisa pakai varian.' },
-      { judul: 'Terima pesanan', ket: 'Pesanan baru dikabarkan lewat WA. Konfirmasi, lalu atur pengantarannya.' },
+      { judul: 'Daftar toko', ket: 'Gratis. Admin cek dulu sebelum tokomu tampil.' },
+      { judul: 'Pajang produk', ket: 'Foto, nama, harga, stok. Ukuran atau rasa beda? Pakai varian.' },
+      { judul: 'Terima pesanan', ket: 'Pesanan baru masuk ke WA-mu. Konfirmasi, lalu atur pengantarannya.' },
     ],
   },
 ];
 
 const untung = [
-  'Pajang produk sebanyak yang kamu mau',
-  'Pembeli langsung menghubungi kamu lewat WA',
-  'COD atau transfer, kamu yang atur',
+  'Pajang sebanyak yang kamu mau',
+  'Pembeli langsung chat kamu di WA',
+  'COD atau transfer, terserah kamu',
   'Cukup bisa pakai HP',
 ];
 
@@ -361,7 +359,7 @@ onMounted(async () => {
   padding: 0.45rem 0.85rem 0.4rem;
   background: var(--kuning);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 6px;
   font-family: var(--font-papan);
   font-size: 0.95rem;
@@ -482,7 +480,7 @@ onMounted(async () => {
   padding: 0.5rem 0.5rem 0.75rem;
   background: var(--papan);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   text-decoration: none;
   transform: rotate(var(--miring, 0deg));
@@ -612,7 +610,7 @@ onMounted(async () => {
   height: 46px;
   background: var(--papan);
   color: var(--tinta);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 50%;
 }
 .kat-nama {
@@ -645,7 +643,7 @@ onMounted(async () => {
   font-weight: 400;
   font-size: 1.2rem;
   padding-bottom: 1rem;
-  border-bottom: 2.5px solid var(--tinta);
+  border-bottom: var(--tebal) solid var(--garis);
 }
 .cara-langkah {
   list-style: none;
@@ -670,7 +668,7 @@ onMounted(async () => {
   height: 40px;
   background: var(--merah);
   color: #fff;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 50%;
   font-size: 1.05rem;
 }

@@ -208,7 +208,7 @@ const ubah = async (t, perubahan, pesanSukses) => {
   const { error } = await supabase.from('toko').update(perubahan).eq('id', t.id);
   prosesId.value = null;
   if (error) {
-    toast.error('Perubahannya belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.');
+    toast.error('Perubahannya belum tersimpan. Cek internetmu, lalu coba lagi.');
     return false;
   }
   Object.assign(t, perubahan);
@@ -358,7 +358,7 @@ onMounted(async () => {
   height: 60px;
   background: var(--hijau);
   color: #fff;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 50%;
   overflow: hidden;
 }

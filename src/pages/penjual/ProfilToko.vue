@@ -234,7 +234,7 @@ const handleSubmit = async () => {
   if (fotoFile.value) {
     fotoUrl = await uploadFoto();
     if (!fotoUrl) {
-      errorMsg.value = 'Fotonya belum terunggah. Periksa koneksi internetmu, lalu coba lagi.';
+      errorMsg.value = 'Fotonya belum terunggah. Cek internetmu, lalu coba lagi.';
       loading.value = false;
       return;
     }
@@ -253,7 +253,7 @@ const handleSubmit = async () => {
     .eq('id', tokoId.value);
 
   if (error) {
-    errorMsg.value = 'Perubahan belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
+    errorMsg.value = 'Perubahan belum tersimpan. Cek internetmu, lalu coba lagi.';
     loading.value = false;
     return;
   }
@@ -387,7 +387,7 @@ onMounted(async () => {
   width: 96px;
   height: 96px;
   background: var(--kuning);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 50%;
   overflow: hidden;
 }

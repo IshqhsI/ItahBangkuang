@@ -44,7 +44,7 @@
         <section class="kepala">
           <div class="wadah kepala-dalam">
             <div>
-              <p class="kepala-sapa">Halo, selamat datang kembali</p>
+              <p class="kepala-sapa">Halo, ini tokomu hari ini</p>
               <h1 class="judul-halaman">{{ toko?.nama_toko }}</h1>
             </div>
             <div class="kepala-aksi">
@@ -70,7 +70,7 @@
             <BellRing :size="30" :stroke-width="2.25" />
             <span class="perlu-teks">
               <strong class="huruf-papan">{{ stats.orderMenunggu }} pesanan menunggu konfirmasimu</strong>
-              <span>Balas secepatnya supaya pembeli tidak membatalkan.</span>
+              <span>Balas cepat, biar pembeli tidak batal.</span>
             </span>
             <ArrowRight :size="24" :stroke-width="2.5" />
           </RouterLink>

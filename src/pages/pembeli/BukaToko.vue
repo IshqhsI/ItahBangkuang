@@ -183,7 +183,7 @@ const handleSubmit = async () => {
   });
 
   if (tokoError) {
-    errorMsg.value = 'Tokomu belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.';
+    errorMsg.value = 'Tokomu belum tersimpan. Cek internetmu, lalu coba lagi.';
     loading.value = false;
     return;
   }

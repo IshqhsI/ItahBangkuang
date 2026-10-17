@@ -165,7 +165,7 @@ const updateStatus = async (order, statusBaru) => {
   prosesId.value = order.id;
   const { error } = await supabase.from('orders').update({ status: statusBaru }).eq('id', order.id);
   if (error) {
-    toast.error('Statusnya belum berubah. Periksa koneksi internetmu, lalu coba lagi.');
+    toast.error('Statusnya belum berubah. Cek internetmu, lalu coba lagi.');
   } else {
     order.status = statusBaru;
     toast.success(
@@ -287,7 +287,7 @@ onMounted(async () => {
   width: 64px;
   height: 64px;
   object-fit: cover;
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: var(--sudut);
   background: var(--dinding);
 }

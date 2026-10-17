@@ -214,7 +214,7 @@ onMounted(async () => {
   width: 76px;
   height: 76px;
   background: var(--kuning);
-  border: 2.5px solid var(--tinta);
+  border: var(--tebal) solid var(--garis);
   border-radius: 50%;
   overflow: hidden;
 }
