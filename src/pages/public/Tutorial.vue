@@ -114,7 +114,7 @@ import {
 } from 'lucide-vue-next';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import IkonWa from '@/components/IkonWa.vue';
-import { useSeo } from '@/lib/useSeo';
+import { useSeo, pasangFaq } from '@/lib/useSeo';
 import { tautanWa } from '@/lib/utils';
 
 useSeo({
@@ -314,6 +314,9 @@ const penjual = {
 };
 
 const panduan = computed(() => (tab.value === 'penjual' ? penjual : pembeli));
+
+// Pertanyaan dua peran digabung untuk data terstruktur FAQ
+pasangFaq([...(pembeli.tanya ?? []), ...(penjual.tanya ?? [])]);
 </script>
 
 <style scoped>

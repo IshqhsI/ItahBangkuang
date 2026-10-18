@@ -134,6 +134,7 @@ import {
   CircleX,
   Ban,
 } from 'lucide-vue-next';
+import { siapkanFoto } from '@/lib/gambar';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 
@@ -174,11 +175,16 @@ const rapikanWa = () => {
 
 const triggerUpload = () => fileInput.value?.click();
 
-const onFileChange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+const onFileChange = async (e) => {
+  const asli = e.target.files[0];
+  if (!asli) return;
+  if (asli.size > 10 * 1024 * 1024) {
+    errorMsg.value = 'Foto terlalu besar. Pilih foto dengan ukuran di bawah 10 MB.';
+    return;
+  }
+  const file = await siapkanFoto(asli, { maksSisi: 800 });
   if (file.size > 2 * 1024 * 1024) {
-    errorMsg.value = 'Fotonya terlalu besar. Pilih foto yang ukurannya di bawah 2 MB.';
+    errorMsg.value = 'Foto masih terlalu besar setelah dikecilkan. Pilih foto lain.';
     return;
   }
   if (previewUrl.value?.startsWith('blob:')) URL.revokeObjectURL(previewUrl.value);

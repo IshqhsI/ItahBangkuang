@@ -20,7 +20,7 @@
         <!-- FOTO -->
         <section class="bagian papan" aria-labelledby="h-foto">
           <h2 id="h-foto" class="bagian-judul">Foto produk</h2>
-          <p class="bagian-ket">Foto terang dan dekat bikin produk lebih cepat laku. Maksimal 2 MB.</p>
+          <p class="bagian-ket">Foto yang terang dan dekat membantu produk lebih diminati. Maksimal 10 MB; foto otomatis dikecilkan.</p>
 
           <div
             class="unggah"
@@ -123,7 +123,7 @@
           </div>
 
           <div v-else>
-            <p class="bagian-ket">Pakai varian kalau ukuran atau rasanya beda-beda. Tiap varian punya harga dan stok sendiri.</p>
+            <p class="bagian-ket">Gunakan varian bila ukuran atau rasa berbeda. Tiap varian memiliki harga dan stok sendiri.</p>
 
             <div v-for="(v, index) in form.varian" :key="index" class="varian">
               <div class="varian-kepala">
@@ -207,6 +207,7 @@ import {
   CircleCheck,
   Layers,
 } from 'lucide-vue-next';
+import { siapkanFoto } from '@/lib/gambar';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 import { KATEGORI } from '@/lib/kategori';
@@ -288,9 +289,14 @@ const onDrop = (e) => {
   if (file && file.type.startsWith('image/')) prosesFile(file);
 };
 
-const prosesFile = (file) => {
+const prosesFile = async (asli) => {
+  if (asli.size > 10 * 1024 * 1024) {
+    errorMsg.value = 'Foto terlalu besar. Pilih foto dengan ukuran di bawah 10 MB.';
+    return;
+  }
+  const file = await siapkanFoto(asli);
   if (file.size > 2 * 1024 * 1024) {
-    errorMsg.value = 'Fotonya terlalu besar. Pilih foto yang ukurannya di bawah 2 MB.';
+    errorMsg.value = 'Foto masih terlalu besar setelah dikecilkan. Pilih foto lain.';
     return;
   }
   fotoFile.value = file;

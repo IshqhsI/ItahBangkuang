@@ -151,6 +151,30 @@ function pasangBreadcrumb(butir) {
 }
 
 /**
+ * pasangFaq — JSON-LD FAQPage dari daftar { t: pertanyaan, j: jawaban }.
+ * Catatan: Google hanya menampilkan hasil kaya FAQ untuk situs tertentu,
+ * tetapi data ini tetap membantu mesin memahami isi halaman.
+ */
+export function pasangFaq(daftar = []) {
+  document.querySelector('#jsonld-faq')?.remove();
+  if (!daftar.length) return;
+  const polos = (s) => String(s).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const el = document.createElement('script');
+  el.id = 'jsonld-faq';
+  el.type = 'application/ld+json';
+  el.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: daftar.map((q) => ({
+      '@type': 'Question',
+      name: polos(q.t),
+      acceptedAnswer: { '@type': 'Answer', text: polos(q.j) },
+    })),
+  });
+  document.head.appendChild(el);
+}
+
+/**
  * resetSeo — dipanggil setiap pindah halaman agar meta dan JSON-LD halaman
  * sebelumnya tidak terbawa. Halaman yang punya SEO sendiri memanggil useSeo
  * lagi setelah ini.
@@ -159,6 +183,7 @@ export function resetSeo(noindex = false) {
   document.querySelector('#jsonld-product')?.remove();
   document.querySelector('#jsonld-store')?.remove();
   document.querySelector('#jsonld-breadcrumb')?.remove();
+  document.querySelector('#jsonld-faq')?.remove();
   useSeo({ noindex });
 }
 
