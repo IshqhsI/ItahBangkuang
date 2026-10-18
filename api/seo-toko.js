@@ -1,4 +1,5 @@
 // HTML ramah crawler untuk /toko/:id.
+import { LOKASI_PENDEK } from './_kategori.js';
 import {
   BASE_URL, GAMBAR_DEFAULT, ambil, adalahUuid, halaman, kirim, esc, ringkas, teksHarga,
 } from './_seo.js';
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
     `produk?toko_id=eq.${t.id}&status=eq.AKTIF&select=id,nama_produk,harga,varian&order=created_at.desc&limit=50`,
   );
 
-  const judul = `${t.nama_toko} — Toko di Kelurahan Bangkuang | ItahBangkuang`;
+  const judul = `${t.nama_toko} — Toko di ${LOKASI_PENDEK} | ItahBangkuang`;
   const deskripsi = ringkas(
     `${t.nama_toko}${t.alamat ? `, ${t.alamat}` : ''}. ${t.deskripsi || 'Produk lokal dari warga Kelurahan Bangkuang.'} Pesan lewat WhatsApp.`,
   );
@@ -48,10 +49,12 @@ export default async function handler(req, res) {
       address: {
         '@type': 'PostalAddress',
         streetAddress: t.alamat || undefined,
-        addressLocality: 'Kelurahan Bangkuang',
+        addressLocality: 'Bangkuang, Karau Kuala',
         addressRegion: 'Kalimantan Tengah',
+        postalCode: '73761',
         addressCountry: 'ID',
       },
+      areaServed: 'Kabupaten Barito Selatan',
     },
     {
       '@context': 'https://schema.org',

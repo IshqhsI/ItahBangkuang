@@ -1,4 +1,5 @@
 // HTML ramah crawler untuk /produk/:id (dialihkan dari vercel.json untuk user-agent bot).
+import { LOKASI_PENDEK, slugUrl } from './_kategori.js';
 import {
   BASE_URL, GAMBAR_DEFAULT, KATEGORI, ambil, adalahUuid, halaman, kirim,
   esc, ringkas, teksHarga, rentangHarga, adaVarian, totalStok, rupiah,
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
   const kategoriLabel = KATEGORI[p.kategori] || '';
   const judul = `${p.nama_produk} — ${p.toko.nama_toko} | ItahBangkuang`;
   const deskripsi = ringkas(
-    `${p.nama_produk} dari ${p.toko.nama_toko}, ${teksHarga(p)}. ${p.deskripsi || ''} Pesan lewat WhatsApp di ItahBangkuang.`,
+    `${p.nama_produk} dari ${p.toko.nama_toko}, ${teksHarga(p)}. ${p.deskripsi || ''} Dijual di ${LOKASI_PENDEK}. Pesan lewat WhatsApp di ItahBangkuang.`,
   );
 
   const ketersediaan = stok > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
@@ -93,7 +94,7 @@ export default async function handler(req, res) {
   <h1>${esc(p.nama_produk)}</h1>
   ${p.foto_url ? `<img src="${esc(p.foto_url)}" alt="${esc(p.nama_produk)}" width="600" height="600">` : ''}
   <p><strong>${esc(teksHarga(p))}</strong> · ${stok > 0 ? `Stok tersedia (${stok})` : 'Stok habis'}</p>
-  ${kategoriLabel ? `<p>Kategori: <a href="${BASE_URL}/produk?kategori=${esc(p.kategori)}">${esc(kategoriLabel)}</a></p>` : ''}
+  ${kategoriLabel ? `<p>Kategori: <a href="${BASE_URL}/kategori/${esc(slugUrl(p.kategori))}">${esc(kategoriLabel)}</a></p>` : ''}
   <p>Dijual oleh <a href="${BASE_URL}/toko/${esc(p.toko.id)}">${esc(p.toko.nama_toko)}</a>${p.toko.alamat ? `, ${esc(p.toko.alamat)}` : ''}${p.toko.terverifikasi ? ' (toko terverifikasi)' : ''}.</p>
   ${adaVarian(p) ? `<h2>Varian</h2><ul>${p.varian.map((v) => `<li>${esc(v.nama)} — ${rupiah(v.harga)}${Number(v.stok) > 0 ? '' : ' (habis)'}</li>`).join('')}</ul>` : ''}
   ${p.deskripsi ? `<h2>Tentang produk</h2><p>${esc(p.deskripsi)}</p>` : ''}

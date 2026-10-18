@@ -15,6 +15,11 @@ const routes = [
     component: () => import('@/pages/public/BrowseProduk.vue'),
   },
   {
+    path: '/kategori/:slug',
+    name: 'Kategori',
+    component: () => import('@/pages/public/Kategori.vue'),
+  },
+  {
     path: '/produk/:id',
     name: 'DetailProduk',
     component: () => import('@/pages/public/DetailProduk.vue'),

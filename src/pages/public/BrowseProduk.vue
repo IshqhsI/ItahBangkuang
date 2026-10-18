@@ -145,7 +145,8 @@ import { Search, SearchX, X, ArrowDownUp, LayoutGrid } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import KartuProduk from '@/components/KartuProduk.vue';
-import { useSeo } from '@/lib/useSeo';
+import { useSeo, BASE_URL } from '@/lib/useSeo';
+import { slugUrl } from '../../../api/_kategori.js';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
 import { totalStok, punyaVarian, beragamkan } from '@/lib/utils';
 
@@ -311,6 +312,8 @@ watch(
   (k) =>
     useSeo({
       title: k === 'semua' ? 'Semua Produk' : labelKategori(k),
+      // Halaman kategori punya alamat sendiri; daftar yang disaring menunjuk ke sana
+      url: k === 'semua' ? `${BASE_URL}/produk` : `${BASE_URL}/kategori/${slugUrl(k)}`,
       description:
         'Daftar produk dan jasa warga Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa.',
     }),

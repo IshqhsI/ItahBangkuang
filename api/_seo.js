@@ -2,20 +2,15 @@
 // Crawler mesin pencari dan media sosial tidak selalu menjalankan JavaScript,
 // jadi vercel.json mengalihkan mereka ke HTML yang sudah berisi konten nyata.
 
+import { KATEGORI_TEKS } from './_kategori.js';
+
 export const BASE_URL = 'https://www.itahbangkuang.my.id';
 export const GAMBAR_DEFAULT = `${BASE_URL}/og-image.jpg`;
 
-// Salinan dari src/lib/kategori.js (file itu tidak bisa diimpor dari sini
-// karena memuat Vue). Ubah keduanya bersamaan.
-export const KATEGORI = {
-  makanan_jajanan: 'Makanan & Jajanan',
-  aneka_minuman: 'Aneka Minuman',
-  dapur_lauk: 'Dapur & Lauk Pauk',
-  pakaian_jahitan: 'Pakaian & Jahitan',
-  jasa_tukang: 'Jasa & Tukang',
-  mesin_elektronik: 'Mesin & Elektronik',
-  lainnya: 'Lainnya',
-};
+// Label kategori diturunkan dari sumber tunggal di _kategori.js
+export const KATEGORI = Object.fromEntries(
+  Object.entries(KATEGORI_TEKS).map(([slug, v]) => [slug, v.label]),
+);
 
 export const esc = (v = '') =>
   String(v)
@@ -104,7 +99,7 @@ ${jsonld.map((j) => `<script type="application/ld+json">${laJson(j)}</script>`).
 </head>
 <body>
 <header>
-  <p><a href="${BASE_URL}/">ItahBangkuang</a> — Marketplace produk lokal Kelurahan Bangkuang</p>
+  <p><a href="${BASE_URL}/">ItahBangkuang</a> — Marketplace produk lokal Kelurahan Bangkuang, Barito Selatan</p>
   <nav><a href="${BASE_URL}/">Beranda</a> · <a href="${BASE_URL}/produk">Semua produk</a> · <a href="${BASE_URL}/tutorial">Cara pakai</a></nav>
 </header>
 <main>

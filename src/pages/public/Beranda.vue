@@ -13,7 +13,7 @@
       <section class="depan">
         <div class="wadah depan-dalam">
           <div class="depan-teks">
-            <p class="sapa">Marketplace Kelurahan Bangkuang</p>
+            <p class="sapa">Marketplace Bangkuang, Barito Selatan</p>
 
             <h1 class="depan-judul">
               Belanja produk lokal,
@@ -21,7 +21,7 @@
             </h1>
 
             <p class="depan-sub">
-              Telusuri produk dan jasa dari warga <strong>Kelurahan Bangkuang</strong>. Pilih produk,
+              Telusuri produk dan jasa dari warga <strong>Kelurahan Bangkuang, Kabupaten Barito Selatan</strong>. Pilih produk,
               pesan di sini, lalu selesaikan transaksi melalui WhatsApp.
             </p>
 
@@ -62,7 +62,7 @@
               <RouterLink
                 v-for="kat in kategori"
                 :key="kat.slug"
-                :to="`/produk?kategori=${kat.slug}`"
+                :to="`/kategori/${slugUrl(kat.slug)}`"
                 class="cari-chip"
               >
                 <component :is="kat.icon" :size="16" :stroke-width="2" />
@@ -241,6 +241,7 @@ import { formatHargaProduk, totalStok, beragamkan } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { KATEGORI } from '@/lib/kategori';
+import { slugUrl } from '../../../api/_kategori.js';
 
 const authStore = useAuthStore();
 const router = useRouter();

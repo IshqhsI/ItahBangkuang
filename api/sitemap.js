@@ -1,5 +1,6 @@
 // Sitemap dinamis: halaman utama, kategori, semua produk dan toko yang aktif.
 import { BASE_URL, KATEGORI, ambil, esc } from './_seo.js';
+import { slugUrl } from './_kategori.js';
 
 const tanggal = (v) => (v ? String(v).slice(0, 10) : undefined);
 
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
     url(`${BASE_URL}/`, { changefreq: 'daily', priority: '1.0' }),
     url(`${BASE_URL}/produk`, { changefreq: 'daily', priority: '0.9' }),
     ...Object.keys(KATEGORI).map((s) =>
-      url(`${BASE_URL}/produk?kategori=${s}`, { changefreq: 'daily', priority: '0.7' }),
+      url(`${BASE_URL}/kategori/${slugUrl(s)}`, { changefreq: 'daily', priority: '0.8' }),
     ),
     url(`${BASE_URL}/tutorial`, { changefreq: 'monthly', priority: '0.4' }),
     ...produk

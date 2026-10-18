@@ -13,10 +13,10 @@
  */
 
 const BASE_TITLE = 'ItahBangkuang';
-const BASE_URL = 'https://www.itahbangkuang.my.id';
+export const BASE_URL = 'https://www.itahbangkuang.my.id';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_DESC =
-  'Belanja dan berjualan produk lokal Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa dari warga. Pesan langsung dari penjual lewat WhatsApp.';
+  'Belanja dan berjualan produk lokal Kelurahan Bangkuang, Kecamatan Karau Kuala, Kabupaten Barito Selatan: makanan, minuman, pakaian, dan jasa dari warga. Pesan langsung dari penjual lewat WhatsApp.';
 
 function setMeta(name, content, attr = 'name') {
   if (!content) return;
@@ -132,7 +132,7 @@ export function useProductSeo({
 }
 
 /** Breadcrumb JSON-LD (menggantikan yang lama bila ada) */
-function pasangBreadcrumb(butir) {
+export function pasangBreadcrumb(butir) {
   document.querySelector('#jsonld-breadcrumb')?.remove();
   const el = document.createElement('script');
   el.id = 'jsonld-breadcrumb';
@@ -216,10 +216,12 @@ export function useStoreSeo({ namaTokoNama, deskripsi, foto, alamat, tokoId }) {
     address: {
       '@type': 'PostalAddress',
       streetAddress: alamat,
-      addressLocality: 'Kelurahan Bangkuang',
+      addressLocality: 'Bangkuang, Karau Kuala',
       addressRegion: 'Kalimantan Tengah',
+      postalCode: '73761',
       addressCountry: 'ID',
     },
+    areaServed: 'Kabupaten Barito Selatan',
   });
   document.head.appendChild(script);
 }
