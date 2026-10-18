@@ -183,7 +183,13 @@ const handleSubmit = async () => {
   });
 
   if (tokoError) {
-    errorMsg.value = 'Toko belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
+    const kembar = tokoError.code === '23505';
+    const nomorKembar = kembar && String(tokoError.message).includes('nomor_wa');
+    errorMsg.value = nomorKembar
+      ? 'Nomor WhatsApp ini sudah dipakai toko lain. Gunakan nomor Anda sendiri, atau hubungi admin bila nomor ini milik Anda.'
+      : kembar
+        ? 'Akun ini sudah memiliki toko.'
+        : 'Toko belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.';
     loading.value = false;
     return;
   }

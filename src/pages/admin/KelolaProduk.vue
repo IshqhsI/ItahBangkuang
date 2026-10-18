@@ -64,6 +64,9 @@
                 <div class="produk-sel">
                   <img :src="p.foto_url" :alt="p.nama_produk" class="thumb" />
                   <span class="produk-nama">{{ p.nama_produk }}</span>
+                  <span v-if="kembarDengan(p)" class="plat plat-kuning" :title="`Sama dengan produk toko ${kembarDengan(p)}`">
+                    Kembar: {{ kembarDengan(p) }}
+                  </span>
                 </div>
               </td>
               <td>
@@ -127,6 +130,18 @@ const filterKategori = ref('');
 const filterStatus = ref('');
 const prosesId = ref(null);
 let searchTimeout = null;
+
+// Penanda produk kembar: nama dan deskripsi sama persis di toko yang berbeda
+const normal = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const kembarDengan = (p) => {
+  const nama = normal(p.nama_produk);
+  const desk = normal(p.deskripsi);
+  if (!nama || desk.length < 15) return '';
+  const lain = produkList.value.find(
+    (x) => x.id !== p.id && x.toko_id !== p.toko_id && normal(x.nama_produk) === nama && normal(x.deskripsi) === desk,
+  );
+  return lain?.toko?.nama_toko ?? '';
+};
 
 const labelStatus = (s) => ({ AKTIF: 'Tampil', HABIS: 'Habis', DISEMBUNYIKAN: 'Disembunyikan' })[s] ?? s;
 const platStatus = { AKTIF: 'plat-hijau', HABIS: 'plat-kuning', DISEMBUNYIKAN: 'plat-tinta' };

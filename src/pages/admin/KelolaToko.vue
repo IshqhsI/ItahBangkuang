@@ -58,6 +58,10 @@
               <p class="info-ket"><MapPin :size="14" :stroke-width="2.5" /> {{ t.alamat }}</p>
               <p class="info-ket"><Phone :size="14" :stroke-width="2.5" /> +62{{ t.nomor_wa }}</p>
               <p class="info-ket">Daftar {{ formatTanggal(t.created_at) }}</p>
+              <p v-if="miripDengan(t)" class="info-ket mirip">
+                <TriangleAlert :size="14" :stroke-width="2.5" />
+                Mirip dengan toko “{{ miripDengan(t) }}”
+              </p>
             </div>
           </div>
 
@@ -223,6 +227,20 @@ const labelStatus = (s) =>
   ({ PENDING: 'Menunggu', AKTIF: 'Aktif', DITOLAK: 'Ditolak', DIBLOKIR: 'Diblokir' })[s] ?? s;
 const badgeClass = (s) => `badge-${(s ?? '').toLowerCase()}`;
 
+// Penanda toko ganda: nama sama, atau deskripsi panjang yang sama persis
+const normal = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const miripDengan = (t) => {
+  const nama = normal(t.nama_toko);
+  const desk = normal(t.deskripsi);
+  const lain = tokoList.value.find(
+    (x) =>
+      x.id !== t.id &&
+      x.status !== 'DITOLAK' &&
+      ((nama && normal(x.nama_toko) === nama) || (desk.length >= 20 && normal(x.deskripsi) === desk)),
+  );
+  return lain?.nama_toko ?? '';
+};
+
 const cocokFilter = (t, val) =>
   val === 'semua'
     ? true
@@ -311,6 +329,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.mirip {
+  color: #8a4a1f;
+  font-weight: 700;
+}
 .kepala {
   background: var(--sage);
   color: var(--sungai-dalam);

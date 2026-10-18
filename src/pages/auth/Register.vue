@@ -299,7 +299,12 @@ const handleSubmit = async () => {
     });
 
     if (errToko) {
-      toast.warning('Akun berhasil dibuat, tetapi info toko belum tersimpan. Lengkapi melalui menu Buka Toko.');
+      const waKembar = errToko.code === '23505' && String(errToko.message).includes('nomor_wa');
+      toast.warning(
+        waKembar
+          ? 'Akun berhasil dibuat, tetapi nomor WhatsApp itu sudah dipakai toko lain. Lengkapi melalui menu Buka Toko dengan nomor Anda sendiri.'
+          : 'Akun berhasil dibuat, tetapi info toko belum tersimpan. Lengkapi melalui menu Buka Toko.',
+      );
       router.push('/buka-toko');
     } else {
       toast.success('Toko berhasil didaftarkan dan sudah tampil.');
