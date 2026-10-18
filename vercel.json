@@ -3,17 +3,46 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/produk/:id",
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/produk/:id([0-9a-fA-F-]{8,40})",
       "has": [
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview).*"
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview|googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|petalbot).*"
         }
       ],
-      "destination": "/api/og-produk?id=:id"
+      "destination": "/api/seo-produk?id=:id"
     },
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/toko/:id([0-9a-fA-F-]{8,40})",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview|googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|petalbot).*"
+        }
+      ],
+      "destination": "/api/seo-toko?id=:id"
+    },
+    {
+      "source": "/produk",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview|googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|petalbot).*"
+        }
+      ],
+      "destination": "/api/seo-katalog"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ],
   "headers": [
     {

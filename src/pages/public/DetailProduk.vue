@@ -249,7 +249,7 @@ import {
   punyaVarian,
   tautanWa,
 } from '@/lib/utils';
-import { useProductSeo } from '@/lib/useSeo';
+import { useProductSeo, useSeo } from '@/lib/useSeo';
 import { labelKategori, iconKategori } from '@/lib/kategori';
 
 const route = useRoute();
@@ -374,6 +374,7 @@ const fetchData = async () => {
 
   if (!p || p.status !== 'AKTIF' || p.toko?.status !== 'AKTIF') {
     produk.value = null;
+    useSeo({ title: 'Produk tidak ditemukan', noindex: true });
     loading.value = false;
     return;
   }
@@ -384,7 +385,9 @@ const fetchData = async () => {
   useProductSeo({
     nama: p.nama_produk,
     deskripsi: p.deskripsi,
-    harga: p.harga,
+    harga: hargaMin.value || p.harga,
+    hargaMaks: hargaMaks.value || undefined,
+    stok: currentStok.value,
     foto: p.foto_url,
     tokoNama: p.toko.nama_toko,
     produkId: p.id,

@@ -14,9 +14,9 @@
 
 const BASE_TITLE = 'ItahBangkuang';
 const BASE_URL = 'https://itah-bangkuang.vercel.app';
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.webp`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_DESC =
-  'Pusat jual beli produk unggulan warga Kelurahan Bangkuang. Mari dukung UMKM lokal dengan belanja mudah, aman, dan terpercaya di ItahBangkuang.';;
+  'Belanja dan berjualan produk lokal Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa dari warga. Pesan langsung dari penjual lewat WhatsApp.';
 
 function setMeta(name, content, attr = 'name') {
   if (!content) return;
@@ -35,6 +35,7 @@ export function useSeo({
   image,
   url,
   type = 'website',
+  noindex = false,
 } = {}) {
   const fullTitle = title
     ? `${title} — ${BASE_TITLE}`
@@ -49,6 +50,7 @@ export function useSeo({
 
   // Primary meta
   setMeta('description', desc);
+  setMeta('robots', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
 
   // Canonical
   let canonicalEl = document.querySelector('link[rel="canonical"]');
@@ -80,6 +82,8 @@ export function useProductSeo({
   nama,
   deskripsi,
   harga,
+  hargaMaks,
+  stok,
   foto,
   tokoNama,
   produkId,
@@ -107,17 +111,55 @@ export function useProductSeo({
     image: foto,
     url,
     offers: {
-      '@type': 'Offer',
+      ...(hargaMaks && hargaMaks !== harga
+        ? { '@type': 'AggregateOffer', lowPrice: harga, highPrice: hargaMaks }
+        : { '@type': 'Offer', price: harga, url }),
       priceCurrency: 'IDR',
-      price: harga,
-      availability: 'https://schema.org/InStock',
+      availability: stok > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       seller: {
-        '@type': 'LocalBusiness',
+        '@type': 'Organization',
         name: tokoNama,
       },
     },
   });
   document.head.appendChild(script);
+
+  pasangBreadcrumb([
+    { name: 'Beranda', url: `${BASE_URL}/` },
+    { name: 'Produk', url: `${BASE_URL}/produk` },
+    { name: nama, url },
+  ]);
+}
+
+/** Breadcrumb JSON-LD (menggantikan yang lama bila ada) */
+function pasangBreadcrumb(butir) {
+  document.querySelector('#jsonld-breadcrumb')?.remove();
+  const el = document.createElement('script');
+  el.id = 'jsonld-breadcrumb';
+  el.type = 'application/ld+json';
+  el.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: butir.map((b, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: b.name,
+      item: b.url,
+    })),
+  });
+  document.head.appendChild(el);
+}
+
+/**
+ * resetSeo — dipanggil setiap pindah halaman agar meta dan JSON-LD halaman
+ * sebelumnya tidak terbawa. Halaman yang punya SEO sendiri memanggil useSeo
+ * lagi setelah ini.
+ */
+export function resetSeo(noindex = false) {
+  document.querySelector('#jsonld-product')?.remove();
+  document.querySelector('#jsonld-store')?.remove();
+  document.querySelector('#jsonld-breadcrumb')?.remove();
+  useSeo({ noindex });
 }
 
 /**

@@ -1,3 +1,4 @@
+import { resetSeo } from '@/lib/useSeo';
 import { createRouter, createWebHistory } from 'vue-router';
 import { supabase } from '@/lib/supabase';
 
@@ -138,6 +139,12 @@ const router = createRouter({
       return { top: 0 };
     }
   }
+});
+
+// Reset meta dan JSON-LD tiap pindah halaman; halaman privat tidak diindeks
+const RUTE_TANPA_INDEKS = ['/login', '/register', '/buka-toko', '/feedback'];
+router.afterEach((to) => {
+  resetSeo(Boolean(to.meta.requiresAuth) || RUTE_TANPA_INDEKS.includes(to.path));
 });
 
 // Navigation Guard
