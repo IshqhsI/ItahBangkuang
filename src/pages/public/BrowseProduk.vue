@@ -8,7 +8,7 @@
           <p class="kepala-sub">Produk dan jasa dari warga Kelurahan Bangkuang.</p>
         </div>
 
-        <form class="cari" role="search" @submit.prevent>
+        <form class="cari" role="search" @submit.prevent="terapkanCari">
           <Search class="cari-ikon" :size="20" :stroke-width="2" aria-hidden="true" />
           <label for="cari-produk" class="sr-only">Cari produk</label>
           <input
@@ -44,22 +44,31 @@
             class="chip"
             :aria-pressed="kategoriAktif === k.slug"
             :class="{ aktif: kategoriAktif === k.slug }"
-            @click="kategoriAktif = k.slug"
+            @click="ubahQuery({ kategori: k.slug === 'semua' ? undefined : k.slug })"
           >
             <component :is="k.icon" :size="18" :stroke-width="2" />
             {{ k.label }}
-            <span v-if="!memuat" class="hitung">{{ jumlahPerKategori[k.slug] ?? 0 }}</span>
+            <span v-if="jumlahKategori" class="hitung">{{ jumlahKategori[k.slug] ?? 0 }}</span>
           </button>
         </div>
         <div class="urut">
           <label class="sembunyi-habis">
-            <input v-model="sembunyikanHabis" type="checkbox" />
+            <input
+              type="checkbox"
+              :checked="sembunyikanHabis"
+              @change="ubahQuery({ habis: $event.target.checked ? undefined : '1' })"
+            />
             <span>Sembunyikan yang habis</span>
           </label>
           <div class="urut-pilih-bungkus">
             <label for="urutan" class="sr-only">Urutkan</label>
             <ArrowDownUp :size="18" :stroke-width="2" aria-hidden="true" />
-            <select id="urutan" v-model="sortBy" class="urut-pilih">
+            <select
+              id="urutan"
+              :value="sortBy"
+              class="urut-pilih"
+              @change="ubahQuery({ urut: $event.target.value === 'beragam' ? undefined : $event.target.value })"
+            >
               <option value="beragam">Pilihan beragam</option>
               <option value="terbaru">Paling baru</option>
               <option value="termurah">Harga termurah</option>
@@ -71,62 +80,59 @@
     </div>
 
     <!-- HASIL -->
-    <section class="hasil">
+    <section ref="areaHasil" class="hasil">
       <div class="wadah">
-        <p v-if="!memuat && hasil.length" class="hasil-info" aria-live="polite">
-          <template v-if="keyword.trim() || kategoriAktif !== 'semua'">
-            Ditemukan <strong>{{ hasil.length }}</strong> produk
-            <template v-if="keyword.trim()"> untuk “{{ keyword.trim() }}”</template>
+        <p v-if="pernahMuat && total > 0" class="hasil-info" aria-live="polite">
+          <template v-if="q || kategoriAktif !== 'semua'">
+            Ditemukan <strong>{{ total }}</strong> produk
+            <template v-if="q"> untuk “{{ q }}”</template>
             <template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>
           </template>
           <template v-else>
-            <strong>{{ hasil.length }}</strong> produk
+            <strong>{{ total }}</strong> produk
           </template>
-          <template v-if="jumlahDisembunyikan > 0">
-            ·
-            <button type="button" class="tautan-tombol" @click="sembunyikanHabis = false">
-              tampilkan {{ jumlahDisembunyikan }} yang habis
-            </button>
-          </template>
+          <template v-if="jumlahHalaman > 1"> · halaman {{ halaman }} dari {{ jumlahHalaman }}</template>
         </p>
 
-        <div v-if="memuat" class="grid-produk">
+        <div v-if="!pernahMuat" class="grid-produk">
           <div v-for="n in 8" :key="n" class="kerangka" style="aspect-ratio: 4 / 5.6; border-radius: 20px"></div>
         </div>
 
-        <template v-else-if="hasil.length">
-          <div class="grid-produk">
-            <KartuProduk v-for="p in tampilDaftar" :key="p.id" :produk="p" />
+        <template v-else-if="daftar.length">
+          <div class="grid-produk" :class="{ memuat: sedangMemuat }">
+            <KartuProduk v-for="p in daftar" :key="p.id" :produk="p" />
           </div>
-          <div v-if="sisaTampil > 0" class="lagi">
-            <button type="button" class="tombol" @click="tampilBatas += LANGKAH">
-              Tampilkan {{ Math.min(LANGKAH, sisaTampil) }} produk lagi
-              <span class="lagi-sisa">({{ sisaTampil }} tersisa)</span>
-            </button>
-          </div>
+          <Paginasi :halaman="halaman" :total="total" :per-halaman="PER_HALAMAN" />
         </template>
 
         <div v-else-if="gagal" class="kosong">
           <SearchX :size="44" :stroke-width="1.75" />
           <h3>Produk belum dapat dimuat</h3>
           <p>Periksa koneksi internet Anda, lalu coba lagi.</p>
-          <button type="button" class="tombol tombol-merah" @click="muatProduk">Coba lagi</button>
+          <button type="button" class="tombol tombol-merah" @click="muat">Coba lagi</button>
         </div>
 
         <div v-else class="kosong">
           <SearchX :size="44" :stroke-width="1.75" />
-          <template v-if="keyword.trim() || kategoriAktif !== 'semua' || jumlahDisembunyikan > 0">
+          <template v-if="q || kategoriAktif !== 'semua' || sembunyikanHabis">
             <h3>Tidak ditemukan</h3>
-            <p v-if="keyword.trim()">
-              Tidak ada produk untuk “{{ keyword.trim() }}”<template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>. Coba kata kunci lain yang lebih singkat.
+            <p v-if="q">
+              Tidak ada produk untuk “{{ q }}”<template v-if="kategoriAktif !== 'semua'"> di {{ labelKategori(kategoriAktif) }}</template>. Coba kata kunci lain yang lebih singkat.
             </p>
-            <p v-else-if="jumlahDisembunyikan > 0">
-              Semua produk yang cocok sedang habis. Anda dapat menampilkannya kembali.
-            </p>
-            <p v-else>Belum ada produk di kategori {{ labelKategori(kategoriAktif) }}.</p>
-            <button type="button" class="tombol tombol-merah" @click="resetFilter">
-              Lihat semua produk
-            </button>
+            <p v-else>Belum ada produk yang tersedia dengan pilihan ini.</p>
+            <div class="kosong-aksi">
+              <button
+                v-if="sembunyikanHabis"
+                type="button"
+                class="tombol"
+                @click="ubahQuery({ habis: '1' })"
+              >
+                Tampilkan yang habis
+              </button>
+              <button type="button" class="tombol tombol-merah" @click="resetFilter">
+                Lihat semua produk
+              </button>
+            </div>
           </template>
           <template v-else>
             <h3>Belum ada produk</h3>
@@ -139,192 +145,134 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, markRaw } from 'vue';
+import { ref, computed, watch, nextTick, onBeforeUnmount, markRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Search, SearchX, X, ArrowDownUp, LayoutGrid } from 'lucide-vue-next';
-import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import KartuProduk from '@/components/KartuProduk.vue';
+import Paginasi from '@/components/Paginasi.vue';
 import { useSeo, BASE_URL } from '@/lib/useSeo';
-import { slugUrl } from '../../../api/_kategori.js';
 import { KATEGORI, labelKategori } from '@/lib/kategori';
-import { totalStok, punyaVarian, beragamkan } from '@/lib/utils';
-
-// Daftar disimpan di tingkat modul: saat kembali dari halaman detail,
-// daftar langsung tampil dan posisi gulir dapat dipulihkan oleh router.
-const TTL_CACHE = 2 * 60 * 1000;
-const BATAS_AMBIL = 300;
-const LANGKAH = 24;
-let cache = { data: null, waktu: 0 };
+import { cariKatalog, hitungKatalog, PER_HALAMAN } from '@/lib/katalog';
+import { slugUrl } from '../../../api/_kategori.js';
 
 const route = useRoute();
 const router = useRouter();
 
-const semuaProduk = ref(cache.data ?? []);
-const memuat = ref(!cache.data);
-const gagal = ref(false);
-
-const keyword = ref(String(route.query.q ?? ''));
-const kategoriAktif = ref(String(route.query.kategori ?? 'semua'));
-const sortBy = ref(String(route.query.urut ?? 'beragam'));
-const sembunyikanHabis = ref(route.query.habis !== '1');
-const tampilBatas = ref(LANGKAH);
+// ---------- keadaan: satu-satunya sumber kebenaran adalah URL ----------
+const URUTAN = ['beragam', 'terbaru', 'termurah', 'termahal'];
+const q = computed(() => String(route.query.q ?? '').trim());
+const kategoriAktif = computed(() => String(route.query.kategori ?? 'semua'));
+const sortBy = computed(() => (URUTAN.includes(route.query.urut) ? route.query.urut : 'beragam'));
+const sembunyikanHabis = computed(() => route.query.habis !== '1');
+const halaman = computed(() => Math.max(1, parseInt(route.query.halaman, 10) || 1));
 
 const kategoriList = [{ slug: 'semua', label: 'Semua', icon: markRaw(LayoutGrid) }, ...KATEGORI];
 
-// ---------- data ----------
-let tokenMuat = 0;
-const muatProduk = async () => {
-  const token = ++tokenMuat;
-  gagal.value = false;
-  if (!semuaProduk.value.length) memuat.value = true;
-
-  const { data, error } = await supabase
-    .from('produk')
-    .select(
-      'id, nama_produk, deskripsi, harga, stok, varian, foto_url, kategori, created_at, toko_id, toko(nama_toko, alamat, status)',
-    )
-    .eq('status', 'AKTIF')
-    .order('created_at', { ascending: false })
-    .limit(BATAS_AMBIL);
-
-  if (token !== tokenMuat) return; // permintaan lama diabaikan
-  if (error) {
-    gagal.value = !semuaProduk.value.length;
-  } else {
-    semuaProduk.value = (data ?? []).filter((p) => p.toko?.status === 'AKTIF');
-    cache = { data: semuaProduk.value, waktu: Date.now() };
-  }
-  memuat.value = false;
+const ubahQuery = (patch) => {
+  const baru = { ...route.query, ...patch };
+  // Ganti saringan selalu kembali ke halaman 1
+  if (!('halaman' in patch)) delete baru.halaman;
+  for (const k of Object.keys(baru)) if (baru[k] === undefined || baru[k] === '') delete baru[k];
+  router.replace({ query: baru });
 };
-
-// ---------- pencarian & penyaringan (di sisi klien) ----------
-const normal = (t) =>
-  String(t ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-
-const kataKunci = computed(() => normal(keyword.value).split(/\s+/).filter(Boolean));
-
-const cocokKata = (p) => {
-  if (!kataKunci.value.length) return true;
-  const gudang = normal(
-    [p.nama_produk, p.deskripsi, p.toko?.nama_toko, labelKategori(p.kategori)].join(' '),
-  );
-  return kataKunci.value.every((k) => gudang.includes(k));
-};
-
-const habis = (p) => totalStok(p) === 0;
-
-// Setelah kata kunci dan penyembunyian, sebelum kategori (untuk jumlah di chip)
-const dasar = computed(() =>
-  semuaProduk.value.filter((p) => cocokKata(p) && (!sembunyikanHabis.value || !habis(p))),
-);
-
-const jumlahPerKategori = computed(() => {
-  const hitung = { semua: dasar.value.length };
-  for (const p of dasar.value) hitung[p.kategori] = (hitung[p.kategori] ?? 0) + 1;
-  return hitung;
-});
-
-// Berapa produk yang cocok tetapi disembunyikan karena habis
-const jumlahDisembunyikan = computed(() => {
-  if (!sembunyikanHabis.value) return 0;
-  return semuaProduk.value.filter(
-    (p) =>
-      cocokKata(p) &&
-      habis(p) &&
-      (kategoriAktif.value === 'semua' || p.kategori === kategoriAktif.value),
-  ).length;
-});
-
-const hargaTerendah = (p) =>
-  punyaVarian(p) ? Math.min(...p.varian.map((v) => Number(v.harga) || 0)) : Number(p.harga) || 0;
-const hargaTertinggi = (p) =>
-  punyaVarian(p) ? Math.max(...p.varian.map((v) => Number(v.harga) || 0)) : Number(p.harga) || 0;
-
-const hasil = computed(() => {
-  const daftar = dasar.value.filter(
-    (p) => kategoriAktif.value === 'semua' || p.kategori === kategoriAktif.value,
-  );
-  const terbaru = (a, b) => new Date(b.created_at) - new Date(a.created_at);
-  // "Pilihan beragam": terbaru, tetapi toko dan kategori digilir supaya tidak
-  // didominasi satu toko atau satu jenis produk
-  if (sortBy.value === 'beragam') {
-    const ada = daftar.filter((p) => !habis(p)).sort(terbaru);
-    const kosong = daftar.filter((p) => habis(p)).sort(terbaru);
-    return [...beragamkan(ada), ...beragamkan(kosong)];
-  }
-  const urut = {
-    terbaru,
-    termurah: (a, b) => hargaTerendah(a) - hargaTerendah(b),
-    termahal: (a, b) => hargaTertinggi(b) - hargaTertinggi(a),
-  }[sortBy.value] ?? (() => 0);
-  // Yang masih ada stok selalu di depan; yang habis di belakang
-  return [...daftar].sort((a, b) => Number(habis(a)) - Number(habis(b)) || urut(a, b));
-});
-
-const tampilDaftar = computed(() => hasil.value.slice(0, tampilBatas.value));
-const sisaTampil = computed(() => Math.max(0, hasil.value.length - tampilBatas.value));
 
 const resetFilter = () => {
   keyword.value = '';
-  kategoriAktif.value = 'semua';
-  sembunyikanHabis.value = true;
+  router.replace({ query: {} });
 };
 
-// ---------- URL & riwayat ----------
-const bangunQuery = () => {
-  const q = {};
-  if (kategoriAktif.value !== 'semua') q.kategori = kategoriAktif.value;
-  if (keyword.value.trim()) q.q = keyword.value.trim();
-  if (sortBy.value !== 'beragam') q.urut = sortBy.value;
-  if (!sembunyikanHabis.value) q.habis = '1';
-  return q;
+// ---------- kolom cari (ditunda agar tidak memanggil database di tiap huruf) ----------
+const keyword = ref(q.value);
+let tundaCari = null;
+const terapkanCari = () => {
+  clearTimeout(tundaCari);
+  if (keyword.value.trim() !== q.value) ubahQuery({ q: keyword.value.trim() || undefined });
 };
-
-let tundaUrl = null;
-watch([keyword, kategoriAktif, sortBy, sembunyikanHabis], () => {
-  tampilBatas.value = LANGKAH;
-  clearTimeout(tundaUrl);
-  tundaUrl = setTimeout(() => router.replace({ query: bangunQuery() }), 350);
+watch(keyword, () => {
+  clearTimeout(tundaCari);
+  tundaCari = setTimeout(terapkanCari, 350);
 });
+watch(q, (baru) => {
+  // Tombol kembali/maju mengubah URL: samakan isi kolom cari
+  if (baru !== keyword.value.trim()) keyword.value = baru;
+});
+onBeforeUnmount(() => clearTimeout(tundaCari));
 
-// Tombol kembali/maju atau tautan yang hanya mengubah query
-watch(
-  () => route.query,
-  (qr) => {
-    const k = String(qr.kategori ?? 'semua');
-    const q = String(qr.q ?? '');
-    const u = String(qr.urut ?? 'beragam');
-    const h = qr.habis !== '1';
-    if (k !== kategoriAktif.value) kategoriAktif.value = k;
-    if (q.trim() !== keyword.value.trim()) keyword.value = q;
-    if (u !== sortBy.value) sortBy.value = u;
-    if (h !== sembunyikanHabis.value) sembunyikanHabis.value = h;
-  },
-);
+// ---------- data ----------
+const daftar = ref([]);
+const total = ref(0);
+const jumlahKategori = ref(null);
+const pernahMuat = ref(false);
+const sedangMemuat = ref(false);
+const gagal = ref(false);
+const areaHasil = ref(null);
+const jumlahHalaman = computed(() => Math.max(1, Math.ceil(total.value / PER_HALAMAN)));
 
-// Judul tab dan deskripsi mengikuti kategori
+let token = 0;
+const muat = async () => {
+  const saya = ++token;
+  sedangMemuat.value = true;
+  gagal.value = false;
+  const hasil = await cariKatalog({
+    cari: q.value,
+    kategori: kategoriAktif.value === 'semua' ? null : kategoriAktif.value,
+    sembunyikanHabis: sembunyikanHabis.value,
+    urut: sortBy.value,
+    halaman: halaman.value,
+  });
+  if (saya !== token) return; // permintaan lama diabaikan
+
+  // Halaman di luar jangkauan (mis. ?halaman=99): arahkan ke halaman terakhir
+  if (hasil.total > 0 && hasil.baris.length === 0 && halaman.value > 1) {
+    router.replace({
+      query: { ...route.query, halaman: String(Math.ceil(hasil.total / PER_HALAMAN)) },
+    });
+    return;
+  }
+
+  daftar.value = hasil.baris;
+  total.value = hasil.total;
+  gagal.value = hasil.gagal;
+  pernahMuat.value = true;
+  sedangMemuat.value = false;
+};
+
+let tokenHitung = 0;
+const muatHitung = async () => {
+  const saya = ++tokenHitung;
+  const hasil = await hitungKatalog({ cari: q.value, sembunyikanHabis: sembunyikanHabis.value });
+  if (saya === tokenHitung) jumlahKategori.value = hasil;
+};
+
 watch(
-  kategoriAktif,
-  (k) =>
-    useSeo({
-      title: k === 'semua' ? 'Semua Produk' : labelKategori(k),
-      // Halaman kategori punya alamat sendiri; daftar yang disaring menunjuk ke sana
-      url: k === 'semua' ? `${BASE_URL}/produk` : `${BASE_URL}/kategori/${slugUrl(k)}`,
-      description:
-        'Daftar produk dan jasa warga Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa.',
-    }),
+  () => [q.value, kategoriAktif.value, sortBy.value, sembunyikanHabis.value, halaman.value],
+  () => muat(),
   { immediate: true },
 );
+watch(() => [q.value, sembunyikanHabis.value], muatHitung, { immediate: true });
 
-onMounted(() => {
-  const segar = cache.data && Date.now() - cache.waktu < TTL_CACHE;
-  if (!segar) muatProduk();
-  else memuat.value = false;
+// Pindah halaman: gulir ke awal hasil
+watch(halaman, async () => {
+  await nextTick();
+  areaHasil.value?.scrollIntoView({ block: 'start' });
 });
+
+// ---------- SEO ----------
+watch(
+  () => [kategoriAktif.value, halaman.value, q.value],
+  ([k, h, kata]) => {
+    const dasar = k === 'semua' ? `${BASE_URL}/produk` : `${BASE_URL}/kategori/${slugUrl(k)}`;
+    useSeo({
+      title: `${k === 'semua' ? 'Semua Produk' : labelKategori(k)}${h > 1 ? ` — Halaman ${h}` : ''}`,
+      description:
+        'Daftar produk dan jasa warga Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa.',
+      url: h > 1 ? `${dasar}?halaman=${h}` : dasar,
+      noindex: Boolean(kata), // hasil pencarian tidak perlu diindeks
+    });
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
@@ -498,6 +446,7 @@ onMounted(() => {
   background: var(--dinding);
   padding: 1.4rem 0 4rem;
   min-height: 50vh;
+  scroll-margin-top: calc(var(--nav-h) + 4.5rem);
 }
 .hasil-info {
   margin-bottom: 1rem;
@@ -506,24 +455,16 @@ onMounted(() => {
 .hasil-info strong {
   color: var(--ink);
 }
-.tautan-tombol {
-  padding: 0;
-  background: none;
-  border: 0;
-  color: var(--sungai-sedang);
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
+.grid-produk.memuat {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
 }
-.lagi {
+.kosong-aksi {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  margin-top: 1.75rem;
-}
-.lagi-sisa {
-  font-weight: 500;
-  color: var(--ink-2);
+  gap: 0.6rem;
+  margin-top: 0.6rem;
 }
 </style>

@@ -31,6 +31,11 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/toko',
+    name: 'DaftarToko',
+    component: () => import('@/pages/public/DaftarToko.vue'),
+  },
+  {
     path: '/toko/:id',
     name: 'ProfilTokoPublic',
     component: () => import('@/pages/public/ProfilToko.vue'),

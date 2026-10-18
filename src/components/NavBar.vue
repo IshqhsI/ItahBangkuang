@@ -155,6 +155,7 @@ const tautanToko = computed(() => {
 
 const tautanPublik = [
   { to: '/produk', label: 'Semua Produk', icon: ShoppingBasket },
+  { to: '/toko', label: 'Toko', icon: Store },
   { to: '/tutorial', label: 'Cara Pakai', icon: BookOpen },
 ];
 

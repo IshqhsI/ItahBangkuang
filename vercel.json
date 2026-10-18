@@ -29,6 +29,17 @@
       "destination": "/api/seo-toko?id=:id"
     },
     {
+      "source": "/toko",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview|googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|petalbot).*"
+        }
+      ],
+      "destination": "/api/seo-daftar-toko"
+    },
+    {
       "source": "/produk",
       "has": [
         {

@@ -21,6 +21,7 @@ export default async function handler(req, res) {
     ...Object.keys(KATEGORI).map((s) =>
       url(`${BASE_URL}/kategori/${slugUrl(s)}`, { changefreq: 'daily', priority: '0.8' }),
     ),
+    url(`${BASE_URL}/toko`, { changefreq: 'daily', priority: '0.7' }),
     url(`${BASE_URL}/tutorial`, { changefreq: 'monthly', priority: '0.4' }),
     ...produk
       .filter((p) => p.toko?.status === 'AKTIF')

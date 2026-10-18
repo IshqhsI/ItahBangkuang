@@ -160,6 +160,12 @@
               <ArrowRight class="tetangga-panah" :size="20" :stroke-width="2" />
             </RouterLink>
           </div>
+          <div class="tetangga-semua">
+            <RouterLink to="/toko" class="btn btn-garis">
+              Lihat semua toko
+              <ArrowRight :size="20" :stroke-width="2" />
+            </RouterLink>
+          </div>
         </div>
       </section>
 
@@ -955,6 +961,11 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.tetangga-semua {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
 }
 .tetangga-verif {
   display: inline-block;

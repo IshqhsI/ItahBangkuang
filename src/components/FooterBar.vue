@@ -13,6 +13,7 @@
       <nav class="kaki-tautan" aria-label="Tautan kaki">
         <RouterLink to="/">Beranda</RouterLink>
         <RouterLink to="/produk">Semua Produk</RouterLink>
+        <RouterLink to="/toko">Toko</RouterLink>
         <RouterLink to="/tutorial">Cara Pakai</RouterLink>
         <RouterLink v-if="authStore.user" to="/riwayat">Pesanan Saya</RouterLink>
       </nav>

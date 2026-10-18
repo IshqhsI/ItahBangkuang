@@ -48,10 +48,14 @@
           </div>
 
           <template v-else-if="produk.length">
-            <p class="hasil-info"><strong>{{ produk.length }}</strong> produk {{ info.label.toLowerCase() }}</p>
+            <p class="hasil-info">
+              <strong>{{ total }}</strong> produk {{ info.label.toLowerCase() }}
+              <template v-if="total > PER_HALAMAN"> · halaman {{ halaman }} dari {{ Math.ceil(total / PER_HALAMAN) }}</template>
+            </p>
             <div class="grid-produk">
               <KartuProduk v-for="p in produk" :key="p.id" :produk="p" />
             </div>
+            <Paginasi :halaman="halaman" :total="total" :per-halaman="PER_HALAMAN" />
           </template>
 
           <div v-else class="kosong">
@@ -82,11 +86,11 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { SearchX, ChevronRight } from 'lucide-vue-next';
-import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import KartuProduk from '@/components/KartuProduk.vue';
+import Paginasi from '@/components/Paginasi.vue';
 import { useSeo, pasangBreadcrumb, BASE_URL } from '@/lib/useSeo';
-import { totalStok, beragamkan } from '@/lib/utils';
+import { cariKatalog, PER_HALAMAN } from '@/lib/katalog';
 import {
   KATEGORI_TEKS,
   LOKASI,
@@ -101,51 +105,52 @@ const info = computed(() => KATEGORI_TEKS[slug.value] ?? null);
 const daftarKategori = Object.entries(KATEGORI_TEKS).map(([s, v]) => ({ slug: s, label: v.label }));
 
 const produk = ref([]);
+const total = ref(0);
 const memuat = ref(true);
+const halaman = computed(() => Math.max(1, parseInt(route.query.halaman, 10) || 1));
 
 const pasangSeo = () => {
   if (!info.value) {
     useSeo({ title: 'Kategori tidak ditemukan', noindex: true });
     return;
   }
-  const url = `${BASE_URL}/kategori/${slugUrl(slug.value)}`;
+  const dasar = `${BASE_URL}/kategori/${slugUrl(slug.value)}`;
+  const url = halaman.value > 1 ? `${dasar}?halaman=${halaman.value}` : dasar;
   useSeo({
-    title: `${info.value.label} di ${LOKASI_PENDEK}`,
+    title: `${info.value.label} di ${LOKASI_PENDEK}${halaman.value > 1 ? ` — Halaman ${halaman.value}` : ''}`,
     description: `${info.value.label} dari warga ${LOKASI}. Lihat produk, cek harga dan stok, lalu pesan lewat WhatsApp.`,
     url,
   });
   pasangBreadcrumb([
     { name: 'Beranda', url: `${BASE_URL}/` },
     { name: 'Produk', url: `${BASE_URL}/produk` },
-    { name: info.value.label, url },
+    { name: info.value.label, url: dasar },
   ]);
 };
 
+let token = 0;
 const muat = async () => {
   pasangSeo();
   if (!info.value) {
     memuat.value = false;
     return;
   }
+  const saya = ++token;
   memuat.value = true;
-  const { data } = await supabase
-    .from('produk')
-    .select('*, toko(nama_toko, alamat, status)')
-    .eq('status', 'AKTIF')
-    .eq('kategori', slug.value)
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  const aktif = (data ?? []).filter((p) => p.toko?.status === 'AKTIF');
-  // Yang masih ada stok lebih dulu, digilir antar toko supaya beragam
-  produk.value = [
-    ...beragamkan(aktif.filter((p) => totalStok(p) > 0)),
-    ...beragamkan(aktif.filter((p) => totalStok(p) === 0)),
-  ];
+  const hasil = await cariKatalog({
+    kategori: slug.value,
+    sembunyikanHabis: false, // halaman kategori menampilkan semuanya; yang habis di belakang
+    urut: 'beragam',
+    halaman: halaman.value,
+  });
+  if (saya !== token) return;
+  produk.value = hasil.baris;
+  total.value = hasil.total;
   memuat.value = false;
+  if (halaman.value > 1) window.scrollTo({ top: 0 });
 };
 
-watch(slug, muat, { immediate: true });
+watch([slug, halaman], muat, { immediate: true });
 </script>
 
 <style scoped>

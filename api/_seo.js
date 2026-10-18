@@ -59,6 +59,40 @@ export async function ambil(path) {
   }
 }
 
+// Seperti ambil(), tetapi juga mengembalikan jumlah seluruh baris (header Content-Range).
+export async function ambilDenganTotal(path) {
+  const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return { baris: [], total: 0 };
+  try {
+    const r = await fetch(`${url}/rest/v1/${path}`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}`, Prefer: 'count=exact' },
+    });
+    if (!r.ok) return { baris: [], total: 0 };
+    const baris = await r.json();
+    const total = Number((r.headers.get('content-range') || '').split('/')[1]);
+    return { baris, total: Number.isFinite(total) ? total : baris.length };
+  } catch {
+    return { baris: [], total: 0 };
+  }
+}
+
+export const PER_HALAMAN = 24;
+
+// Penomoran halaman untuk HTML bot: tautan sebelumnya/berikutnya yang bisa diikuti crawler
+export function tautanHalaman(dasar, halaman, total) {
+  const jumlah = Math.max(1, Math.ceil(total / PER_HALAMAN));
+  const alamat = (n) => (n > 1 ? `${dasar}${dasar.includes('?') ? '&' : '?'}halaman=${n}` : dasar);
+  const head = [
+    halaman > 1 ? `<link rel="prev" href="${alamat(halaman - 1)}">` : '',
+    halaman < jumlah ? `<link rel="next" href="${alamat(halaman + 1)}">` : '',
+  ].join('\n');
+  const nav = jumlah > 1
+    ? `<nav aria-label="Halaman">${halaman > 1 ? `<a rel="prev" href="${alamat(halaman - 1)}">Sebelumnya</a> ` : ''}Halaman ${halaman} dari ${jumlah}${halaman < jumlah ? ` <a rel="next" href="${alamat(halaman + 1)}">Berikutnya</a>` : ''}</nav>`
+    : '';
+  return { head, nav, alamat, jumlah };
+}
+
 export const laJson = (obj) => JSON.stringify(obj).replace(/</g, '\\u003c');
 
 /**
@@ -74,6 +108,7 @@ export function halaman({
   jsonld = [],
   isi = '',
   noindex = false,
+  kepala = '',
 }) {
   return `<!doctype html>
 <html lang="id">
@@ -95,6 +130,7 @@ export function halaman({
 <meta name="twitter:title" content="${esc(judul)}">
 <meta name="twitter:description" content="${esc(deskripsi)}">
 <meta name="twitter:image" content="${esc(gambar)}">
+${kepala}
 ${jsonld.map((j) => `<script type="application/ld+json">${laJson(j)}</script>`).join('\n')}
 </head>
 <body>
