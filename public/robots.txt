@@ -14,4 +14,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /feedback
 
-Sitemap: https://itah-bangkuang.vercel.app/sitemap.xml
+Sitemap: https://www.itahbangkuang.my.id/sitemap.xml

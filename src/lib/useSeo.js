@@ -13,7 +13,7 @@
  */
 
 const BASE_TITLE = 'ItahBangkuang';
-const BASE_URL = 'https://itah-bangkuang.vercel.app';
+const BASE_URL = 'https://www.itahbangkuang.my.id';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_DESC =
   'Belanja dan berjualan produk lokal Kelurahan Bangkuang: makanan, minuman, pakaian, dan jasa dari warga. Pesan langsung dari penjual lewat WhatsApp.';

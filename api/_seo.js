@@ -2,7 +2,7 @@
 // Crawler mesin pencari dan media sosial tidak selalu menjalankan JavaScript,
 // jadi vercel.json mengalihkan mereka ke HTML yang sudah berisi konten nyata.
 
-export const BASE_URL = 'https://itah-bangkuang.vercel.app';
+export const BASE_URL = 'https://www.itahbangkuang.my.id';
 export const GAMBAR_DEFAULT = `${BASE_URL}/og-image.jpg`;
 
 // Salinan dari src/lib/kategori.js (file itu tidak bisa diimpor dari sini
