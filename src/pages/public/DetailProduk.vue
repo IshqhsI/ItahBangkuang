@@ -56,7 +56,7 @@
               </div>
 
               <!-- TOKO: dinaikkan agar kepercayaan terlihat sebelum memesan -->
-              <RouterLink :to="`/toko/${toko?.id}`" class="papan-toko">
+              <RouterLink :to="urlToko(toko)" class="papan-toko">
                 <span class="toko-foto">
                   <img v-if="toko?.foto_toko" :src="toko.foto_toko" :alt="toko.nama_toko" />
                   <Store v-else :size="24" :stroke-width="2" />
@@ -250,6 +250,7 @@ import {
   tautanWa,
 } from '@/lib/utils';
 import { useProductSeo, useSeo } from '@/lib/useSeo';
+import { urlToko, adalahUuid } from '@/lib/tautan';
 import { labelKategori, iconKategori } from '@/lib/kategori';
 
 const route = useRoute();
@@ -366,11 +367,19 @@ const fetchData = async () => {
   jumlah.value = 1;
   varianTerpilih.value = null; // Reset varian saat pindah produk
 
+  // Alamat bisa berupa slug (ramah) atau UUID lama
+  const kunci = String(route.params.id);
   const { data: p } = await supabase
     .from('produk')
     .select('*, toko(*)')
-    .eq('id', route.params.id)
+    .eq(adalahUuid(kunci) ? 'id' : 'slug', kunci)
     .single();
+
+  // Dibuka lewat UUID lama: alihkan ke alamat ramah (pemuatan diulang oleh watcher rute)
+  if (p && adalahUuid(kunci) && p.slug) {
+    await router.replace({ path: `/produk/${p.slug}`, query: route.query, hash: route.hash });
+    return;
+  }
 
   if (!p || p.status !== 'AKTIF' || p.toko?.status !== 'AKTIF') {
     produk.value = null;
@@ -390,12 +399,12 @@ const fetchData = async () => {
     stok: currentStok.value,
     foto: p.foto_url,
     tokoNama: p.toko.nama_toko,
-    produkId: p.id,
+    produkId: p.slug || p.id,
   });
 
   const { data: lain } = await supabase
     .from('produk')
-    .select('id, nama_produk, foto_url, harga, stok, varian')
+    .select('id, slug, nama_produk, foto_url, harga, stok, varian')
     .eq('toko_id', p.toko_id)
     .eq('status', 'AKTIF')
     .neq('id', p.id)

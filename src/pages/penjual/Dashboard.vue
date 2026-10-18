@@ -52,7 +52,7 @@
                 <Plus :size="20" :stroke-width="2.75" />
                 Tambah produk
               </RouterLink>
-              <RouterLink :to="`/toko/${toko?.id}`" class="tombol">
+              <RouterLink :to="`/toko/${toko?.slug || toko?.id}`" class="tombol">
                 <ExternalLink :size="18" :stroke-width="2.5" />
                 Lihat tokoku
               </RouterLink>
@@ -164,7 +164,7 @@
           <div class="bagikan papan papan-bingkai">
             <div class="bagikan-teks">
               <p class="label">Tautan toko</p>
-              <p class="bagikan-url">{{ baseUrl }}/toko/{{ toko?.id }}</p>
+              <p class="bagikan-url">{{ baseUrl }}/toko/{{ toko?.slug || toko?.id }}</p>
             </div>
             <button type="button" class="tombol" @click="copyLink">
               <Check v-if="copied" :size="20" :stroke-width="2.75" />
@@ -246,7 +246,7 @@ const statusInfo = computed(() => INFO_STATUS[statusToko.value] ?? INFO_STATUS.P
 const tautanAdmin = tautanWa('6282253158560', 'Halo admin, saya penjual di ItahBangkuang. Saya ingin menanyakan status toko saya.');
 
 const copyLink = async () => {
-  await navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.id}`);
+  await navigator.clipboard.writeText(`${baseUrl}/toko/${toko.value?.slug || toko.value?.id}`);
   copied.value = true;
   setTimeout(() => (copied.value = false), 2000);
 };

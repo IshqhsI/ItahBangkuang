@@ -106,7 +106,7 @@
             <RouterLink
               v-for="p in sisaProduk"
               :key="p.id"
-              :to="`/produk/${p.id}`"
+              :to="urlProduk(p)"
               class="kartu"
               :class="{ 'kartu-habis': totalStok(p) === 0 }"
             >
@@ -142,7 +142,7 @@
           <h2 class="judul-bagian">Toko di Bangkuang</h2>
           <p class="sub-bagian">Toko yang sudah terdaftar dan aktif.</p>
           <div class="tetangga">
-            <RouterLink v-for="t in tokoAktif" :key="t.id" :to="`/toko/${t.id}`" class="tetangga-kartu">
+            <RouterLink v-for="t in tokoAktif" :key="t.id" :to="urlToko(t)" class="tetangga-kartu">
               <span class="tetangga-foto">
                 <img v-if="t.foto_toko" :src="t.foto_toko" :alt="`Foto ${t.nama_toko}`" loading="lazy" />
                 <Store v-else :size="26" :stroke-width="1.75" />
@@ -248,6 +248,7 @@ import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { KATEGORI } from '@/lib/kategori';
 import { slugUrl } from '../../../api/_kategori.js';
+import { urlProduk, urlToko } from '@/lib/tautan';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -330,7 +331,7 @@ onMounted(async () => {
         .eq('status', 'AKTIF'),
       supabase
         .from('toko')
-        .select('id, nama_toko, alamat, foto_toko, terverifikasi')
+        .select('id, slug, nama_toko, alamat, foto_toko, terverifikasi')
         .eq('status', 'AKTIF')
         .order('created_at', { ascending: false })
         .limit(6),

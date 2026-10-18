@@ -10,6 +10,7 @@ const petakan = (b) => ({
     alamat: b.alamat_toko,
     terverifikasi: b.toko_terverifikasi,
     status: 'AKTIF',
+    slug: b.toko_slug,
   },
 });
 

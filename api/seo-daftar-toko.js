@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   const dasar = `${BASE_URL}/toko`;
 
   const { baris, total } = await ambilDenganTotal(
-    'toko?status=eq.AKTIF&select=id,nama_toko,alamat,terverifikasi' +
+    'toko?status=eq.AKTIF&select=id,slug,nama_toko,alamat,terverifikasi' +
       `&order=terverifikasi.desc,created_at.desc&limit=${PER_HALAMAN}&offset=${(hal - 1) * PER_HALAMAN}`,
   );
 
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
         itemListElement: baris.map((t, i) => ({
           '@type': 'ListItem',
           position: (hal - 1) * PER_HALAMAN + i + 1,
-          url: `${BASE_URL}/toko/${t.id}`,
+          url: `${BASE_URL}/toko/${t.slug || t.id}`,
           name: t.nama_toko,
         })),
       },
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 <h1>Toko di ${esc(LOKASI_PENDEK)}</h1>
 <p>Toko dan penyedia jasa dari warga ${esc(LOKASI)}.</p>
 ${baris.length
-    ? `<ul>${baris.map((t) => `<li><a href="${BASE_URL}/toko/${esc(t.id)}">${esc(t.nama_toko)}</a>${t.alamat ? ` — ${esc(t.alamat)}` : ''}${t.terverifikasi ? ' (terverifikasi)' : ''}</li>`).join('')}</ul>`
+    ? `<ul>${baris.map((t) => `<li><a href="${BASE_URL}/toko/${esc(t.slug || t.id)}">${esc(t.nama_toko)}</a>${t.alamat ? ` — ${esc(t.alamat)}` : ''}${t.terverifikasi ? ' (terverifikasi)' : ''}</li>`).join('')}</ul>`
     : '<p>Belum ada toko.</p>'}
 ${nav.nav}`;
 

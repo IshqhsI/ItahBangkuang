@@ -151,4 +151,14 @@ export function kirim(res, status, html, { cache = 'public, s-maxage=600, stale-
   res.status(status).send(html);
 }
 
-export const adalahUuid = (v) => /^[0-9a-f-]{8,40}$/i.test(String(v || ''));
+export const adalahSlug = (v) => /^[a-z0-9-]{1,120}$/.test(String(v || ''));
+
+// Pengalihan permanen (301) untuk alamat lama (UUID) ke alamat ramah
+export function alihkan(res, tujuan) {
+  res.setHeader('Location', tujuan);
+  res.setHeader('Cache-Control', 'public, s-maxage=3600');
+  res.status(301).send(`Dialihkan ke ${tujuan}`);
+}
+
+export const adalahUuid = (v) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v || ''));

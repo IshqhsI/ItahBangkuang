@@ -11,8 +11,8 @@ const url = (loc, { lastmod, changefreq, priority } = {}) =>
 
 export default async function handler(req, res) {
   const [produk, toko] = await Promise.all([
-    ambil('produk?status=eq.AKTIF&select=id,created_at,toko(status)&order=created_at.desc&limit=1000'),
-    ambil('toko?status=eq.AKTIF&select=id,created_at&order=created_at.desc&limit=1000'),
+    ambil('produk?status=eq.AKTIF&select=id,slug,created_at,toko(status)&order=created_at.desc&limit=1000'),
+    ambil('toko?status=eq.AKTIF&select=id,slug,created_at&order=created_at.desc&limit=1000'),
   ]);
 
   const entri = [
@@ -26,10 +26,10 @@ export default async function handler(req, res) {
     ...produk
       .filter((p) => p.toko?.status === 'AKTIF')
       .map((p) =>
-        url(`${BASE_URL}/produk/${p.id}`, { lastmod: tanggal(p.created_at), changefreq: 'weekly', priority: '0.8' }),
+        url(`${BASE_URL}/produk/${p.slug || p.id}`, { lastmod: tanggal(p.created_at), changefreq: 'weekly', priority: '0.8' }),
       ),
     ...toko.map((t) =>
-      url(`${BASE_URL}/toko/${t.id}`, { lastmod: tanggal(t.created_at), changefreq: 'weekly', priority: '0.6' }),
+      url(`${BASE_URL}/toko/${t.slug || t.id}`, { lastmod: tanggal(t.created_at), changefreq: 'weekly', priority: '0.6' }),
     ),
   ];
 

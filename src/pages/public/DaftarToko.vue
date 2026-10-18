@@ -44,7 +44,7 @@
 
         <template v-else-if="daftar.length">
           <div class="grid-toko" :class="{ memuat: sedangMemuat }">
-            <RouterLink v-for="t in daftar" :key="t.id" :to="`/toko/${t.id}`" class="toko-kartu">
+            <RouterLink v-for="t in daftar" :key="t.id" :to="urlToko(t)" class="toko-kartu">
               <span class="toko-foto">
                 <img v-if="t.foto_toko" :src="t.foto_toko" :alt="`Foto ${t.nama_toko}`" loading="lazy" />
                 <Store v-else :size="26" :stroke-width="1.75" />
@@ -85,6 +85,7 @@ import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import Paginasi from '@/components/Paginasi.vue';
 import { useSeo, pasangBreadcrumb, BASE_URL } from '@/lib/useSeo';
 import { LOKASI, LOKASI_PENDEK } from '../../../api/_kategori.js';
+import { urlToko } from '@/lib/tautan';
 
 const PER_HALAMAN_TOKO = 24;
 
@@ -123,7 +124,7 @@ const muat = async () => {
   const dari = (halaman.value - 1) * PER_HALAMAN_TOKO;
   let kueri = supabase
     .from('toko')
-    .select('id, nama_toko, alamat, foto_toko, terverifikasi, created_at', { count: 'exact' })
+    .select('id, slug, nama_toko, alamat, foto_toko, terverifikasi, created_at', { count: 'exact' })
     .eq('status', 'AKTIF')
     // Toko terverifikasi lebih dulu, lalu yang terbaru
     .order('terverifikasi', { ascending: false })

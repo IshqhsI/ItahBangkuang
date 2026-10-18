@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   const filter = info ? `&kategori=eq.${slug}` : '';
   const { baris, total } = await ambilDenganTotal(
     `produk?status=eq.AKTIF${filter}&toko.status=eq.AKTIF` +
-      '&select=id,nama_produk,harga,varian,kategori,toko!inner(nama_toko,status)' +
+      '&select=id,slug,nama_produk,harga,varian,kategori,toko!inner(nama_toko,status)' +
       `&order=created_at.desc&limit=${PER_HALAMAN}&offset=${(hal - 1) * PER_HALAMAN}`,
   );
   const produk = baris;
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
         itemListElement: produk.map((p, i) => ({
           '@type': 'ListItem',
           position: (hal - 1) * PER_HALAMAN + i + 1,
-          url: `${BASE_URL}/produk/${p.id}`,
+          url: `${BASE_URL}/produk/${p.slug || p.id}`,
           name: p.nama_produk,
         })),
       },
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
 <ul>${Object.entries(KATEGORI_TEKS).map(([s, v]) => `<li><a href="${BASE_URL}/kategori/${slugUrl(s)}">${esc(v.label)}</a></li>`).join('')}</ul>
 <h2>Daftar produk${total ? ` (${total})` : ''}</h2>
 ${produk.length
-    ? `<ul>${produk.map((p) => `<li><a href="${BASE_URL}/produk/${esc(p.id)}">${esc(p.nama_produk)}</a> — ${esc(teksHarga(p))} — ${esc(p.toko.nama_toko)}</li>`).join('')}</ul>`
+    ? `<ul>${produk.map((p) => `<li><a href="${BASE_URL}/produk/${esc(p.slug || p.id)}">${esc(p.nama_produk)}</a> — ${esc(teksHarga(p))} — ${esc(p.toko.nama_toko)}</li>`).join('')}</ul>`
     : '<p>Belum ada produk.</p>'}
 ${nav.nav}`;
 

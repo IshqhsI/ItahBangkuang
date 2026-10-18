@@ -7,7 +7,7 @@
       "destination": "/api/sitemap"
     },
     {
-      "source": "/produk/:id([0-9a-fA-F-]{8,40})",
+      "source": "/produk/:id([a-zA-Z0-9-]+)",
       "has": [
         {
           "type": "header",
@@ -18,7 +18,7 @@
       "destination": "/api/seo-produk?id=:id"
     },
     {
-      "source": "/toko/:id([0-9a-fA-F-]{8,40})",
+      "source": "/toko/:id([a-zA-Z0-9-]+)",
       "has": [
         {
           "type": "header",

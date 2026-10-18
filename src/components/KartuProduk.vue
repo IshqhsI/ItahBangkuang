@@ -1,5 +1,5 @@
 <template>
-  <RouterLink :to="`/produk/${produk.id}`" class="kartu-produk">
+  <RouterLink :to="urlProduk(produk)" class="kartu-produk">
     <div class="foto">
       <img :src="produk.foto_url" :alt="produk.nama_produk" loading="lazy" />
       <span v-if="punyaVarian(produk)" class="plat">{{ produk.varian.length }} varian</span>
@@ -25,6 +25,7 @@
 import { computed } from 'vue';
 import { Store } from 'lucide-vue-next';
 import { punyaVarian, totalStok, formatHargaProduk } from '@/lib/utils';
+import { urlProduk } from '@/lib/tautan';
 
 const props = defineProps({
   produk: { type: Object, required: true },

@@ -87,7 +87,7 @@
 
 <script setup>
 import { ref, computed, onMounted, markRaw } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
   Store as StoreIcon,
   MapPin,
@@ -101,10 +101,12 @@ import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import KartuProduk from '@/components/KartuProduk.vue';
 import IkonWa from '@/components/IkonWa.vue';
 import { tautanWa } from '@/lib/utils';
+import { adalahUuid } from '@/lib/tautan';
 import { useStoreSeo } from '@/lib/useSeo';
 import { KATEGORI } from '@/lib/kategori';
 
 const route = useRoute();
+const router = useRouter();
 const loading = ref(true);
 const toko = ref(null);
 const produkList = ref([]);
@@ -139,15 +141,22 @@ const salinTautan = async () => {
 };
 
 onMounted(async () => {
+  // Alamat bisa berupa slug (ramah) atau UUID lama
+  const kunci = String(route.params.id);
   const { data: t } = await supabase
     .from('toko')
     .select('*')
-    .eq('id', route.params.id)
+    .eq(adalahUuid(kunci) ? 'id' : 'slug', kunci)
     .eq('status', 'AKTIF')
     .single();
   if (!t) {
     loading.value = false;
     return;
+  }
+
+  // Dibuka lewat UUID lama: alihkan ke alamat ramah
+  if (adalahUuid(kunci) && t.slug) {
+    router.replace({ path: `/toko/${t.slug}`, query: route.query, hash: route.hash });
   }
 
   toko.value = t;
@@ -157,7 +166,7 @@ onMounted(async () => {
     deskripsi: t.deskripsi,
     foto: t.foto_toko,
     alamat: t.alamat,
-    tokoId: t.id,
+    tokoId: t.slug || t.id,
   });
 
   const { data: produk } = await supabase
