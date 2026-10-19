@@ -51,6 +51,47 @@
               <template v-else>Stok {{ totalStok(p) }}<template v-if="punyaVarian(p)"> · {{ p.varian.length }} varian</template></template>
             </p>
 
+            <!-- Atur stok cepat -->
+            <div v-if="!punyaVarian(p)" class="stok-atur" role="group" :aria-label="`Atur stok ${p.nama_produk}`">
+              <button
+                type="button"
+                class="stok-tombol"
+                aria-label="Kurangi stok"
+                :disabled="prosesId === p.id || totalStok(p) <= 0"
+                @click="ubahStok(p, -1)"
+              >
+                <Minus :size="18" :stroke-width="2.5" />
+              </button>
+              <output class="stok-angka" aria-live="polite">{{ totalStok(p) }}</output>
+              <button
+                type="button"
+                class="stok-tombol"
+                aria-label="Tambah stok"
+                :disabled="prosesId === p.id"
+                @click="ubahStok(p, 1)"
+              >
+                <Plus :size="18" :stroke-width="2.5" />
+              </button>
+              <button
+                v-if="totalStok(p) > 0"
+                type="button"
+                class="tombol tombol-kecil"
+                :disabled="prosesId === p.id"
+                @click="tandaiHabis(p)"
+              >
+                Tandai habis
+              </button>
+            </div>
+            <button
+              v-else-if="totalStok(p) > 0"
+              type="button"
+              class="tombol tombol-kecil stok-semua"
+              :disabled="prosesId === p.id"
+              @click="tandaiHabis(p)"
+            >
+              Tandai semua varian habis
+            </button>
+
             <ul v-if="punyaVarian(p)" class="varian">
               <li v-for="(v, i) in p.varian.slice(0, 3)" :key="i" :class="{ habis: Number(v.stok) === 0 }">
                 {{ v.nama }} <b>{{ v.stok }}</b>
@@ -112,7 +153,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Plus, Pencil, Eye, EyeOff, Trash2, PackageOpen } from 'lucide-vue-next';
+import { Plus, Pencil, Eye, EyeOff, Trash2, PackageOpen, Minus } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { useToastStore } from '@/stores/toast';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
@@ -145,6 +186,27 @@ const cocok = (p, val) => {
 };
 const produkFiltered = computed(() => produkList.value.filter((p) => cocok(p, filterAktif.value)));
 const hitungFilter = (val) => produkList.value.filter((p) => cocok(p, val)).length;
+
+// Stok cepat: tanpa membuka halaman ubah produk
+const simpanStok = async (p, perubahan, pesan) => {
+  prosesId.value = p.id;
+  const { error } = await supabase.from('produk').update(perubahan).eq('id', p.id);
+  prosesId.value = null;
+  if (error) {
+    toast.error('Stok belum tersimpan. Periksa koneksi internet Anda, lalu coba lagi.');
+    return;
+  }
+  Object.assign(p, perubahan);
+  if (pesan) toast.success(pesan);
+};
+
+const ubahStok = (p, selisih) =>
+  simpanStok(p, { stok: Math.max(0, (Number(p.stok) || 0) + selisih) });
+
+const tandaiHabis = (p) =>
+  punyaVarian(p)
+    ? simpanStok(p, { varian: p.varian.map((v) => ({ ...v, stok: 0 })) }, `Semua varian “${p.nama_produk}” ditandai habis.`)
+    : simpanStok(p, { stok: 0 }, `“${p.nama_produk}” ditandai habis.`);
 
 const toggleStatus = async (p) => {
   prosesId.value = p.id;
@@ -211,6 +273,40 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.stok-atur {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+.stok-tombol {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 1.5px solid var(--garis);
+  border-radius: 50%;
+  color: var(--sungai);
+  cursor: pointer;
+}
+.stok-tombol:hover:not(:disabled) {
+  background: var(--sage);
+}
+.stok-tombol:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.stok-angka {
+  min-width: 2.2rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.stok-semua {
+  margin-top: 0.6rem;
+}
 .kepala {
   background: var(--sage);
   color: var(--sungai-dalam);

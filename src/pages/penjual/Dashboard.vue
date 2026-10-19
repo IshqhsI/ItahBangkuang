@@ -68,6 +68,8 @@
             </span>
           </p>
 
+          <NotifikasiPesanan class="kartu-notif" />
+
           <!-- Yang perlu dikerjakan -->
           <RouterLink
             v-if="stats.orderMenunggu > 0"
@@ -197,6 +199,7 @@ import {
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
+import NotifikasiPesanan from '@/components/NotifikasiPesanan.vue';
 import IkonWa from '@/components/IkonWa.vue';
 import {
   formatRupiah,
@@ -315,6 +318,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.kartu-notif {
+  margin-bottom: 1rem;
+}
 .belum-verif {
   margin-bottom: 1rem;
 }

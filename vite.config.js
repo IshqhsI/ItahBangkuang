@@ -40,6 +40,8 @@ export default defineConfig({
       workbox: {
         // Hanya file aplikasi yang di-cache. Data produk & pesanan (Supabase) selalu diambil langsung.
         navigateFallback: '/index.html',
+        // Penangan notifikasi Web Push (public/push-sw.js)
+        importScripts: ['push-sw.js'],
         // Berkas non-halaman harus dilayani server, bukan digantikan app shell oleh service worker
         navigateFallbackDenylist: [/^\/sitemap\.xml$/, /^\/robots\.txt$/, /^\/api\//],
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
