@@ -437,8 +437,26 @@ watch(
     align-items: stretch;
     gap: 0.15rem;
   }
+  .saring-dalam > * {
+    min-width: 0;
+  }
+  /* Di HP bilah filter tidak lengket: tingginya hampir seperempat layar dan menutupi produk */
+  .saring {
+    position: static;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* Di HP, "Sembunyikan yang habis" dan pilihan urutan boleh turun baris, jangan melebarkan halaman */
   .urut {
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 0 0.75rem;
+  }
+  .sembunyi-habis {
+    white-space: normal;
+  }
+  .urut-pilih {
+    max-width: 100%;
   }
 }
 

@@ -820,6 +820,8 @@ select.input {
 }
 .kartu-produk .plat-harga {
   font-size: 1.02rem;
+  /* harga rentang ("Rp 40.000 – Rp 80.000") boleh turun baris di kartu sempit */
+  white-space: normal;
 }
 .kartu-produk .stok {
   font-size: 0.78rem;
