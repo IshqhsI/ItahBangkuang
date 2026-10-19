@@ -7,7 +7,7 @@
           <span class="kaki-nama"><span class="itah">Itah</span>Bangkuang</span>
         </RouterLink>
         <p class="kaki-semboyan">Marketplace produk lokal Kelurahan Bangkuang.</p>
-        <p class="kaki-ket">Belanja dan berjualan produk lokal secara daring.</p>
+        <p class="kaki-ket">ItahBangkuang (Itah Bangkuang) adalah marketplace produk lokal untuk warga Kelurahan Bangkuang, Karau Kuala, Barito Selatan.</p>
       </div>
 
       <nav class="kaki-tautan" aria-label="Tautan kaki">

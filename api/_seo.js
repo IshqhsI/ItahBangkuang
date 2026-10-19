@@ -135,7 +135,7 @@ ${jsonld.map((j) => `<script type="application/ld+json">${laJson(j)}</script>`).
 </head>
 <body>
 <header>
-  <p><a href="${BASE_URL}/">ItahBangkuang</a> — Marketplace produk lokal Kelurahan Bangkuang, Barito Selatan</p>
+  <p><a href="${BASE_URL}/">ItahBangkuang</a> (Itah Bangkuang) — Marketplace produk lokal Kelurahan Bangkuang, Barito Selatan</p>
   <nav><a href="${BASE_URL}/">Beranda</a> · <a href="${BASE_URL}/produk">Semua produk</a> · <a href="${BASE_URL}/tutorial">Cara pakai</a></nav>
 </header>
 <main>
