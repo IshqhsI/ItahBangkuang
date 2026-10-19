@@ -13,5 +13,7 @@ Disallow: /buka-toko
 Disallow: /login
 Disallow: /register
 Disallow: /feedback
+Disallow: /lupa-sandi
+Disallow: /atur-sandi
 
 Sitemap: https://www.itahbangkuang.my.id/sitemap.xml

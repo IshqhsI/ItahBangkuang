@@ -49,6 +49,7 @@
               <Eye v-else :size="22" :stroke-width="2.25" />
             </button>
           </div>
+          <RouterLink to="/lupa-sandi" class="lupa-sandi">Lupa kata sandi?</RouterLink>
         </div>
 
         <div v-if="errorMsg" class="pesan pesan-galat" role="alert">
@@ -112,13 +113,13 @@ const handleLogin = async () => {
   const tujuan = tujuanAman(route.query.redirect);
 
   if (profile?.role === 'admin') {
-    toast.success('Selamat datang, Admin!');
+    toast.success('Anda berhasil masuk sebagai admin.');
     router.push(tujuan ?? '/admin/dashboard');
   } else if (profile?.role === 'penjual') {
-    toast.success('Selamat datang lagi!');
+    toast.success('Anda berhasil masuk.');
     router.push(tujuan ?? '/toko/dashboard');
   } else {
-    toast.success('Selamat datang lagi!');
+    toast.success('Anda berhasil masuk.');
     router.push(tujuan ?? '/');
   }
 };
@@ -146,6 +147,13 @@ const handleLogin = async () => {
 }
 .isi-form > .pesan {
   margin-top: 1.25rem;
+}
+.lupa-sandi {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  padding: 0.4rem 0;
+  font-weight: 700;
+  font-size: 0.92rem;
 }
 .sandi {
   position: relative;

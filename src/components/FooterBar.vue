@@ -16,6 +16,7 @@
         <RouterLink to="/toko">Toko</RouterLink>
         <RouterLink to="/tutorial">Cara Pakai</RouterLink>
         <RouterLink v-if="authStore.user" to="/riwayat">Pesanan Saya</RouterLink>
+        <RouterLink v-if="authStore.user" to="/atur-sandi">Ganti kata sandi</RouterLink>
       </nav>
 
       <div class="kaki-saran">

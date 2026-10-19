@@ -68,7 +68,8 @@
           <RouterLink to="/login" class="tombol tombol-penuh">Masuk</RouterLink>
           <RouterLink to="/register" class="tombol tombol-merah tombol-penuh">Daftar Akun</RouterLink>
         </template>
-        <button v-else class="tombol tombol-bahaya tombol-penuh" @click="handleLogout">
+        <RouterLink v-else to="/atur-sandi" class="tombol tombol-penuh">Ganti kata sandi</RouterLink>
+        <button v-if="authStore.user" class="tombol tombol-bahaya tombol-penuh" @click="handleLogout">
           <LogOut :size="20" :stroke-width="2.25" />
           Keluar
         </button>

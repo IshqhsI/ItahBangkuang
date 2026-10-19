@@ -44,6 +44,16 @@ const routes = [
 
   // Auth
   {
+    path: '/lupa-sandi',
+    name: 'LupaSandi',
+    component: () => import('@/pages/auth/LupaSandi.vue'),
+  },
+  {
+    path: '/atur-sandi',
+    name: 'AturSandi',
+    component: () => import('@/pages/auth/AturSandi.vue'),
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/pages/auth/Login.vue'),
@@ -152,7 +162,7 @@ const router = createRouter({
 });
 
 // Reset meta dan JSON-LD tiap pindah halaman; halaman privat tidak diindeks
-const RUTE_TANPA_INDEKS = ['/login', '/register', '/buka-toko', '/feedback'];
+const RUTE_TANPA_INDEKS = ['/login', '/register', '/buka-toko', '/feedback', '/lupa-sandi', '/atur-sandi'];
 router.afterEach((to) => {
   resetSeo(Boolean(to.meta.requiresAuth) || RUTE_TANPA_INDEKS.includes(to.path));
 });

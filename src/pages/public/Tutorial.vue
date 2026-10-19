@@ -195,6 +195,10 @@ const pembeli = {
   ],
   tanya: [
     {
+      t: 'Saya lupa kata sandi. Apa yang harus dilakukan?',
+      j: 'Di halaman Masuk, tekan "Lupa kata sandi?", masukkan email akun, lalu buka tautan yang dikirim ke email itu untuk membuat kata sandi baru. Jika email tidak masuk, hubungi admin lewat WhatsApp dari halaman tersebut.',
+    },
+    {
       t: 'Harus daftar dulu untuk melihat produk?',
       j: 'Tidak. Semua produk bisa dilihat tanpa akun. Akun baru dibutuhkan saat memesan.',
     },
