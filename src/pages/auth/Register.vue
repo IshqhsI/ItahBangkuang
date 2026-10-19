@@ -123,7 +123,7 @@
                 @input="rapikanWa"
               />
             </div>
-            <span id="wa-bantuan" class="bantuan">Pesanan baru akan dikabarkan ke nomor ini.</span>
+            <span id="wa-bantuan" class="bantuan">Pembeli menghubungi Anda lewat nomor ini.</span>
           </div>
 
           <div class="isian">
@@ -137,6 +137,8 @@
               :disabled="loading"
             />
           </div>
+
+          <LayananToko :data="form" :disabled="loading" />
 
           <div class="isian">
             <label for="deskripsi">Deskripsi singkat toko <span class="opsional">(boleh dikosongkan)</span></label>
@@ -199,6 +201,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useToastStore } from '@/stores/toast';
 import LayoutAuth from '@/layouts/LayoutAuth.vue';
+import LayananToko, { periksaLayanan, layananAwal, kolomLayanan } from '@/components/LayananToko.vue';
 import { tujuanAman } from '@/lib/utils';
 
 const route = useRoute();
@@ -219,6 +222,7 @@ const form = ref({
   nomor_wa: '',
   alamat: '',
   deskripsi: '',
+  ...layananAwal(),
 });
 
 // Nomor WA: hanya angka, tanpa awalan 0 / 62
@@ -259,6 +263,11 @@ const handleSubmit = async () => {
       errorMsg.value = 'Nomor WA sepertinya belum lengkap. Tulis tanpa 0 di depan, contoh: 81234567890.';
       return;
     }
+    const galatLayanan = periksaLayanan(form.value);
+    if (galatLayanan) {
+      errorMsg.value = galatLayanan;
+      return;
+    }
   }
 
   loading.value = true;
@@ -295,6 +304,7 @@ const handleSubmit = async () => {
       nomor_wa: form.value.nomor_wa,
       alamat: form.value.alamat.trim(),
       deskripsi: form.value.deskripsi.trim(),
+      ...kolomLayanan(form.value),
       status: 'PENDING',
     });
 

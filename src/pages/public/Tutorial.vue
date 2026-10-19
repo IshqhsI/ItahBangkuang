@@ -261,7 +261,7 @@ const penjual = {
     },
     {
       judul: 'Terima dan urus pesanan',
-      ket: 'Pesanan baru dikabarkan lewat WhatsApp dan muncul di menu Pesanan.',
+      ket: 'Pesanan baru muncul di menu Pesanan, dan pembeli juga menghubungi Anda lewat WhatsApp.',
       butir: [
         'Buka <strong>Pesanan</strong> dan lihat detailnya.',
         'Tekan <strong>Konfirmasi</strong> kalau Anda bisa memenuhinya.',
