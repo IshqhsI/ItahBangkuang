@@ -80,8 +80,8 @@ export async function ambilDenganTotal(path) {
 export const PER_HALAMAN = 24;
 
 // Penomoran halaman untuk HTML bot: tautan sebelumnya/berikutnya yang bisa diikuti crawler
-export function tautanHalaman(dasar, halaman, total) {
-  const jumlah = Math.max(1, Math.ceil(total / PER_HALAMAN));
+export function tautanHalaman(dasar, halaman, total, perHalaman = PER_HALAMAN) {
+  const jumlah = Math.max(1, Math.ceil(total / perHalaman));
   const alamat = (n) => (n > 1 ? `${dasar}${dasar.includes('?') ? '&' : '?'}halaman=${n}` : dasar);
   const head = [
     halaman > 1 ? `<link rel="prev" href="${alamat(halaman - 1)}">` : '',

@@ -1,8 +1,11 @@
 // HTML ramah crawler untuk /toko (daftar toko), berhalaman.
 import {
-  BASE_URL, PER_HALAMAN, ambilDenganTotal, halaman as bangunHalaman, kirim, esc, tautanHalaman,
+  BASE_URL, ambilDenganTotal, halaman as bangunHalaman, kirim, esc, tautanHalaman,
 } from './_seo.js';
 import { LOKASI, LOKASI_PENDEK } from './_kategori.js';
+
+// Harus sama dengan PER_HALAMAN_TOKO di src/pages/public/DaftarToko.vue
+const PER_TOKO = 12;
 
 export default async function handler(req, res) {
   const hal = Math.max(1, parseInt(req.query.halaman, 10) || 1);
@@ -10,7 +13,7 @@ export default async function handler(req, res) {
 
   const { baris, total } = await ambilDenganTotal(
     'toko?status=eq.AKTIF&select=id,slug,nama_toko,alamat,terverifikasi' +
-      `&order=terverifikasi.desc,created_at.desc&limit=${PER_HALAMAN}&offset=${(hal - 1) * PER_HALAMAN}`,
+      `&order=terverifikasi.desc,created_at.desc&limit=${PER_TOKO}&offset=${(hal - 1) * PER_TOKO}`,
   );
 
   if (hal > 1 && baris.length === 0) {
@@ -27,7 +30,7 @@ export default async function handler(req, res) {
     );
   }
 
-  const nav = tautanHalaman(dasar, hal, total);
+  const nav = tautanHalaman(dasar, hal, total, PER_TOKO);
   const kanonik = nav.alamat(hal);
   const judul = `Toko di ${LOKASI_PENDEK}${hal > 1 ? ` — Halaman ${hal}` : ''} | ItahBangkuang`;
   const deskripsi = `Daftar toko dan penyedia jasa dari warga ${LOKASI}. Lihat produknya dan pesan lewat WhatsApp.`;
@@ -43,7 +46,7 @@ export default async function handler(req, res) {
         '@type': 'ItemList',
         itemListElement: baris.map((t, i) => ({
           '@type': 'ListItem',
-          position: (hal - 1) * PER_HALAMAN + i + 1,
+          position: (hal - 1) * PER_TOKO + i + 1,
           url: `${BASE_URL}/toko/${t.slug || t.id}`,
           name: t.nama_toko,
         })),
