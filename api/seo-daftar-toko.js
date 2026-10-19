@@ -60,8 +60,8 @@ export default async function handler(req, res) {
   ];
 
   const isi = `
-<h1>Toko di ${esc(LOKASI_PENDEK)}</h1>
-<p>Toko dan penyedia jasa dari warga ${esc(LOKASI)}.</p>
+<h1>Toko</h1>
+<p>Toko dan penyedia jasa dari warga Bangkuang.</p>
 ${baris.length
     ? `<ul>${baris.map((t) => `<li><a href="${BASE_URL}/toko/${esc(t.slug || t.id)}">${esc(t.nama_toko)}</a>${t.alamat ? ` — ${esc(t.alamat)}` : ''}${t.terverifikasi ? ' (terverifikasi)' : ''}</li>`).join('')}</ul>`
     : '<p>Belum ada toko.</p>'}

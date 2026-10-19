@@ -19,7 +19,7 @@
             <ChevronRight :size="16" :stroke-width="2.25" aria-hidden="true" />
             <span aria-current="page">{{ info.label }}</span>
           </nav>
-          <h1 class="kepala-judul huruf-papan">{{ info.label }} di {{ LOKASI_PENDEK }}</h1>
+          <h1 class="kepala-judul huruf-papan">{{ info.label }}</h1>
           <p class="kepala-intro">{{ info.intro }}</p>
         </div>
       </section>

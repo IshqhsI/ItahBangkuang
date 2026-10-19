@@ -86,7 +86,7 @@ export default async function handler(req, res) {
   ];
 
   const isi = `
-<h1>${esc(info ? `${info.label} di ${LOKASI_PENDEK}` : 'Semua produk')}</h1>
+<h1>${esc(info ? info.label : 'Semua produk')}</h1>
 <p>${esc(info ? info.intro : `Produk dan jasa dari warga ${LOKASI}.`)}</p>
 <h2>Kategori</h2>
 <ul>${Object.entries(KATEGORI_TEKS).map(([s, v]) => `<li><a href="${BASE_URL}/kategori/${slugUrl(s)}">${esc(v.label)}</a></li>`).join('')}</ul>

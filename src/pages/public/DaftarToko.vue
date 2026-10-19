@@ -8,10 +8,9 @@
             <ChevronRight :size="16" :stroke-width="2.25" aria-hidden="true" />
             <span aria-current="page">Toko</span>
           </nav>
-          <h1 class="kepala-judul huruf-papan">Toko di {{ LOKASI_PENDEK }}</h1>
+          <h1 class="kepala-judul huruf-papan">Toko</h1>
           <p class="kepala-sub">
-            Toko dan penyedia jasa dari warga {{ LOKASI }}. Toko bertanda Terverifikasi sudah
-            diperiksa admin.
+            Toko dan penyedia jasa dari warga Bangkuang. Yang bertanda centang sudah diperiksa admin.
           </p>
         </div>
 
