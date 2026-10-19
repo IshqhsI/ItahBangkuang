@@ -16,7 +16,7 @@ const BASE_TITLE = 'ItahBangkuang';
 export const BASE_URL = 'https://www.itahbangkuang.my.id';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_DESC =
-  'Belanja dan berjualan produk lokal Kelurahan Bangkuang, Kecamatan Karau Kuala, Kabupaten Barito Selatan: makanan, minuman, pakaian, dan jasa dari warga. Pesan langsung dari penjual lewat WhatsApp.';
+  'Belanja dan berjualan produk lokal warga Kelurahan Bangkuang, Karau Kuala, Barito Selatan. Pesan langsung dari penjual lewat WhatsApp.';
 
 function setMeta(name, content, attr = 'name') {
   if (!content) return;
@@ -39,7 +39,7 @@ export function useSeo({
 } = {}) {
   const fullTitle = title
     ? `${title} — ${BASE_TITLE}`
-    : `${BASE_TITLE} — Marketplace Lokal Kelurahan Bangkuang`;
+    : `${BASE_TITLE} — Produk Lokal Bangkuang, Barito Selatan`;
 
   const desc = description || DEFAULT_DESC;
   const img = image || DEFAULT_IMAGE;

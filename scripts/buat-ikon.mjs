@@ -15,6 +15,7 @@ const keluaran = [
   ['public/pwa-maskable-512x512.png', maskable, 512],
   ['public/apple-touch-icon.png', maskable, 180],
   ['public/favicon.png', biasa, 64],
+  ['public/favicon-96x96.png', biasa, 96],
 ];
 
 for (const [berkas, svg, ukuran] of keluaran) {
