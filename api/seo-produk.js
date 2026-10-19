@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     lewatUuid || adalahSlug(kunci)
       ? await ambil(
           `produk?${lewatUuid ? 'id' : 'slug'}=eq.${kunci}&status=eq.AKTIF` +
-            '&select=id,slug,nama_produk,deskripsi,harga,stok,varian,foto_url,kategori,toko_id,toko(id,slug,nama_toko,alamat,status,terverifikasi)',
+            '&select=id,slug,nama_produk,deskripsi,harga,stok,varian,foto_url,kategori,toko_id,toko(id,slug,nama_toko,alamat,status,terverifikasi,layanan_pesan)',
         )
       : [];
   const p = rows[0];
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
   ${adaVarian(p) ? `<h2>Varian</h2><ul>${p.varian.map((v) => `<li>${esc(v.nama)} — ${rupiah(v.harga)}${Number(v.stok) > 0 ? '' : ' (habis)'}</li>`).join('')}</ul>` : ''}
   ${p.deskripsi ? `<h2>Tentang produk</h2><p>${esc(p.deskripsi)}</p>` : ''}
   <h2>Cara memesan</h2>
-  <p>Pilih produk, isi pesanan, lalu selesaikan transaksi dengan penjual melalui WhatsApp. Pembayaran COD atau transfer.</p>
+  <p>${p.toko.layanan_pesan === false ? 'Toko ini memajang produknya dan tidak menerima pesanan lewat aplikasi. Hubungi penjual melalui WhatsApp atau datang langsung ke toko.' : 'Pilih produk, isi pesanan, lalu selesaikan transaksi dengan penjual melalui WhatsApp. Pembayaran COD atau transfer.'}</p>
 </article>
 ${lain.length ? `<section><h2>Produk lain dari ${esc(p.toko.nama_toko)}</h2><ul>${lain.map((x) => `<li><a href="${BASE_URL}/produk/${esc(x.slug || x.id)}">${esc(x.nama_produk)}</a></li>`).join('')}</ul></section>` : ''}`;
 

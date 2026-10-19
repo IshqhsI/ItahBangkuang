@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     lewatUuid || adalahSlug(kunci)
       ? await ambil(
           `toko?${lewatUuid ? 'id' : 'slug'}=eq.${kunci}&status=eq.AKTIF` +
-            '&select=id,slug,nama_toko,alamat,deskripsi,foto_toko,terverifikasi',
+            '&select=id,slug,nama_toko,alamat,deskripsi,foto_toko,terverifikasi,jam_buka,tautan_peta,layanan_pesan,layanan_antar,layanan_ambil',
         )
       : [];
   const t = rows[0];
@@ -61,6 +61,7 @@ export default async function handler(req, res) {
         addressCountry: 'ID',
       },
       areaServed: 'Kabupaten Barito Selatan',
+      ...(t.tautan_peta ? { hasMap: t.tautan_peta } : {}),
     },
     {
       '@context': 'https://schema.org',
@@ -76,6 +77,8 @@ export default async function handler(req, res) {
 <h1>${esc(t.nama_toko)}</h1>
 ${t.foto_toko ? `<img src="${esc(t.foto_toko)}" alt="Foto ${esc(t.nama_toko)}" width="300" height="300">` : ''}
 ${t.alamat ? `<p>Alamat: ${esc(t.alamat)}</p>` : ''}
+${t.jam_buka ? `<p>Jam buka: ${esc(t.jam_buka)}</p>` : ''}
+<p>${t.layanan_pesan === false ? 'Toko ini memajang produk dan tidak menerima pesanan online; hubungi penjual atau datang langsung.' : 'Menerima pesanan online.'}${t.layanan_antar !== false ? ' Bisa diantar.' : ''}${t.layanan_ambil === true ? ' Ambil di tempat.' : ''}</p>
 ${t.terverifikasi ? '<p>Toko terverifikasi admin.</p>' : ''}
 ${t.deskripsi ? `<p>${esc(t.deskripsi)}</p>` : ''}
 <h2>Produk dari ${esc(t.nama_toko)}</h2>

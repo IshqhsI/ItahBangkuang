@@ -123,7 +123,26 @@
             <span v-if="nomorWaError" class="galat">{{ nomorWaError }}</span>
           </div>
 
-          <div class="isian">
+          <fieldset v-if="pilihanTerima.length > 1" class="metode">
+            <legend class="label">Cara menerima</legend>
+            <div class="metode-pilihan">
+              <label v-for="p in pilihanTerima" :key="p.nilai" class="metode-kartu" :class="{ dipilih: caraTerima === p.nilai }">
+                <input v-model="caraTerima" type="radio" :value="p.nilai" class="sr-only" />
+                <component :is="p.ikon" :size="26" :stroke-width="2.25" />
+                <span class="metode-nama">{{ p.judul }}</span>
+                <span class="metode-ket">{{ p.ket }}</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div v-if="caraTerima === 'ambil'" class="pesan pesan-info">
+            <MapPin :size="18" :stroke-width="2" />
+            <span>
+              Ambil di: {{ produk?.toko?.alamat || 'alamat toko' }}<template v-if="produk?.toko?.jam_buka">. Jam buka: {{ produk.toko.jam_buka }}</template>.
+            </span>
+          </div>
+
+          <div v-else class="isian">
             <label for="alamat">Alamat pengantaran</label>
             <textarea
               id="alamat"
@@ -136,7 +155,7 @@
           </div>
 
           <fieldset class="metode">
-            <legend class="label">Bayarnya gimana?</legend>
+            <legend class="label">Cara pembayaran</legend>
             <div class="metode-pilihan">
               <label class="metode-kartu" :class="{ dipilih: form.metode === 'COD' }">
                 <input v-model="form.metode" type="radio" value="COD" class="sr-only" />
@@ -182,20 +201,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, markRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  ArrowLeft,
-  PackageX,
-  CircleCheck,
-  CircleAlert,
-  Store,
-  Minus,
-  Plus,
-  HandCoins,
-  Landmark,
-  Send,
-} from 'lucide-vue-next';
+import { ArrowLeft, PackageX, CircleCheck, CircleAlert, Store, Minus, Plus, HandCoins, Landmark, Send, Truck, MapPin } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import IkonWa from '@/components/IkonWa.vue';
@@ -210,6 +218,22 @@ const produk = ref(null);
 const orderSuccess = ref(false);
 const userId = ref(null);
 const nomorWaError = ref('');
+const caraTerima = ref('antar'); // 'antar' | 'ambil'
+
+// Pilihan penerimaan mengikuti pengaturan toko
+const pilihanTerima = computed(() => {
+  const t = produk.value?.toko;
+  const daftar = [];
+  if (t?.layanan_antar !== false) daftar.push({ nilai: 'antar', judul: 'Diantar', ket: 'Alamat Anda diisi di bawah', ikon: markRaw(Truck) });
+  if (t?.layanan_ambil === true) daftar.push({ nilai: 'ambil', judul: 'Ambil di tempat', ket: 'Datang ke toko', ikon: markRaw(Store) });
+  return daftar;
+});
+
+const alamatPesanan = computed(() =>
+  caraTerima.value === 'ambil'
+    ? `Ambil di tempat${produk.value?.toko?.alamat ? ` (${produk.value.toko.alamat})` : ''}`
+    : form.value.alamat.trim(),
+);
 
 const varianNama = ref(route.query.varian || null);
 
@@ -270,7 +294,7 @@ const chatPenjual = () => {
     `Halo, saya baru memesan ${detail} sebanyak ${form.value.jumlah} lewat ItahBangkuang.`,
     `Total: ${formatRupiah(total.value)} (${form.value.metode === 'COD' ? 'COD' : 'transfer'}).`,
     `Nama: ${form.value.nama_pemesan.trim()}`,
-    `Alamat: ${form.value.alamat.trim()}`,
+    caraTerima.value === 'ambil' ? 'Ambil di tempat' : `Alamat: ${form.value.alamat.trim()}`,
     'Mohon dikonfirmasi.',
   ].join('\n');
   window.open(tautanWa(produk.value?.toko?.nomor_wa, pesan), '_blank');
@@ -287,8 +311,8 @@ const addAddressToProfile = (address) => {
 
 const handleOrder = async () => {
   errorMsg.value = '';
-  if (!form.value.nama_pemesan.trim() || !form.value.nomor_wa || !form.value.alamat.trim()) {
-    errorMsg.value = 'Nama, nomor WhatsApp, dan alamat wajib diisi.';
+  if (!form.value.nama_pemesan.trim() || !form.value.nomor_wa || (caraTerima.value === 'antar' && !form.value.alamat.trim())) {
+    errorMsg.value = caraTerima.value === 'ambil' ? 'Nama dan nomor WhatsApp wajib diisi.' : 'Nama, nomor WhatsApp, dan alamat wajib diisi.';
     return;
   }
   if (nomorWaError.value) return;
@@ -301,10 +325,10 @@ const handleOrder = async () => {
     p_pembeli_id: userId.value,
     p_nama_pemesan: form.value.nama_pemesan.trim(),
     p_nomor_wa_pembeli: form.value.nomor_wa,
-    p_alamat: form.value.alamat.trim(),
+    p_alamat: alamatPesanan.value,
     p_jumlah: form.value.jumlah,
     p_metode: form.value.metode,
-    p_catatan: form.value.catatan ?? '',
+    p_catatan: caraTerima.value === 'ambil' ? `Ambil di tempat. ${form.value.catatan ?? ''}`.trim() : form.value.catatan ?? '',
     p_varian_pilihan: varianNama.value,
   });
 
@@ -355,12 +379,18 @@ onMounted(async () => {
 
   const { data: produkData } = await supabase
     .from('produk')
-    .select('*, toko(nama_toko, nomor_wa, status, user_id)')
+    .select('*, toko(nama_toko, nomor_wa, status, user_id, alamat, jam_buka, layanan_pesan, layanan_antar, layanan_ambil)')
     .eq('id', route.params.id)
     .single();
 
   if (!produkData || produkData.status !== 'AKTIF' || produkData.toko?.status !== 'AKTIF') {
     loadingData.value = false;
+    return;
+  }
+
+  // Toko etalase tidak menerima pesanan online: kembali ke halaman produk
+  if (produkData.toko?.layanan_pesan === false) {
+    router.replace(`/produk/${produkData.slug || produkData.id}`);
     return;
   }
 
@@ -370,6 +400,7 @@ onMounted(async () => {
   }
 
   produk.value = produkData;
+  caraTerima.value = produkData.toko?.layanan_antar === false && produkData.toko?.layanan_ambil === true ? 'ambil' : 'antar';
 
   // Jumlah awal dari URL, dihitung setelah produk terisi supaya stok sudah benar
   const parsed = parseInt(route.query.jumlah) || 1;

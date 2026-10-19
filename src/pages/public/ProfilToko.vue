@@ -34,10 +34,23 @@
 
           <p v-if="toko.deskripsi" class="toko-cerita">{{ toko.deskripsi }}</p>
 
+          <ul class="toko-layanan" aria-label="Cara layanan">
+            <li :class="{ etalase: toko.layanan_pesan === false }">
+              {{ toko.layanan_pesan === false ? 'Memajang produk, tanpa pesanan online' : 'Terima pesanan online' }}
+            </li>
+            <li v-if="toko.layanan_antar !== false">Bisa diantar</li>
+            <li v-if="toko.layanan_ambil === true">Ambil di tempat</li>
+            <li v-if="toko.jam_buka">Buka: {{ toko.jam_buka }}</li>
+          </ul>
+
           <div class="toko-aksi">
             <a :href="tautanChat" target="_blank" rel="noopener" class="tombol tombol-kuning tombol-besar">
               <IkonWa :size="22" />
               Chat penjual di WA
+            </a>
+            <a v-if="toko.tautan_peta" :href="toko.tautan_peta" target="_blank" rel="noopener" class="tombol tombol-besar tombol-terang">
+              <MapPin :size="20" :stroke-width="2" />
+              Lihat di peta
             </a>
             <button type="button" class="tombol tombol-besar tombol-terang" @click="salinTautan">
               <Check v-if="tersalin" :size="20" :stroke-width="2.75" />
@@ -250,6 +263,24 @@ onMounted(async () => {
   line-height: 1.6;
   color: var(--ink-2);
   white-space: pre-line;
+}
+.toko-layanan {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.toko-layanan li {
+  padding: 0.3rem 0.85rem;
+  background: #fff;
+  border-radius: 999px;
+  color: var(--sungai);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.toko-layanan li.etalase {
+  background: var(--aprikot-muda);
+  color: #7a4a24;
 }
 .toko-aksi {
   display: flex;

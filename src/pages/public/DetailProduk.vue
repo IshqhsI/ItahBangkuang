@@ -81,7 +81,7 @@
               <fieldset v-if="punyaVarian(produk)" class="varian">
                 <legend class="label">
                   Pilih varian
-                  <span v-if="!varianTerpilih" class="varian-wajib">— wajib dipilih</span>
+                  <span v-if="terimaPesanan && !varianTerpilih" class="varian-wajib">— wajib dipilih</span>
                 </legend>
                 <div class="varian-daftar">
                   <button
@@ -103,7 +103,7 @@
               </fieldset>
 
               <!-- JUMLAH -->
-              <div v-if="currentStok > 0" class="jumlah">
+              <div v-if="terimaPesanan && currentStok > 0" class="jumlah">
                 <span class="label" id="label-jumlah">Jumlah</span>
                 <div class="jumlah-atur" role="group" aria-labelledby="label-jumlah">
                   <button
@@ -128,7 +128,7 @@
 
               <!-- AKSI -->
               <div class="aksi">
-                <div v-if="currentStok > 0" class="aksi-lekat">
+                <div v-if="terimaPesanan && currentStok > 0" class="aksi-lekat">
                   <div class="aksi-total">
                     <span>Total</span>
                     <strong>{{ formatRupiah(currentHarga * jumlah) }}</strong>
@@ -143,7 +143,7 @@
                     {{ perluVarian ? 'Pilih varian dulu' : 'Pesan sekarang' }}
                   </button>
                 </div>
-                <p v-if="currentStok > 0 && !authStore.user" class="aksi-catatan">
+                <p v-if="terimaPesanan && currentStok > 0 && !authStore.user" class="aksi-catatan">
                   Masuk dulu untuk memesan.
                 </p>
 
@@ -160,22 +160,38 @@
                   target="_blank"
                   rel="noopener"
                   class="tombol tombol-besar tombol-penuh"
-                  :class="{ 'tombol-merah': currentStok === 0 }"
+                  :class="{ 'tombol-merah': currentStok === 0 || !terimaPesanan }"
                 >
                   <IkonWa :size="22" />
                   {{ currentStok === 0 ? 'Tanya ketersediaan di WhatsApp' : 'Tanya penjual di WhatsApp' }}
                 </a>
               </div>
 
+              <!-- LOKASI: toko etalase atau yang melayani ambil di tempat -->
+              <section v-if="!terimaPesanan || bisaAmbil" class="lokasi" aria-labelledby="judul-lokasi">
+                <h2 id="judul-lokasi" class="label">{{ terimaPesanan ? 'Ambil di tempat' : 'Tersedia di toko' }}</h2>
+                <p v-if="!terimaPesanan" class="lokasi-ket">
+                  Toko ini memajang produknya dan tidak menerima pesanan lewat aplikasi. Hubungi penjual atau datang langsung.
+                </p>
+                <ul class="lokasi-daftar">
+                  <li v-if="toko?.alamat"><MapPin :size="18" :stroke-width="2" /> {{ toko.alamat }}</li>
+                  <li v-if="toko?.jam_buka"><Clock :size="18" :stroke-width="2" /> {{ toko.jam_buka }}</li>
+                </ul>
+                <a v-if="toko?.tautan_peta" :href="toko.tautan_peta" target="_blank" rel="noopener" class="tombol tombol-kecil">
+                  <Navigation :size="16" :stroke-width="2" />
+                  Lihat di peta
+                </a>
+              </section>
+
               <!-- INFO PENTING -->
-              <ul class="info-penting" aria-label="Informasi pemesanan">
+              <ul v-if="terimaPesanan" class="info-penting" aria-label="Informasi pemesanan">
                 <li>
                   <Wallet :size="20" :stroke-width="2" />
                   <span><strong>Pembayaran</strong> COD atau transfer, dipilih saat memesan.</span>
                 </li>
                 <li>
                   <Truck :size="20" :stroke-width="2" />
-                  <span><strong>Pengantaran</strong> Diatur langsung dengan penjual lewat WhatsApp setelah pesanan dikonfirmasi.</span>
+                  <span><strong>Penerimaan</strong> {{ teksPenerimaan }}</span>
                 </li>
                 <li>
                   <MessageCircle :size="20" :stroke-width="2" />
@@ -237,6 +253,8 @@ import {
   Truck,
   MessageCircle,
   Share2,
+  Clock,
+  Navigation,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth';
@@ -299,6 +317,17 @@ const currentStok = computed(() => {
 });
 
 const isHabis = computed(() => currentStok.value === 0);
+
+// Cara layanan toko (kolom kosong dianggap: terima pesanan, bisa diantar)
+const terimaPesanan = computed(() => toko.value?.layanan_pesan !== false);
+const bisaAntar = computed(() => toko.value?.layanan_antar !== false);
+const bisaAmbil = computed(() => toko.value?.layanan_ambil === true);
+const teksPenerimaan = computed(() => {
+  if (bisaAntar.value && bisaAmbil.value)
+    return 'Bisa diantar atau diambil di tempat. Diatur langsung dengan penjual lewat WhatsApp.';
+  if (bisaAmbil.value) return 'Ambil di tempat penjual. Alamat dan jam buka tertera di bawah.';
+  return 'Diatur langsung dengan penjual lewat WhatsApp setelah pesanan dikonfirmasi.';
+});
 const perluVarian = computed(() => punyaVarian(produk.value) && !varianTerpilih.value);
 const kelasStok = computed(() => ({
   habis: currentStok.value === 0,
@@ -802,6 +831,37 @@ watch(() => route.params.id, fetchData);
   .toko-terverifikasi {
     display: none;
   }
+}
+
+/* Lokasi / etalase */
+.lokasi {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1.5px solid var(--garis-lembut);
+  border-radius: 20px;
+}
+.lokasi-ket {
+  margin-top: 0.4rem;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.lokasi-daftar {
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.7rem 0;
+}
+.lokasi-daftar li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--ink);
+}
+.lokasi-daftar svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--sungai);
 }
 
 /* Info pemesanan */

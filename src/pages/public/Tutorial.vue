@@ -290,6 +290,10 @@ const penjual = {
   },
   tanya: [
     {
+      t: 'Bagaimana kalau saya tidak melayani pesanan online?',
+      j: 'Buka Profil Toko, lalu matikan "Terima pesanan online". Produk Anda tetap tampil sebagai etalase, dan pembeli melihat alamat, jam buka, dan tombol WhatsApp untuk datang atau bertanya langsung.',
+    },
+    {
       t: 'Apa arti lencana Terverifikasi?',
       j: 'Artinya admin sudah memeriksa toko Anda dan informasinya sesuai. Toko baru langsung tampil tanpa lencana, dan lencana diberikan setelah admin memeriksanya.',
     },

@@ -85,6 +85,36 @@
             <input id="alamat" v-model="form.alamat" type="text" autocomplete="street-address" placeholder="Contoh: Jl. Pahlawan RT 03, dekat masjid" :disabled="loading" />
           </div>
 
+          <fieldset class="isian layanan">
+            <legend class="label">Cara layanan</legend>
+            <label class="centang">
+              <input v-model="form.layanan_pesan" type="checkbox" :disabled="loading" />
+              <span>
+                <strong>Terima pesanan online</strong>
+                <small>Pembeli dapat memesan lewat aplikasi. Matikan bila toko hanya memajang produk dan pembeli datang langsung.</small>
+              </span>
+            </label>
+            <label class="centang">
+              <input v-model="form.layanan_antar" type="checkbox" :disabled="loading" />
+              <span><strong>Bisa diantar</strong></span>
+            </label>
+            <label class="centang">
+              <input v-model="form.layanan_ambil" type="checkbox" :disabled="loading" />
+              <span><strong>Ambil di tempat</strong></span>
+            </label>
+          </fieldset>
+
+          <div class="isian">
+            <label for="jam">Jam buka <span class="opsional">(boleh dikosongkan)</span></label>
+            <input id="jam" v-model="form.jam_buka" type="text" maxlength="120" placeholder="Contoh: Setiap hari 07.00–17.00" :disabled="loading" />
+          </div>
+
+          <div class="isian">
+            <label for="peta">Tautan peta <span class="opsional">(boleh dikosongkan)</span></label>
+            <input id="peta" v-model="form.tautan_peta" type="url" inputmode="url" placeholder="https://maps.app.goo.gl/…" aria-describedby="peta-bantuan" :disabled="loading" />
+            <span id="peta-bantuan" class="bantuan">Buka Google Maps, tekan Bagikan, lalu salin tautannya.</span>
+          </div>
+
           <div class="isian">
             <label for="deskripsi">Deskripsi singkat toko <span class="opsional">(boleh dikosongkan)</span></label>
             <textarea id="deskripsi" v-model="form.deskripsi" rows="4" maxlength="300" aria-describedby="desk-hitung" :disabled="loading"></textarea>
@@ -96,6 +126,9 @@
           <div><dt>Nama toko</dt><dd>{{ form.nama_toko || '–' }}</dd></div>
           <div><dt>WhatsApp</dt><dd>{{ form.nomor_wa ? `+62${form.nomor_wa}` : '–' }}</dd></div>
           <div><dt>Alamat</dt><dd>{{ form.alamat || '–' }}</dd></div>
+          <div><dt>Layanan</dt><dd>{{ ringkasLayanan }}</dd></div>
+          <div><dt>Jam buka</dt><dd>{{ form.jam_buka || '–' }}</dd></div>
+          <div v-if="form.tautan_peta"><dt>Peta</dt><dd><a :href="form.tautan_peta" target="_blank" rel="noopener">Buka di peta</a></dd></div>
           <div><dt>Cerita</dt><dd class="cerita">{{ form.deskripsi || 'Belum ada cerita.' }}</dd></div>
         </dl>
       </section>
@@ -156,7 +189,26 @@ const statusToko = ref('');
 const toko = ref({ status: '', alasan_tolak: '' });
 
 // Data yang boleh diubah penjual
-const form = ref({ nama_toko: '', nomor_wa: '', alamat: '', deskripsi: '', foto_toko: '' });
+const form = ref({
+  nama_toko: '',
+  nomor_wa: '',
+  alamat: '',
+  deskripsi: '',
+  foto_toko: '',
+  layanan_pesan: true,
+  layanan_antar: true,
+  layanan_ambil: false,
+  jam_buka: '',
+  tautan_peta: '',
+});
+
+const ringkasLayanan = computed(() => {
+  const f = form.value;
+  const bagian = [f.layanan_pesan ? 'Terima pesanan online' : 'Hanya memajang produk (tanpa pesanan online)'];
+  if (f.layanan_antar) bagian.push('bisa diantar');
+  if (f.layanan_ambil) bagian.push('ambil di tempat');
+  return bagian.join(', ');
+});
 
 let snapshot = null;
 
@@ -232,6 +284,14 @@ const handleSubmit = async () => {
     errorMsg.value = 'Lengkapi alamat toko.';
     return;
   }
+  if (!form.value.layanan_antar && !form.value.layanan_ambil) {
+    errorMsg.value = 'Pilih minimal satu: bisa diantar atau ambil di tempat.';
+    return;
+  }
+  if (form.value.tautan_peta.trim() && !/^https?:\/\//i.test(form.value.tautan_peta.trim())) {
+    errorMsg.value = 'Tautan peta harus diawali https://. Salin dari tombol Bagikan di Google Maps.';
+    return;
+  }
 
   loading.value = true;
 
@@ -254,6 +314,11 @@ const handleSubmit = async () => {
       nomor_wa: form.value.nomor_wa,
       alamat: form.value.alamat.trim(),
       deskripsi: form.value.deskripsi.trim(),
+      layanan_pesan: form.value.layanan_pesan,
+      layanan_antar: form.value.layanan_antar,
+      layanan_ambil: form.value.layanan_ambil,
+      jam_buka: form.value.jam_buka.trim() || null,
+      tautan_peta: form.value.tautan_peta.trim() || null,
       ...(fotoUrl ? { foto_toko: fotoUrl } : {}),
     })
     .eq('id', tokoId.value);
@@ -306,6 +371,11 @@ const muatData = async () => {
     alamat: data.alamat ?? '',
     deskripsi: data.deskripsi ?? '',
     foto_toko: data.foto_toko ?? '',
+    layanan_pesan: data.layanan_pesan !== false,
+    layanan_antar: data.layanan_antar !== false,
+    layanan_ambil: data.layanan_ambil === true,
+    jam_buka: data.jam_buka ?? '',
+    tautan_peta: data.tautan_peta ?? '',
   };
   snapshot = { ...form.value };
   previewUrl.value = data.foto_toko ?? '';
@@ -318,6 +388,39 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.layanan {
+  border: 0;
+  padding: 0;
+}
+.centang {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 48px;
+  padding: 0.7rem 0.9rem;
+  margin-top: 0.5rem;
+  background: #fff;
+  border: 1.5px solid var(--garis-lembut);
+  border-radius: 16px;
+  cursor: pointer;
+}
+.centang input {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--sungai-sedang);
+}
+.centang span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.centang small {
+  color: var(--ink-2);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
 .sempit {
   max-width: 720px;
 }
