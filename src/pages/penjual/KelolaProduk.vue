@@ -36,95 +36,120 @@
       </div>
 
       <div v-else-if="produkFiltered.length" class="grid-kelola">
-        <article v-for="p in produkFiltered" :key="p.id" class="kartu papan" :class="{ tersembunyi: p.status === 'DISEMBUNYIKAN' }">
+        <article v-for="p in produkFiltered" :key="p.id" class="kartu" :class="{ tersembunyi: p.status === 'DISEMBUNYIKAN' }">
           <div class="foto">
-            <img :src="p.foto_url" :alt="p.nama_produk" />
-            <span v-if="p.status === 'DISEMBUNYIKAN'" class="plat plat-tinta foto-plat">
+            <img :src="p.foto_url" :alt="p.nama_produk" loading="lazy" />
+            <span v-if="p.status === 'DISEMBUNYIKAN'" class="lencana lencana-sembunyi">
               <EyeOff :size="14" :stroke-width="2.5" /> Disembunyikan
             </span>
           </div>
 
           <div class="badan">
-            <p class="kategori">{{ labelKategori(p.kategori) }}<template v-if="p.po"> · {{ labelPo(p) }}</template></p>
+            <p class="kategori">{{ labelKategori(p.kategori) }}</p>
             <h2 class="nama">{{ p.nama_produk }}</h2>
             <p class="harga">{{ formatHargaProduk(p) }}</p>
 
-            <p class="stok" :class="{ habis: totalStok(p) === 0, sedikit: totalStok(p) > 0 && totalStok(p) <= 5 }">
-              <template v-if="totalStok(p) === 0">{{ punyaVarian(p) ? 'Semua varian habis' : 'Stok habis' }}</template>
-              <template v-else>{{ stokBebas(totalStok(p)) ? 'Stok tidak dibatasi' : `Stok ${totalStok(p)}` }}<template v-if="punyaVarian(p)"> · {{ p.varian.length }} varian</template></template>
-            </p>
+            <div class="status">
+              <span v-if="p.po" class="cip cip-po">{{ labelPo(p) }}</span>
+              <span v-if="totalStok(p) === 0" class="cip cip-habis">
+                {{ punyaVarian(p) ? 'Semua varian habis' : 'Stok habis' }}
+              </span>
+              <span v-else-if="stokBebas(totalStok(p))" class="cip">Stok tidak dibatasi</span>
+              <span v-else-if="totalStok(p) <= 5 && !punyaVarian(p)" class="cip cip-sedikit">Hampir habis</span>
+              <span v-if="punyaVarian(p)" class="cip">{{ p.varian.length }} varian</span>
+            </div>
 
-            <!-- Atur stok cepat -->
-            <div v-if="!punyaVarian(p) && !stokBebas(totalStok(p))" class="stok-atur" role="group" :aria-label="`Atur stok ${p.nama_produk}`">
-              <button
-                type="button"
-                class="stok-tombol"
-                aria-label="Kurangi stok"
-                :disabled="prosesId === p.id || totalStok(p) <= 0"
-                @click="ubahStok(p, -1)"
+            <!-- Atur stok cepat: area ini selalu setinggi sama supaya kartu sejajar -->
+            <div class="stok-area">
+              <div
+                v-if="!punyaVarian(p) && !stokBebas(totalStok(p))"
+                class="stok-atur"
+                role="group"
+                :aria-label="`Atur stok ${p.nama_produk}`"
               >
-                <Minus :size="18" :stroke-width="2.5" />
-              </button>
-              <output class="stok-angka" aria-live="polite">{{ totalStok(p) }}</output>
+                <button
+                  type="button"
+                  class="stok-tombol"
+                  aria-label="Kurangi stok"
+                  :disabled="prosesId === p.id || totalStok(p) <= 0"
+                  @click="ubahStok(p, -1)"
+                >
+                  <Minus :size="18" :stroke-width="2.5" />
+                </button>
+                <output class="stok-angka" aria-live="polite">{{ totalStok(p) }}</output>
+                <button
+                  type="button"
+                  class="stok-tombol"
+                  aria-label="Tambah stok"
+                  :disabled="prosesId === p.id"
+                  @click="ubahStok(p, 1)"
+                >
+                  <Plus :size="18" :stroke-width="2.5" />
+                </button>
+                <span class="stok-satuan">stok</span>
+              </div>
+
+              <ul v-else-if="punyaVarian(p)" class="varian">
+                <li v-for="(v, i) in p.varian.slice(0, 3)" :key="i" :class="{ habis: Number(v.stok) === 0 }">
+                  {{ v.nama }} <b>{{ stokBebas(v.stok) ? 'Ada' : v.stok }}</b>
+                </li>
+                <li v-if="p.varian.length > 3" class="lagi">+{{ p.varian.length - 3 }} lagi</li>
+              </ul>
+
               <button
+                v-if="totalStok(p) > 0 && (punyaVarian(p) || stokBebas(totalStok(p)))"
                 type="button"
-                class="stok-tombol"
-                aria-label="Tambah stok"
+                class="tombol tombol-kecil tandai-habis"
                 :disabled="prosesId === p.id"
-                @click="ubahStok(p, 1)"
+                @click="tandaiHabis(p)"
               >
-                <Plus :size="18" :stroke-width="2.5" />
+                {{ punyaVarian(p) ? 'Tandai semua varian habis' : 'Tandai habis' }}
               </button>
               <button
-                v-if="totalStok(p) > 0"
+                v-else-if="totalStok(p) > 0"
                 type="button"
-                class="tombol tombol-kecil"
+                class="tautan-habis"
                 :disabled="prosesId === p.id"
                 @click="tandaiHabis(p)"
               >
                 Tandai habis
               </button>
             </div>
-            <button
-              v-else-if="totalStok(p) > 0"
-              type="button"
-              class="tombol tombol-kecil stok-semua"
-              :disabled="prosesId === p.id"
-              @click="tandaiHabis(p)"
-            >
-              {{ punyaVarian(p) ? 'Tandai semua varian habis' : 'Tandai habis' }}
-            </button>
-
-            <ul v-if="punyaVarian(p)" class="varian">
-              <li v-for="(v, i) in p.varian.slice(0, 3)" :key="i" :class="{ habis: Number(v.stok) === 0 }">
-                {{ v.nama }} <b>{{ stokBebas(v.stok) ? 'Ada' : v.stok }}</b>
-              </li>
-              <li v-if="p.varian.length > 3" class="lagi">+{{ p.varian.length - 3 }} lagi</li>
-            </ul>
           </div>
 
           <div class="aksi">
-            <RouterLink :to="`/toko/produk/${p.id}/edit`" class="tombol tombol-kecil aksi-edit">
-              <Pencil :size="16" :stroke-width="2.5" />
+            <RouterLink :to="`/toko/produk/${p.id}/edit`" class="tombol tombol-kuning aksi-edit">
+              <Pencil :size="18" :stroke-width="2.5" />
               Edit
             </RouterLink>
-            <RouterLink :to="{ path: '/toko/produk/tambah', query: { salin: p.id } }" class="tombol tombol-kecil" :aria-label="`Salin ${p.nama_produk} jadi produk baru`">
-              <Copy :size="16" :stroke-width="2.5" />
-              Salin
+            <RouterLink
+              :to="{ path: '/toko/produk/tambah', query: { salin: p.id } }"
+              class="ikon-aksi"
+              title="Salin jadi produk baru"
+              :aria-label="`Salin ${p.nama_produk} jadi produk baru`"
+            >
+              <Copy :size="19" :stroke-width="2.25" />
             </RouterLink>
-            <button type="button" class="tombol tombol-kecil" :disabled="prosesId === p.id" @click="toggleStatus(p)">
-              <Eye v-if="p.status === 'DISEMBUNYIKAN'" :size="16" :stroke-width="2.5" />
-              <EyeOff v-else :size="16" :stroke-width="2.5" />
-              {{ p.status === 'DISEMBUNYIKAN' ? 'Tampilkan' : 'Sembunyikan' }}
+            <button
+              type="button"
+              class="ikon-aksi"
+              :disabled="prosesId === p.id"
+              :title="p.status === 'DISEMBUNYIKAN' ? 'Tampilkan di toko' : 'Sembunyikan dari toko'"
+              :aria-label="p.status === 'DISEMBUNYIKAN' ? `Tampilkan ${p.nama_produk}` : `Sembunyikan ${p.nama_produk}`"
+              @click="toggleStatus(p)"
+            >
+              <Eye v-if="p.status === 'DISEMBUNYIKAN'" :size="19" :stroke-width="2.25" />
+              <EyeOff v-else :size="19" :stroke-width="2.25" />
             </button>
             <button
               type="button"
-              class="tombol tombol-kecil tombol-bahaya"
+              class="ikon-aksi ikon-bahaya"
               :disabled="prosesId === p.id"
+              title="Hapus produk"
               :aria-label="`Hapus ${p.nama_produk}`"
               @click="bukaHapus(p)"
             >
-              <Trash2 :size="16" :stroke-width="2.5" />
+              <Trash2 :size="19" :stroke-width="2.25" />
             </button>
           </div>
         </article>
@@ -285,40 +310,6 @@ onMounted(async () => {
   margin-top: 0.2rem;
   font-weight: 700;
 }
-.stok-atur {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
-}
-.stok-tombol {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  background: #fff;
-  border: 1.5px solid var(--garis);
-  border-radius: 50%;
-  color: var(--sungai);
-  cursor: pointer;
-}
-.stok-tombol:hover:not(:disabled) {
-  background: var(--sage);
-}
-.stok-tombol:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.stok-angka {
-  min-width: 2.2rem;
-  text-align: center;
-  font-weight: 800;
-  font-size: 1.1rem;
-}
-.stok-semua {
-  margin-top: 0.6rem;
-}
 .kepala {
   background: var(--sage);
   color: var(--sungai-dalam);
@@ -343,9 +334,10 @@ onMounted(async () => {
   padding-bottom: 2rem;
 }
 
+/* ── Kartu produk penjual ─────────────────────────────────── */
 .grid-kelola {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.1rem;
   margin-top: 0.75rem;
 }
@@ -353,38 +345,54 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: var(--bayang);
+}
+.foto {
+  position: relative;
+  aspect-ratio: 4 / 3; /* tinggi foto sama di semua kartu, apa pun ukuran aslinya */
+  background: var(--sage);
+  overflow: hidden;
+}
+.foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .kartu.tersembunyi .foto img {
   filter: grayscale(0.85);
   opacity: 0.7;
 }
-.foto {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  background: var(--dinding);
-  border-bottom: var(--tebal) solid var(--garis);
-}
-.foto img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.foto-plat {
+.lencana-sembunyi {
   position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
+  top: 0.65rem;
+  left: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  background: rgba(29, 42, 38, 0.82);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 .badan {
-  flex: 1;
-  padding: 0.85rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* mengisi sisa tinggi supaya baris tombol selalu sejajar di bawah */
+  padding: 0.95rem 1rem 0.9rem;
 }
 .kategori {
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--tinta-3);
+  color: var(--ink-2);
 }
 .nama {
-  margin-top: 0.1rem;
+  margin-top: 0.15rem;
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.25;
@@ -394,64 +402,183 @@ onMounted(async () => {
   overflow: hidden;
 }
 .harga {
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
   font-family: var(--font-papan);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  color: var(--sungai-dalam);
 }
-.stok {
-  margin-top: 0.35rem;
-  font-size: 0.92rem;
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+.cip {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  background: var(--sage);
+  color: var(--sungai);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.cip-po {
+  background: var(--aprikot-muda);
+  color: #7a4a24;
+}
+.cip-habis {
+  background: #f9e3df;
+  color: #a1352a;
+}
+.cip-sedikit {
+  background: #fdf0d5;
+  color: #8a5a00;
+}
+
+.stok-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--sage-2);
+}
+.stok-atur {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.stok-tombol {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 1.5px solid var(--sage-2);
+  border-radius: 50%;
+  color: var(--sungai);
+  cursor: pointer;
+}
+.stok-tombol:hover:not(:disabled) {
+  background: var(--sage);
+}
+.stok-tombol:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.stok-angka {
+  min-width: 2.4rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.stok-satuan {
+  margin-left: 0.15rem;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.tautan-habis {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: #a1352a;
+  font-size: 0.86rem;
   font-weight: 700;
-  color: var(--hijau-tua);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
-.stok.sedikit,
-.stok.habis {
-  color: var(--merah-tua);
+.tautan-habis:disabled {
+  opacity: 0.5;
+}
+.tandai-habis {
+  align-self: flex-start;
 }
 .varian {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  margin-top: 0.6rem;
 }
 .varian li {
-  padding: 0.05rem 0.45rem;
+  padding: 0.1rem 0.55rem;
   background: var(--dinding);
-  border: 1.5px solid var(--garis-lembut);
-  border-radius: 4px;
+  border: 1px solid var(--sage-2);
+  border-radius: 999px;
   font-size: 0.82rem;
 }
 .varian li.habis {
-  color: var(--merah-tua);
-  border-color: var(--merah);
+  color: #a1352a;
+  border-color: #e9b9b2;
   text-decoration: line-through;
 }
 .varian li.lagi {
   border-style: dashed;
-  color: var(--tinta-3);
+  color: var(--ink-2);
 }
 
+/* Kartu berdampingan: sisakan ruang tetap supaya harga, status, dan stok sejajar antar kartu */
+@media (min-width: 560px) {
+  .nama {
+    min-height: 2.5em;
+  }
+  .status {
+    min-height: 1.9rem;
+  }
+  .stok-area {
+    min-height: 5.1rem;
+  }
+}
+
+/* Baris tombol: Edit lebar, sisanya ikon (nama muncul sebagai tooltip dan label aksesibilitas) */
 .aksi {
   display: flex;
-  flex-wrap: wrap; /* Edit + Salin di baris atas, Sembunyikan + Hapus di bawahnya */
+  align-items: center;
   gap: 0.4rem;
-  padding: 0.7rem 0.8rem 0.8rem;
-  border-top: 1px solid var(--garis-lembut);
-}
-.aksi > .tombol {
-  min-height: 42px;
+  padding: 0.75rem 0.85rem 0.9rem;
+  border-top: 1px solid var(--sage-2);
 }
 .aksi-edit {
-  --t-bg: var(--kuning);
-  --t-bg-hover: var(--kuning-tua);
+  flex: 1;
+  min-height: 44px;
 }
-.aksi > a.tombol {
-  flex: 1 1 45%;
+.ikon-aksi {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: var(--sage);
+  border: 0;
+  border-radius: 50%;
+  color: var(--sungai);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
-.aksi > button:not(.tombol-bahaya) {
-  flex: 1 1 60%;
+.ikon-aksi:hover:not(:disabled) {
+  background: var(--sungai);
+  color: #fff;
+}
+.ikon-aksi:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ikon-bahaya {
+  background: #f9e3df;
+  color: #a1352a;
+}
+.ikon-bahaya:hover:not(:disabled) {
+  background: #a1352a;
+  color: #fff;
 }
 
 /* Dialog */
