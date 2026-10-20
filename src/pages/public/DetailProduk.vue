@@ -384,13 +384,14 @@ const bagikan = async () => {
   const judul = produk.value.nama_produk;
   if (navigator.share) {
     try {
-      await navigator.share({ title: judul, text: `${judul} di ItahBangkuang`, url });
+      // Aplikasi tujuan menyambung teks dan tautan: "Pesan <produk> sekarang di <tautan>"
+      await navigator.share({ title: judul, text: `Pesan ${judul} sekarang di`, url });
     } catch {
       /* dibatalkan pengguna */
     }
     return;
   }
-  const teks = `${judul} di ItahBangkuang\n${url}`;
+  const teks = `Pesan ${judul} sekarang di ${url}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
 };
 
