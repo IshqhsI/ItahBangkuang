@@ -140,25 +140,9 @@
         <div class="wadah">
           <p class="kicker"><span>02</span>Toko</p>
           <h2 class="judul-bagian">Toko di Bangkuang</h2>
-          <p class="sub-bagian">Toko yang sudah terdaftar dan aktif.</p>
+          <p class="sub-bagian">Toko dan penyedia jasa warga. Yang bertanda Terverifikasi sudah diperiksa admin.</p>
           <div class="tetangga">
-            <RouterLink v-for="t in tokoAktif" :key="t.id" :to="urlToko(t)" class="tetangga-kartu">
-              <span class="tetangga-foto">
-                <img v-if="t.foto_toko" :src="t.foto_toko" :alt="`Foto ${t.nama_toko}`" loading="lazy" />
-                <Store v-else :size="26" :stroke-width="1.75" />
-              </span>
-              <span class="tetangga-teks">
-                <span class="tetangga-nama">
-                  {{ t.nama_toko }}
-                  <BadgeCheck v-if="t.terverifikasi" class="tetangga-verif" :size="16" :stroke-width="2.25" aria-label="Terverifikasi" />
-                </span>
-                <span v-if="t.alamat" class="tetangga-alamat">
-                  <MapPin :size="14" :stroke-width="2" />
-                  {{ t.alamat }}
-                </span>
-              </span>
-              <ArrowRight class="tetangga-panah" :size="20" :stroke-width="2" />
-            </RouterLink>
+            <KartuToko v-for="t in tokoAktif" :key="t.id" :t="t" />
           </div>
           <div class="tetangga-semua">
             <RouterLink to="/toko" class="btn btn-garis">
@@ -238,9 +222,7 @@ import {
   Store,
   ArrowRight,
   Check,
-  MapPin,
   Search,
-  BadgeCheck,
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { formatHargaProduk, totalStok, beragamkan } from '@/lib/utils';
@@ -248,7 +230,9 @@ import { useAuthStore } from '@/stores/auth';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import { KATEGORI } from '@/lib/kategori';
 import { slugUrl } from '../../../api/_kategori.js';
-import { urlProduk, urlToko } from '@/lib/tautan';
+import { urlProduk } from '@/lib/tautan';
+import KartuToko from '@/components/KartuToko.vue';
+import { KOLOM_TOKO_KARTU, lengkapiToko } from '@/lib/dataToko';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -331,13 +315,15 @@ onMounted(async () => {
         .eq('status', 'AKTIF'),
       supabase
         .from('toko')
-        .select('id, slug, nama_toko, alamat, foto_toko, terverifikasi')
+        .select(KOLOM_TOKO_KARTU)
         .eq('status', 'AKTIF')
+        // Terverifikasi lebih dulu, lalu yang terbaru
+        .order('terverifikasi', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(6),
     ]);
 
-  tokoAktif.value = alamatData ?? [];
+  tokoAktif.value = await lengkapiToko(alamatData ?? []);
   stats.value = {
     produk: jProduk ?? 0,
     toko: jToko ?? 0,
@@ -911,86 +897,24 @@ onMounted(async () => {
 /* ── Tetangga ──────────────────────────────────────────────── */
 .tetangga {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
   margin-top: 1.75rem;
 }
-.tetangga-kartu {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem 0.9rem 0.9rem;
-  background: #fff;
-  border-radius: 999px;
-  box-shadow: var(--bayang);
-  text-decoration: none;
-  color: var(--ink);
-  transition:
-    transform 0.3s var(--ease-out),
-    box-shadow 0.3s ease;
+@media (min-width: 700px) {
+  .tetangga {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
-.tetangga-kartu:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--bayang-naik);
-}
-.tetangga-foto {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--sage);
-  color: var(--sungai);
-  overflow: hidden;
-}
-.tetangga-foto img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.tetangga-teks {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-.tetangga-nama {
-  font-weight: 700;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+@media (min-width: 1100px) {
+  .tetangga {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 .tetangga-semua {
   display: flex;
   justify-content: center;
   margin-top: 1.5rem;
-}
-.tetangga-verif {
-  display: inline-block;
-  vertical-align: -2px;
-  margin-left: 0.2rem;
-  color: var(--sungai-sedang);
-}
-.tetangga-alamat {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.88rem;
-  color: var(--ink-2);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.tetangga-panah {
-  flex-shrink: 0;
-  color: var(--sungai);
-  transition: transform 0.3s var(--ease-out);
-}
-.tetangga-kartu:hover .tetangga-panah {
-  transform: translateX(4px);
 }
 
 /* ── Cara kerja ────────────────────────────────────────────── */
