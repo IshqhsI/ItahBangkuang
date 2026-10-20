@@ -48,6 +48,9 @@ export const labelStok = (n) => {
   return stok <= 5 ? `Sisa ${stok}` : `Stok ${stok}`
 }
 
+// Lencana pre-order: "PO · 2 hari", atau kosong bila bukan PO
+export const labelPo = (p) => (p?.po ? (p.lama_proses ? `PO · ${p.lama_proses}` : 'Pre-order') : '')
+
 // Harga tunggal, atau rentang min–max kalau produk punya varian
 export const formatHargaProduk = (p) => {
   if (!punyaVarian(p)) return formatRupiah(p?.harga)

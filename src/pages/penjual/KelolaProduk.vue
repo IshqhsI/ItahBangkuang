@@ -45,7 +45,7 @@
           </div>
 
           <div class="badan">
-            <p class="kategori">{{ labelKategori(p.kategori) }}</p>
+            <p class="kategori">{{ labelKategori(p.kategori) }}<template v-if="p.po"> · {{ labelPo(p) }}</template></p>
             <h2 class="nama">{{ p.nama_produk }}</h2>
             <p class="harga">{{ formatHargaProduk(p) }}</p>
 
@@ -164,7 +164,7 @@ import { Plus, Pencil, Eye, EyeOff, Trash2, PackageOpen, Minus, Copy } from 'luc
 import { supabase } from '@/lib/supabase';
 import { useToastStore } from '@/stores/toast';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
-import { punyaVarian, totalStok, stokBebas, formatHargaProduk } from '@/lib/utils';
+import { punyaVarian, totalStok, stokBebas, formatHargaProduk, labelPo } from '@/lib/utils';
 import { labelKategori } from '@/lib/kategori';
 
 const route = useRoute();

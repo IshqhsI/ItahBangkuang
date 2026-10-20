@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     lewatUuid || adalahSlug(kunci)
       ? await ambil(
           `produk?${lewatUuid ? 'id' : 'slug'}=eq.${kunci}&status=eq.AKTIF` +
-            '&select=id,slug,nama_produk,deskripsi,harga,stok,varian,foto_url,kategori,toko_id,toko(id,slug,nama_toko,alamat,status,terverifikasi,layanan_pesan)',
+            '&select=id,slug,nama_produk,deskripsi,harga,stok,varian,foto_url,kategori,toko_id,po,lama_proses,toko(id,slug,nama_toko,alamat,status,terverifikasi,layanan_pesan)',
         )
       : [];
   const p = rows[0];
@@ -48,7 +48,10 @@ export default async function handler(req, res) {
     `${p.nama_produk} dari ${p.toko.nama_toko}, ${teksHarga(p)}. ${p.deskripsi || ''} Dijual di ${LOKASI_PENDEK}. Pesan lewat WhatsApp di ItahBangkuang.`,
   );
 
-  const ketersediaan = stok > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+  const ketersediaan =
+    stok > 0
+      ? (p.po ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock')
+      : 'https://schema.org/OutOfStock';
   const penjual = { '@type': 'Organization', name: p.toko.nama_toko, url: alamatToko };
   const penawaran =
     adaVarian(p) && min !== maks
@@ -101,7 +104,7 @@ export default async function handler(req, res) {
 <article>
   <h1>${esc(p.nama_produk)}</h1>
   ${p.foto_url ? `<img src="${esc(p.foto_url)}" alt="${esc(p.nama_produk)}" width="600" height="600">` : ''}
-  <p><strong>${esc(teksHarga(p))}</strong> · ${stok > 0 ? `Stok tersedia (${stok})` : 'Stok habis'}</p>
+  <p><strong>${esc(teksHarga(p))}</strong> · ${stok <= 0 ? 'Stok habis' : p.po ? `Pre-order${p.lama_proses ? `, perkiraan pengerjaan ${esc(p.lama_proses)}` : ''}` : `Stok tersedia (${stok})`}</p>
   ${kategoriLabel ? `<p>Kategori: <a href="${BASE_URL}/kategori/${esc(slugUrl(p.kategori))}">${esc(kategoriLabel)}</a></p>` : ''}
   <p>Dijual oleh <a href="${alamatToko}">${esc(p.toko.nama_toko)}</a>${p.toko.alamat ? `, ${esc(p.toko.alamat)}` : ''}${p.toko.terverifikasi ? ' (toko terverifikasi)' : ''}.</p>
   ${adaVarian(p) ? `<h2>Varian</h2><ul>${p.varian.map((v) => `<li>${esc(v.nama)} — ${rupiah(v.harga)}${Number(v.stok) > 0 ? '' : ' (habis)'}</li>`).join('')}</ul>` : ''}

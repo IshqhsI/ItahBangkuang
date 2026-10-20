@@ -129,6 +129,26 @@
             </button>
           </div>
 
+          <div class="po">
+            <label class="centang">
+              <input v-model="form.po" type="checkbox" :disabled="loading" />
+              Produk pre-order (dibuat setelah dipesan)
+            </label>
+            <div v-if="form.po" class="isian">
+              <label for="lama-proses">Lama pengerjaan</label>
+              <input
+                id="lama-proses"
+                v-model="form.lama_proses"
+                type="text"
+                maxlength="60"
+                placeholder="Contoh: 2 hari, atau dibuat tiap Sabtu"
+                :disabled="loading"
+                :aria-invalid="fieldGalat === 'lama-proses'"
+              />
+              <span class="bantuan">Pembeli melihat lencana “PO” dan perkiraan ini sebelum memesan. Untuk stok, isi kuota atau centang “Tidak dibatasi”.</span>
+            </div>
+          </div>
+
           <div v-if="form.varian.length === 0" class="baris-isian">
             <div class="isian">
               <label for="harga">Harga (Rp)</label>
@@ -346,6 +366,8 @@ const form = ref({
   stok: '',
   status: 'AKTIF',
   varian: [],
+  po: false,
+  lama_proses: '',
 });
 
 const toggleVarian = () => {
@@ -457,6 +479,11 @@ const handleSubmit = async (tambahLagi = false) => {
     return;
   }
 
+  if (form.value.po && !form.value.lama_proses.trim()) {
+    galat('Isi lama pengerjaan untuk produk pre-order, misalnya “2 hari”.', 'lama-proses');
+    return;
+  }
+
   const pakaiVarian = form.value.varian.length > 0;
 
   if (pakaiVarian) {
@@ -529,6 +556,8 @@ const handleSubmit = async (tambahLagi = false) => {
     stok: stokProduk,
     foto_url: fotoUrl,
     varian: varianBersih,
+    po: form.value.po,
+    lama_proses: form.value.po ? form.value.lama_proses.trim() : null,
     ...(isEdit.value
       ? { status: form.value.status }
       : { toko_id: tokoId.value }),
@@ -627,6 +656,8 @@ onMounted(async () => {
       stok: p.stok,
       status: p.status,
       varian: p.varian || [],
+      po: Boolean(p.po),
+      lama_proses: p.lama_proses ?? '',
     };
     previewUrl.value = p.foto_url;
     loadingData.value = false;
@@ -638,7 +669,7 @@ onMounted(async () => {
     if (asal) {
       const { data: p } = await supabase
         .from('produk')
-        .select('nama_produk, kategori, deskripsi, harga, stok, varian, foto_url')
+        .select('nama_produk, kategori, deskripsi, harga, stok, varian, foto_url, po, lama_proses')
         .eq('id', asal)
         .eq('toko_id', toko.id)
         .maybeSingle();
@@ -651,6 +682,8 @@ onMounted(async () => {
           stok: p.stok,
           status: 'AKTIF',
           varian: p.varian || [],
+          po: Boolean(p.po),
+          lama_proses: p.lama_proses ?? '',
         };
         previewUrl.value = p.foto_url;
       }
@@ -864,6 +897,14 @@ onMounted(async () => {
   margin-top: 0.6rem;
 }
 
+.po {
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--garis-lembut);
+}
+.po .isian {
+  margin-top: 0.9rem;
+}
 .batas {
   margin-bottom: 1rem;
   align-items: flex-start;

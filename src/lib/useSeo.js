@@ -87,6 +87,7 @@ export function useProductSeo({
   foto,
   tokoNama,
   produkId,
+  po = false,
 }) {
   const title = nama;
   const description = deskripsi
@@ -115,7 +116,10 @@ export function useProductSeo({
         ? { '@type': 'AggregateOffer', lowPrice: harga, highPrice: hargaMaks }
         : { '@type': 'Offer', price: harga, url }),
       priceCurrency: 'IDR',
-      availability: stok > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability:
+        stok > 0
+          ? (po ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock')
+          : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
         name: tokoNama,

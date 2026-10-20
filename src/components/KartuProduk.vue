@@ -13,7 +13,8 @@
       </p>
       <div class="kaki">
         <span class="plat-harga">{{ formatHargaProduk(produk) }}</span>
-        <span v-if="stok > 0" class="stok" :class="{ sedikit: stok <= 5 }">{{ labelStok(stok) }}</span>
+        <span v-if="produk.po && stok > 0" class="stok po">{{ labelPo(produk) }}</span>
+        <span v-else-if="stok > 0" class="stok" :class="{ sedikit: stok <= 5 }">{{ labelStok(stok) }}</span>
       </div>
     </div>
   </RouterLink>
@@ -22,7 +23,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Store } from 'lucide-vue-next';
-import { punyaVarian, totalStok, formatHargaProduk, labelStok } from '@/lib/utils';
+import { punyaVarian, totalStok, formatHargaProduk, labelStok, labelPo } from '@/lib/utils';
 import { urlProduk } from '@/lib/tautan';
 
 const props = defineProps({

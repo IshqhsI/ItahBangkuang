@@ -51,8 +51,15 @@
                 <span class="stok" :class="kelasStok">
                   <template v-if="currentStok === 0">Stok habis</template>
                   <template v-else-if="currentStok <= 5">Tinggal {{ currentStok }}</template>
-                  <template v-else>{{ labelStok(currentStok) }}</template>
+                  <template v-else>{{ produk.po && stokBebas(currentStok) ? 'Pre-order' : labelStok(currentStok) }}</template>
                 </span>
+              </div>
+
+              <div v-if="produk.po" class="po-info">
+                <Clock :size="20" :stroke-width="2" />
+                <p>
+                  <strong>Pre-order.</strong> Produk dibuat setelah Anda memesan<template v-if="produk.lama_proses">, perkiraan pengerjaan {{ produk.lama_proses }}</template>.
+                </p>
               </div>
 
               <!-- TOKO: dinaikkan agar kepercayaan terlihat sebelum memesan -->
@@ -266,6 +273,7 @@ import {
   formatHargaProduk,
   punyaVarian,
   labelStok,
+  stokBebas,
   tautanWa,
 } from '@/lib/utils';
 import { useProductSeo, useSeo } from '@/lib/useSeo';
@@ -430,6 +438,7 @@ const fetchData = async () => {
     foto: p.foto_url,
     tokoNama: p.toko.nama_toko,
     produkId: p.slug || p.id,
+    po: p.po,
   });
 
   const { data: lain } = await supabase
@@ -540,6 +549,21 @@ watch(() => route.params.id, fetchData);
   font-weight: 700;
   line-height: 1.15;
   text-wrap: balance;
+}
+.po-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+  padding: 0.8rem 1rem;
+  background: var(--aprikot-muda);
+  color: #7a4a24;
+  border-radius: 16px;
+  line-height: 1.5;
+}
+.po-info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 .harga-baris {
   display: flex;

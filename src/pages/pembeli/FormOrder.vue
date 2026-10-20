@@ -123,6 +123,13 @@
             <span v-if="nomorWaError" class="galat">{{ nomorWaError }}</span>
           </div>
 
+          <div v-if="produk?.po" class="pesan pesan-info">
+            <Clock :size="18" :stroke-width="2" />
+            <span>
+              Pre-order: produk dibuat setelah dipesan<template v-if="produk.lama_proses">, perkiraan pengerjaan {{ produk.lama_proses }}</template>.
+            </span>
+          </div>
+
           <fieldset v-if="pilihanTerima.length > 1" class="metode">
             <legend class="label">Cara menerima</legend>
             <div class="metode-pilihan">
@@ -203,7 +210,7 @@
 <script setup>
 import { ref, onMounted, computed, markRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, PackageX, CircleCheck, CircleAlert, Store, Minus, Plus, HandCoins, Landmark, Send, Truck, MapPin } from 'lucide-vue-next';
+import { ArrowLeft, PackageX, CircleCheck, CircleAlert, Store, Minus, Plus, HandCoins, Landmark, Send, Truck, MapPin, Clock } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import IkonWa from '@/components/IkonWa.vue';
@@ -292,11 +299,14 @@ const chatPenjual = () => {
   if (varianNama.value) detail += ` (varian ${varianNama.value})`;
   const pesan = [
     `Halo, saya baru memesan ${detail} sebanyak ${form.value.jumlah} lewat ItahBangkuang.`,
+    produk.value.po ? `Pre-order${produk.value.lama_proses ? `, perkiraan pengerjaan ${produk.value.lama_proses}` : ''}.` : null,
     `Total: ${formatRupiah(total.value)} (${form.value.metode === 'COD' ? 'COD' : 'transfer'}).`,
     `Nama: ${form.value.nama_pemesan.trim()}`,
     caraTerima.value === 'ambil' ? 'Ambil di tempat' : `Alamat: ${form.value.alamat.trim()}`,
     'Mohon dikonfirmasi.',
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
   window.open(tautanWa(produk.value?.toko?.nomor_wa, pesan), '_blank');
 };
 
@@ -328,7 +338,13 @@ const handleOrder = async () => {
     p_alamat: alamatPesanan.value,
     p_jumlah: form.value.jumlah,
     p_metode: form.value.metode,
-    p_catatan: caraTerima.value === 'ambil' ? `Ambil di tempat. ${form.value.catatan ?? ''}`.trim() : form.value.catatan ?? '',
+    p_catatan: [
+      produk.value.po ? `Pre-order${produk.value.lama_proses ? ` (${produk.value.lama_proses})` : ''}.` : '',
+      caraTerima.value === 'ambil' ? 'Ambil di tempat.' : '',
+      form.value.catatan ?? '',
+    ]
+      .filter(Boolean)
+      .join(' '),
     p_varian_pilihan: varianNama.value,
   });
 
