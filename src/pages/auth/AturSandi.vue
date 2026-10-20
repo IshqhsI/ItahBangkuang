@@ -98,6 +98,16 @@ const errorMsg = ref('');
 // Halaman ini dibuka dari tautan email (sesi pemulihan) atau oleh pengguna yang sudah masuk (ganti sandi).
 // supabase-js membaca token di alamat saat dimuat; getSession menunggu proses itu selesai.
 onMounted(async () => {
+  // Tautan email mengarah ke domain ini membawa token_hash; sesi dibuat dengan memverifikasinya di sini
+  // (bukan lewat alamat supabase.co), supaya email tidak dinilai mencurigakan dan token tidak hangus
+  // karena dibuka lebih dulu oleh pemindai tautan.
+  const parameter = new URLSearchParams(window.location.search);
+  const tokenHash = parameter.get('token_hash');
+  if (tokenHash && parameter.get('type') === 'recovery') {
+    await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+
   const { data: { session } } = await supabase.auth.getSession();
   siap.value = Boolean(session);
   memeriksa.value = false;
