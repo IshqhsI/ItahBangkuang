@@ -16,18 +16,38 @@
     </div>
 
     <div v-else class="wadah sempit isi">
-      <form class="form" novalidate @submit.prevent="handleSubmit">
+      <div v-if="batasPenuh" class="pesan pesan-info batas" role="alert">
+        <Lock :size="20" :stroke-width="2.5" />
+        <div>
+          <strong>Toko belum terverifikasi hanya bisa memiliki {{ BATAS_PRODUK }} produk.</strong>
+          <p>
+            Minta verifikasi ke admin untuk menambah lebih banyak.
+            <a :href="tautanVerifikasi" target="_blank" rel="noopener">Hubungi admin lewat WhatsApp</a>
+          </p>
+        </div>
+      </div>
+      <div v-else-if="sisaSlot !== null && sisaSlot <= 2" class="pesan pesan-info batas" role="status">
+        <Lock :size="20" :stroke-width="2.5" />
+        <span>
+          Toko belum terverifikasi dapat memiliki {{ BATAS_PRODUK }} produk. Sisa {{ sisaSlot }} lagi.
+          <a :href="tautanVerifikasi" target="_blank" rel="noopener">Minta verifikasi</a>
+        </span>
+      </div>
+
+      <form class="form" novalidate @submit.prevent="handleSubmit()">
         <!-- FOTO -->
         <section class="bagian papan" aria-labelledby="h-foto">
           <h2 id="h-foto" class="bagian-judul">Foto produk</h2>
-          <p class="bagian-ket">Foto yang terang dan dekat membantu produk lebih diminati. Maksimal 10 MB; foto otomatis dikecilkan.</p>
+          <p class="bagian-ket">Foto yang terang dan dekat membantu produk lebih diminati. Langsung pakai foto dari kamera atau galeri; ukurannya otomatis dikecilkan.</p>
 
           <div
+            id="unggah"
             class="unggah"
             :class="{ ada: previewUrl, seret: isDragging }"
             role="button"
             tabindex="0"
             :aria-label="previewUrl ? 'Ganti foto produk' : 'Pilih foto produk'"
+            :aria-invalid="fieldGalat === 'unggah'"
             @click="triggerUpload"
             @keydown.enter.prevent="triggerUpload"
             @keydown.space.prevent="triggerUpload"
@@ -39,7 +59,7 @@
             <div v-else class="unggah-kosong">
               <ImagePlus :size="40" :stroke-width="2" />
               <p class="unggah-judul">Pilih atau seret foto ke sini</p>
-              <p class="unggah-ket">JPG atau PNG</p>
+              <p class="unggah-ket">Dari kamera atau galeri</p>
             </div>
             <input ref="fileInput" type="file" accept="image/*" class="sr-only" tabindex="-1" @change="onFileChange" />
           </div>
@@ -63,14 +83,13 @@
               maxlength="100"
               placeholder="Contoh: Kue Lapis Pandan isi 10"
               :disabled="loading"
-              aria-describedby="nama-hitung"
+              :aria-invalid="fieldGalat === 'nama'"
             />
-            <span id="nama-hitung" class="bantuan">{{ form.nama_produk.length }} dari 100 karakter</span>
           </div>
 
           <div class="isian">
             <label for="kategori">Kategori</label>
-            <select id="kategori" v-model="form.kategori" :disabled="loading">
+            <select id="kategori" v-model="form.kategori" :disabled="loading" :aria-invalid="fieldGalat === 'kategori'">
               <option value="" disabled>Pilih kategori</option>
               <option v-for="k in KATEGORI" :key="k.slug" :value="k.slug">{{ k.label }}</option>
             </select>
@@ -85,9 +104,8 @@
               maxlength="500"
               placeholder="Bahan, rasa, cara simpan, minimal pesan…"
               :disabled="loading"
-              aria-describedby="desk-hitung"
             ></textarea>
-            <span id="desk-hitung" class="bantuan">{{ form.deskripsi.length }} dari 500 karakter</span>
+            <span v-if="form.deskripsi.length > 400" class="bantuan">{{ form.deskripsi.length }} dari 500 karakter</span>
           </div>
 
           <div v-if="isEdit" class="isian">
@@ -114,11 +132,27 @@
           <div v-if="form.varian.length === 0" class="baris-isian">
             <div class="isian">
               <label for="harga">Harga (Rp)</label>
-              <input id="harga" v-model.number="form.harga" type="number" inputmode="numeric" min="0" placeholder="15000" :disabled="loading" />
+              <input id="harga" v-model.number="form.harga" type="number" inputmode="numeric" min="0" placeholder="15000" :disabled="loading" :aria-invalid="fieldGalat === 'harga'" />
+              <span v-if="form.harga > 0" class="bantuan bantuan-harga">{{ formatRupiah(form.harga) }}</span>
             </div>
             <div class="isian">
               <label for="stok">Stok</label>
-              <input id="stok" v-model.number="form.stok" type="number" inputmode="numeric" min="0" placeholder="10" :disabled="loading" />
+              <input v-if="stokBebas(form.stok)" id="stok" type="text" placeholder="Tidak dibatasi" disabled />
+              <input
+                v-else
+                id="stok"
+                v-model.number="form.stok"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                placeholder="10"
+                :disabled="loading"
+                :aria-invalid="fieldGalat === 'stok'"
+              />
+              <label class="centang">
+                <input type="checkbox" :checked="stokBebas(form.stok)" :disabled="loading" @change="setBebas(form, 'stok', $event.target.checked)" />
+                Tidak dibatasi (dibuat sesuai pesanan)
+              </label>
             </div>
           </div>
 
@@ -134,16 +168,30 @@
               </div>
               <div class="isian">
                 <label :for="`v-nama-${index}`">Nama varian</label>
-                <input :id="`v-nama-${index}`" v-model="v.nama" type="text" placeholder="Contoh: Keju, 100 gram, atau L" />
+                <input :id="`v-nama-${index}`" v-model="v.nama" type="text" placeholder="Contoh: Keju, 100 gram, atau L" :aria-invalid="fieldGalat === `varian-${index}`" />
               </div>
               <div class="baris-isian">
                 <div class="isian">
                   <label :for="`v-harga-${index}`">Harga (Rp)</label>
-                  <input :id="`v-harga-${index}`" v-model.number="v.harga" type="number" inputmode="numeric" min="0" />
+                  <input :id="`v-harga-${index}`" v-model.number="v.harga" type="number" inputmode="numeric" min="0" :aria-invalid="fieldGalat === `varian-${index}`" />
+                  <span v-if="v.harga > 0" class="bantuan bantuan-harga">{{ formatRupiah(v.harga) }}</span>
                 </div>
                 <div class="isian">
                   <label :for="`v-stok-${index}`">Stok</label>
-                  <input :id="`v-stok-${index}`" v-model.number="v.stok" type="number" inputmode="numeric" min="0" />
+                  <input v-if="stokBebas(v.stok)" :id="`v-stok-${index}`" type="text" placeholder="Tidak dibatasi" disabled />
+                  <input
+                    v-else
+                    :id="`v-stok-${index}`"
+                    v-model.number="v.stok"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    :aria-invalid="fieldGalat === `varian-${index}`"
+                  />
+                  <label class="centang">
+                    <input type="checkbox" :checked="stokBebas(v.stok)" @change="setBebas(v, 'stok', $event.target.checked)" />
+                    Tidak dibatasi
+                  </label>
                 </div>
               </div>
             </div>
@@ -172,7 +220,16 @@
 
         <div class="aksi">
           <RouterLink to="/toko/produk" class="tombol tombol-besar">Batal</RouterLink>
-          <button type="submit" class="tombol tombol-merah tombol-besar aksi-utama" :disabled="loading || uploading">
+          <button
+            v-if="!isEdit && !batasPenuh"
+            type="button"
+            class="tombol tombol-besar"
+            :disabled="loading || uploading"
+            @click="handleSubmit(true)"
+          >
+            Simpan &amp; tambah lagi
+          </button>
+          <button type="submit" class="tombol tombol-merah tombol-besar aksi-utama" :disabled="loading || uploading || batasPenuh">
             <span v-if="loading || uploading" class="spinner-sm"></span>
             {{ loading || uploading ? 'Menyimpan…' : isEdit ? 'Simpan perubahan' : 'Simpan produk' }}
           </button>
@@ -206,14 +263,25 @@ import {
   CircleAlert,
   CircleCheck,
   Layers,
+  Lock,
 } from 'lucide-vue-next';
 import { siapkanFoto } from '@/lib/gambar';
 import { supabase } from '@/lib/supabase';
+import { useToastStore } from '@/stores/toast';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
 import { KATEGORI } from '@/lib/kategori';
+import { formatRupiah, tautanWa, STOK_BEBAS, stokBebas } from '@/lib/utils';
+
+const BATAS_PRODUK = 5; // toko yang belum terverifikasi (sama dengan batasan di basis data)
+const KUNCI_KATEGORI = 'kategori-produk-terakhir';
+const tautanVerifikasi = tautanWa(
+  '6282253158560',
+  'Halo admin, saya ingin meminta verifikasi toko di ItahBangkuang agar bisa menambah lebih banyak produk.',
+);
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToastStore();
 
 const loading = ref(false);
 const loadingData = ref(!!route.params.id);
@@ -228,8 +296,47 @@ const isDragging = ref(false);
 const dialogVarian = ref(null);
 const tokoId = ref(null);
 const statusToko = ref(null);
+const fieldGalat = ref('');
+const jumlahProduk = ref(0);
+const sudahVerifikasi = ref(true);
 
 const isEdit = computed(() => !!route.params.id);
+
+// Sisa tempat produk untuk toko yang belum terverifikasi (null = tanpa batas)
+const sisaSlot = computed(() =>
+  isEdit.value || sudahVerifikasi.value ? null : Math.max(0, BATAS_PRODUK - jumlahProduk.value),
+);
+const batasPenuh = computed(() => sisaSlot.value === 0);
+
+const setBebas = (objek, kunci, bebas) => {
+  objek[kunci] = bebas ? STOK_BEBAS : '';
+};
+
+const ingatKategori = (slug) => {
+  try {
+    localStorage.setItem(KUNCI_KATEGORI, slug);
+  } catch {
+    // penyimpanan peramban dimatikan: tidak masalah
+  }
+};
+const kategoriTerakhir = () => {
+  try {
+    const slug = localStorage.getItem(KUNCI_KATEGORI);
+    return KATEGORI.some((k) => k.slug === slug) ? slug : '';
+  } catch {
+    return '';
+  }
+};
+
+// Menandai kolom yang salah, memindahkan layar ke sana, lalu memberi tahu penyebabnya
+const galat = (pesan, id, kolom = id) => {
+  errorMsg.value = pesan;
+  fieldGalat.value = kolom;
+  toast.error(pesan);
+  const el = document.getElementById(id);
+  el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  el?.focus({ preventScroll: true });
+};
 
 const form = ref({
   nama_produk: '',
@@ -290,8 +397,8 @@ const onDrop = (e) => {
 };
 
 const prosesFile = async (asli) => {
-  if (asli.size > 10 * 1024 * 1024) {
-    errorMsg.value = 'Foto terlalu besar. Pilih foto dengan ukuran di bawah 10 MB.';
+  if (asli.size > 40 * 1024 * 1024) {
+    errorMsg.value = 'Foto terlalu besar. Pilih foto lain.';
     return;
   }
   const file = await siapkanFoto(asli);
@@ -328,22 +435,25 @@ const uploadFoto = async () => {
   return data.publicUrl;
 };
 
-const handleSubmit = async () => {
+const handleSubmit = async (tambahLagi = false) => {
   errorMsg.value = '';
   successMsg.value = '';
+  fieldGalat.value = '';
 
-  if (!isEdit.value && !fotoFile.value) {
-    errorMsg.value = 'Pasang foto produk dulu.';
+  if (batasPenuh.value) return;
+
+  if (!previewUrl.value && !fotoFile.value) {
+    galat('Pasang foto produk dulu.', 'unggah');
     return;
   }
 
   if (!form.value.nama_produk.trim()) {
-    errorMsg.value = 'Isi nama produknya dulu.';
+    galat('Isi nama produknya dulu.', 'nama');
     return;
   }
 
   if (!form.value.kategori) {
-    errorMsg.value = 'Pilih kategori produknya dulu.';
+    galat('Pilih kategori produknya dulu.', 'kategori');
     return;
   }
 
@@ -352,29 +462,33 @@ const handleSubmit = async () => {
   if (pakaiVarian) {
     // Harga & stok produk disembunyikan saat pakai varian, jadi yang dicek tiap varian
     const namaList = form.value.varian.map((v) => (v.nama || '').trim());
-    if (namaList.some((n) => !n)) {
-      errorMsg.value = 'Setiap varian perlu nama, misalnya “Keju” atau “Besar”.';
+    const kosong = namaList.findIndex((n) => !n);
+    if (kosong >= 0) {
+      galat('Setiap varian perlu nama, misalnya “Keju” atau “Besar”.', `v-nama-${kosong}`, `varian-${kosong}`);
       return;
     }
-    if (new Set(namaList.map((n) => n.toLowerCase())).size !== namaList.length) {
-      errorMsg.value = 'Ada dua varian yang namanya sama. Beri nama yang berbeda.';
+    const kembar = namaList.findIndex((n, i) => namaList.findIndex((m) => m.toLowerCase() === n.toLowerCase()) !== i);
+    if (kembar >= 0) {
+      galat('Ada dua varian yang namanya sama. Beri nama yang berbeda.', `v-nama-${kembar}`, `varian-${kembar}`);
       return;
     }
-    if (form.value.varian.some((v) => !v.harga || v.harga < 100)) {
-      errorMsg.value = 'Harga setiap varian minimal Rp 100.';
+    const hargaSalah = form.value.varian.findIndex((v) => !v.harga || v.harga < 100);
+    if (hargaSalah >= 0) {
+      galat('Harga setiap varian minimal Rp 100.', `v-harga-${hargaSalah}`, `varian-${hargaSalah}`);
       return;
     }
-    if (form.value.varian.some((v) => v.stok === '' || v.stok == null || v.stok < 0)) {
-      errorMsg.value = 'Isi stok setiap varian. Angkanya tidak boleh minus.';
+    const stokSalah = form.value.varian.findIndex((v) => v.stok === '' || v.stok == null || v.stok < 0);
+    if (stokSalah >= 0) {
+      galat('Isi stok setiap varian. Angkanya tidak boleh minus.', `v-stok-${stokSalah}`, `varian-${stokSalah}`);
       return;
     }
   } else {
     if (!form.value.harga || form.value.harga < 100) {
-      errorMsg.value = 'Harga minimal Rp 100.';
+      galat('Harga minimal Rp 100.', 'harga');
       return;
     }
     if (form.value.stok === '' || form.value.stok === null || form.value.stok < 0) {
-      errorMsg.value = 'Isi stoknya. Angkanya tidak boleh minus.';
+      galat('Isi stoknya, atau centang “Tidak dibatasi”.', 'stok');
       return;
     }
   }
@@ -444,8 +558,18 @@ const handleSubmit = async () => {
       loading.value = false;
       return;
     }
-    successMsg.value = 'Produk berhasil ditambahkan.';
-    setTimeout(() => router.push('/toko/produk'), 1000);
+    ingatKategori(form.value.kategori);
+    jumlahProduk.value += 1;
+    if (tambahLagi && !batasPenuh.value) {
+      toast.success(`“${payload.nama_produk}” tersimpan. Silakan isi produk berikutnya.`);
+      form.value = { ...form.value, nama_produk: '', deskripsi: '', harga: '', stok: '', varian: [] };
+      fotoFile.value = null;
+      previewUrl.value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      successMsg.value = 'Produk berhasil ditambahkan.';
+      setTimeout(() => router.push('/toko/produk'), 1000);
+    }
   }
 
   loading.value = false;
@@ -460,13 +584,22 @@ onMounted(async () => {
 
   const { data: toko } = await supabase
     .from('toko')
-    .select('id, status')
+    .select('id, status, terverifikasi')
     .eq('user_id', session.user.id)
     .single();
 
   if (!toko || toko.status !== 'AKTIF') {
     router.push('/toko/dashboard');
     return;
+  }
+
+  sudahVerifikasi.value = Boolean(toko.terverifikasi);
+  if (!isEdit.value && !sudahVerifikasi.value) {
+    const { count } = await supabase
+      .from('produk')
+      .select('id', { count: 'exact', head: true })
+      .eq('toko_id', toko.id);
+    jumlahProduk.value = count ?? 0;
   }
 
   statusToko.value = toko.status;
@@ -498,6 +631,30 @@ onMounted(async () => {
     previewUrl.value = p.foto_url;
     loadingData.value = false;
   } else {
+    form.value.kategori = kategoriTerakhir();
+
+    // "Salin produk": isian produk lama dipakai lagi, penjual cukup mengubah yang berbeda
+    const asal = route.query.salin;
+    if (asal) {
+      const { data: p } = await supabase
+        .from('produk')
+        .select('nama_produk, kategori, deskripsi, harga, stok, varian, foto_url')
+        .eq('id', asal)
+        .eq('toko_id', toko.id)
+        .maybeSingle();
+      if (p) {
+        form.value = {
+          nama_produk: p.nama_produk,
+          kategori: p.kategori,
+          deskripsi: p.deskripsi ?? '',
+          harga: p.harga,
+          stok: p.stok,
+          status: 'AKTIF',
+          varian: p.varian || [],
+        };
+        previewUrl.value = p.foto_url;
+      }
+    }
     loadingData.value = false;
   }
 });
@@ -705,5 +862,41 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.6rem;
+}
+
+.batas {
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+.batas p {
+  margin-top: 0.2rem;
+}
+.bantuan-harga {
+  font-weight: 700;
+  color: var(--sungai);
+}
+.centang {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-weight: 400;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.centang input {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  flex-shrink: 0;
+  accent-color: var(--sungai);
+}
+.form [aria-invalid='true'] {
+  border-color: #c0392b !important;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.18);
+}
+.aksi {
+  flex-wrap: wrap;
 }
 </style>

@@ -34,6 +34,20 @@ export const totalStok = (p) =>
     ? p.varian.reduce((sum, v) => sum + (Number(v.stok) || 0), 0)
     : Number(p?.stok) || 0
 
+// Penjual yang tidak menghitung stok (dibuat sesuai pesanan) memakai angka besar ini sebagai tanda
+// "tidak dibatasi", jadi tidak perlu kolom baru. Ambangnya dibuat jauh di bawah supaya pesanan
+// yang mengurangi stok tetap terbaca sebagai tidak dibatasi.
+export const STOK_BEBAS = 9999
+export const stokBebas = (n) => Number(n) >= 9000
+
+// Teks stok untuk pembeli dan penjual
+export const labelStok = (n) => {
+  const stok = Number(n) || 0
+  if (stok <= 0) return 'Habis'
+  if (stokBebas(stok)) return 'Tersedia'
+  return stok <= 5 ? `Sisa ${stok}` : `Stok ${stok}`
+}
+
 // Harga tunggal, atau rentang min–max kalau produk punya varian
 export const formatHargaProduk = (p) => {
   if (!punyaVarian(p)) return formatRupiah(p?.harga)

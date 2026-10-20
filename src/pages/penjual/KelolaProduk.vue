@@ -5,6 +5,9 @@
         <div>
           <h1 class="judul-halaman">Produk saya</h1>
           <p class="sub-halaman">Ubah, sembunyikan, atau hapus produk toko Anda.</p>
+          <p v-if="toko && !toko.terverifikasi" class="sub-halaman kuota">
+            {{ produkList.length }} dari {{ BATAS_PRODUK }} produk terpakai (toko belum terverifikasi).
+          </p>
         </div>
         <RouterLink to="/toko/produk/tambah" class="tombol tombol-merah">
           <Plus :size="20" :stroke-width="2.75" />
@@ -48,11 +51,11 @@
 
             <p class="stok" :class="{ habis: totalStok(p) === 0, sedikit: totalStok(p) > 0 && totalStok(p) <= 5 }">
               <template v-if="totalStok(p) === 0">{{ punyaVarian(p) ? 'Semua varian habis' : 'Stok habis' }}</template>
-              <template v-else>Stok {{ totalStok(p) }}<template v-if="punyaVarian(p)"> · {{ p.varian.length }} varian</template></template>
+              <template v-else>{{ stokBebas(totalStok(p)) ? 'Stok tidak dibatasi' : `Stok ${totalStok(p)}` }}<template v-if="punyaVarian(p)"> · {{ p.varian.length }} varian</template></template>
             </p>
 
             <!-- Atur stok cepat -->
-            <div v-if="!punyaVarian(p)" class="stok-atur" role="group" :aria-label="`Atur stok ${p.nama_produk}`">
+            <div v-if="!punyaVarian(p) && !stokBebas(totalStok(p))" class="stok-atur" role="group" :aria-label="`Atur stok ${p.nama_produk}`">
               <button
                 type="button"
                 class="stok-tombol"
@@ -89,12 +92,12 @@
               :disabled="prosesId === p.id"
               @click="tandaiHabis(p)"
             >
-              Tandai semua varian habis
+              {{ punyaVarian(p) ? 'Tandai semua varian habis' : 'Tandai habis' }}
             </button>
 
             <ul v-if="punyaVarian(p)" class="varian">
               <li v-for="(v, i) in p.varian.slice(0, 3)" :key="i" :class="{ habis: Number(v.stok) === 0 }">
-                {{ v.nama }} <b>{{ v.stok }}</b>
+                {{ v.nama }} <b>{{ stokBebas(v.stok) ? 'Ada' : v.stok }}</b>
               </li>
               <li v-if="p.varian.length > 3" class="lagi">+{{ p.varian.length - 3 }} lagi</li>
             </ul>
@@ -104,6 +107,10 @@
             <RouterLink :to="`/toko/produk/${p.id}/edit`" class="tombol tombol-kecil aksi-edit">
               <Pencil :size="16" :stroke-width="2.5" />
               Edit
+            </RouterLink>
+            <RouterLink :to="{ path: '/toko/produk/tambah', query: { salin: p.id } }" class="tombol tombol-kecil" :aria-label="`Salin ${p.nama_produk} jadi produk baru`">
+              <Copy :size="16" :stroke-width="2.5" />
+              Salin
             </RouterLink>
             <button type="button" class="tombol tombol-kecil" :disabled="prosesId === p.id" @click="toggleStatus(p)">
               <Eye v-if="p.status === 'DISEMBUNYIKAN'" :size="16" :stroke-width="2.5" />
@@ -153,11 +160,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Plus, Pencil, Eye, EyeOff, Trash2, PackageOpen, Minus } from 'lucide-vue-next';
+import { Plus, Pencil, Eye, EyeOff, Trash2, PackageOpen, Minus, Copy } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { useToastStore } from '@/stores/toast';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
-import { punyaVarian, totalStok, formatHargaProduk } from '@/lib/utils';
+import { punyaVarian, totalStok, stokBebas, formatHargaProduk } from '@/lib/utils';
 import { labelKategori } from '@/lib/kategori';
 
 const route = useRoute();
@@ -170,6 +177,7 @@ const prosesId = ref(null);
 const dialogHapus = ref(null);
 const hapusTarget = ref(null);
 const statusToko = ref(null);
+const BATAS_PRODUK = 5; // toko belum terverifikasi
 const toko = ref(null);
 
 const filterList = [
@@ -250,7 +258,7 @@ onMounted(async () => {
 
   const { data: tokoData } = await supabase
     .from('toko')
-    .select('id, status')
+    .select('id, status, terverifikasi')
     .eq('user_id', session.user.id)
     .single();
 
@@ -273,6 +281,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.kuota {
+  margin-top: 0.2rem;
+  font-weight: 700;
+}
 .stok-atur {
   display: flex;
   align-items: center;

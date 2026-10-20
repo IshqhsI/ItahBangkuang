@@ -83,7 +83,7 @@
                 <Plus :size="20" :stroke-width="2.75" />
               </button>
             </div>
-            <span class="jumlah-stok">Stok {{ currentStok }}</span>
+            <span class="jumlah-stok">{{ stokBebas(currentStok) ? 'Tersedia' : `Stok ${currentStok}` }}</span>
           </div>
 
           <div class="total">
@@ -207,7 +207,7 @@ import { ArrowLeft, PackageX, CircleCheck, CircleAlert, Store, Minus, Plus, Hand
 import { supabase } from '@/lib/supabase';
 import LayoutPublic from '@/layouts/LayoutPublic.vue';
 import IkonWa from '@/components/IkonWa.vue';
-import { formatRupiah, tautanWa } from '@/lib/utils';
+import { formatRupiah, tautanWa, stokBebas } from '@/lib/utils';
 
 const route = useRoute();
 const router = useRouter();

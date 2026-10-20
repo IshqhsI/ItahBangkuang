@@ -51,7 +51,7 @@
                 <span class="stok" :class="kelasStok">
                   <template v-if="currentStok === 0">Stok habis</template>
                   <template v-else-if="currentStok <= 5">Tinggal {{ currentStok }}</template>
-                  <template v-else>Stok {{ currentStok }}</template>
+                  <template v-else>{{ labelStok(currentStok) }}</template>
                 </span>
               </div>
 
@@ -265,6 +265,7 @@ import {
   formatRupiah,
   formatHargaProduk,
   punyaVarian,
+  labelStok,
   tautanWa,
 } from '@/lib/utils';
 import { useProductSeo, useSeo } from '@/lib/useSeo';

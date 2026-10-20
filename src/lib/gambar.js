@@ -18,12 +18,18 @@ export async function siapkanFoto(file, { maksSisi = 1280, kualitas = 0.82 } = {
     kanvas.getContext('2d').drawImage(bmp, 0, 0, lebar, tinggi);
     bmp.close?.();
 
-    const blob = await new Promise((selesai) => kanvas.toBlob(selesai, 'image/webp', kualitas));
-    if (!blob || blob.type !== 'image/webp') return file;
+    // WebP bila didukung; kalau tidak, JPEG, supaya foto besar tetap berhasil dikecilkan
+    let blob = await new Promise((selesai) => kanvas.toBlob(selesai, 'image/webp', kualitas));
+    let jenis = 'image/webp';
+    if (!blob || blob.type !== jenis) {
+      jenis = 'image/jpeg';
+      blob = await new Promise((selesai) => kanvas.toBlob(selesai, jenis, kualitas));
+    }
+    if (!blob || blob.type !== jenis) return file;
     if (skala === 1 && blob.size >= file.size) return file;
 
-    const nama = file.name.replace(/\.[^.]+$/, '') + '.webp';
-    return new File([blob], nama, { type: 'image/webp' });
+    const nama = file.name.replace(/\.[^.]+$/, '') + (jenis === 'image/webp' ? '.webp' : '.jpg');
+    return new File([blob], nama, { type: jenis });
   } catch {
     return file;
   }

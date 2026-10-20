@@ -148,7 +148,7 @@
                       <p class="baris-ket">{{ formatHargaProduk(p) }}</p>
                     </div>
                     <span class="stok" :class="{ habis: totalStok(p) === 0, sedikit: totalStok(p) > 0 && totalStok(p) <= 5 }">
-                      {{ totalStok(p) === 0 ? 'Habis' : `Stok ${totalStok(p)}` }}
+                      {{ labelStok(totalStok(p)) }}
                     </span>
                   </RouterLink>
                 </li>
@@ -206,6 +206,7 @@ import {
   formatTanggal,
   badgeOrderClass,
   totalStok,
+  labelStok,
   formatHargaProduk,
   tautanWa,
 } from '@/lib/utils';
