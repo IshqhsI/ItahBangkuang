@@ -41,6 +41,7 @@ const routes = [
     component: () => import('@/pages/public/ProfilToko.vue'),
   },
   { path: '/tutorial', component: () => import('@/pages/public/Tutorial.vue') },
+  { path: '/jualan', component: () => import('@/pages/public/Jualan.vue') },
 
   // Auth
   {

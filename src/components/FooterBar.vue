@@ -14,6 +14,7 @@
         <RouterLink to="/">Beranda</RouterLink>
         <RouterLink to="/produk">Semua Produk</RouterLink>
         <RouterLink to="/toko">Toko</RouterLink>
+        <RouterLink to="/jualan">Jualan di Sini</RouterLink>
         <RouterLink to="/tutorial">Cara Pakai</RouterLink>
         <RouterLink v-if="authStore.user" to="/riwayat">Pesanan Saya</RouterLink>
         <RouterLink v-if="authStore.user" to="/atur-sandi">Ganti kata sandi</RouterLink>
