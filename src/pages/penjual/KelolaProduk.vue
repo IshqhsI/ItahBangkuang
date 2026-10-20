@@ -435,6 +435,7 @@ onMounted(async () => {
 
 .aksi {
   display: flex;
+  flex-wrap: wrap; /* Edit + Salin di baris atas, Sembunyikan + Hapus di bawahnya */
   gap: 0.4rem;
   padding: 0.7rem 0.8rem 0.8rem;
   border-top: 1px solid var(--garis-lembut);
@@ -446,8 +447,11 @@ onMounted(async () => {
   --t-bg: var(--kuning);
   --t-bg-hover: var(--kuning-tua);
 }
+.aksi > a.tombol {
+  flex: 1 1 45%;
+}
 .aksi > button:not(.tombol-bahaya) {
-  flex: 1;
+  flex: 1 1 60%;
 }
 
 /* Dialog */
