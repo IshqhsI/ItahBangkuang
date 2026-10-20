@@ -23,6 +23,22 @@ for (const [berkas, svg, ukuran] of keluaran) {
   console.log('dibuat', berkas);
 }
 
+// Lencana notifikasi: Android hanya memakai kanal alfa, jadi harus siluet satu warna.
+// Lengkung putih dengan toko "dilubangi" (transparan).
+const svgLencana = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <mask id="m">
+      <rect width="96" height="96" fill="#000"/>
+      <path d="M22 80 V44 A26 26 0 0 1 74 44 V80 Q74 86 68 86 H28 Q22 86 22 80 Z" fill="#fff"/>
+      <path d="M31 42 H65 V50 A5.7 5.7 0 0 1 53.6 50 A5.7 5.7 0 0 1 42.2 50 A5.7 5.7 0 0 1 31 50 Z" fill="#000"/>
+      <rect x="34" y="57" width="28" height="22" rx="2" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="96" height="96" fill="#fff" mask="url(#m)"/>
+</svg>`;
+await sharp(Buffer.from(svgLencana)).resize(96, 96).png().toFile('public/badge-notif.png');
+console.log('dibuat public/badge-notif.png');
+
 // favicon.ico sungguhan (PNG di dalam wadah ICO). Tanpa ini /favicon.ico dijawab
 // halaman aplikasi (HTML), padahal crawler dan browser selalu mencoba alamat itu.
 const ukuranIco = [16, 32, 48];

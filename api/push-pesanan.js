@@ -59,8 +59,11 @@ export default async function handler(req, res) {
   if (!langganan.length) return res.status(200).json({ terkirim: 0, gagal: 0 });
 
   let namaProduk = '';
+  let gambar = '';
   if (adalahUuid(pesanan.produk_id)) {
-    namaProduk = (await rest(`produk?id=eq.${pesanan.produk_id}&select=nama_produk`))[0]?.nama_produk ?? '';
+    const p = (await rest(`produk?id=eq.${pesanan.produk_id}&select=nama_produk,foto_url`))[0];
+    namaProduk = p?.nama_produk ?? '';
+    gambar = p?.foto_url ?? '';
   }
 
   const isi = [
@@ -76,7 +79,10 @@ export default async function handler(req, res) {
     judul: `Pesanan baru di ${toko.nama_toko}`,
     isi,
     url: '/toko/order',
-    tag: 'pesanan-baru',
+    gambar,
+    // tiap pesanan tampil sendiri (tidak saling menimpa)
+    tag: `pesanan-${pesanan.id ?? Date.now()}`,
+    penting: true,
   });
 
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);

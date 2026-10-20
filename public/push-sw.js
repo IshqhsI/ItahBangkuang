@@ -12,9 +12,15 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.judul || 'ItahBangkuang', {
       body: data.isi || '',
       icon: '/pwa-192x192.png',
-      badge: '/favicon-96x96.png',
+      badge: '/badge-notif.png',
+      image: data.gambar || undefined,
       tag: data.tag || 'itahbangkuang',
       renotify: true,
+      vibrate: [160, 80, 160, 80, 240],
+      timestamp: Date.now(),
+      silent: false,
+      requireInteraction: Boolean(data.penting),
+      actions: data.url ? [{ action: 'buka', title: 'Lihat pesanan' }] : [],
       data: { url: data.url || '/' },
     }),
   );
