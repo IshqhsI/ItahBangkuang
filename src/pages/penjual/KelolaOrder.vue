@@ -8,6 +8,18 @@
     </section>
 
     <div class="wadah isi">
+      <div v-if="baruDikonfirmasi" class="pesan pesan-sukses beri-kabar" role="status">
+        <CircleCheck :size="20" :stroke-width="2.5" />
+        <span>Pesanan dari <strong>{{ baruDikonfirmasi.nama_pemesan }}</strong> dikonfirmasi. Beri tahu pembelinya.</span>
+        <a :href="tautanKonfirmasi(baruDikonfirmasi)" target="_blank" rel="noopener" class="tombol tombol-hijau tombol-kecil">
+          <IkonWa :size="16" />
+          Balas lewat WhatsApp
+        </a>
+        <button type="button" class="tutup-kabar" aria-label="Tutup" @click="baruDikonfirmasi = null">
+          <X :size="18" :stroke-width="2.5" />
+        </button>
+      </div>
+
       <div class="deret-chip" role="group" aria-label="Saring menurut status">
         <button
           v-for="f in filterList"
@@ -28,7 +40,13 @@
       </div>
 
       <ul v-else-if="orderFiltered.length" class="daftar">
-        <li v-for="o in orderFiltered" :key="o.id" class="nota papan" :class="{ baru: o.status === 'MENUNGGU' }">
+        <li
+          v-for="o in orderFiltered"
+          :id="`order-${o.id}`"
+          :key="o.id"
+          class="nota papan"
+          :class="{ baru: o.status === 'MENUNGGU', sorot: sorotId === o.id }"
+        >
           <div class="nota-kepala">
             <div class="nota-status">
               <span class="badge" :class="badgeClass(o.status)">{{ labelStatus(o.status) }}</span>
@@ -101,6 +119,26 @@
       </div>
     </div>
 
+    <!-- Konfirmasi pesanan (dari tombol di notifikasi) -->
+    <dialog ref="dialogKonfirmasi" class="dialog" @close="konfirmTarget = null">
+      <div class="dialog-isi">
+        <h2 class="huruf-papan">Konfirmasi pesanan ini?</h2>
+        <p>
+          <strong>{{ konfirmTarget?.nama_pemesan }}</strong> memesan
+          <strong>{{ konfirmTarget?.produk?.nama_produk }}</strong>
+          <template v-if="konfirmTarget"> ×{{ konfirmTarget.jumlah }} ({{ formatRupiah(konfirmTarget.total_harga) }})</template>.
+          Setelah dikonfirmasi, Anda bisa langsung memberi tahu pembeli lewat WhatsApp.
+        </p>
+        <div class="dialog-aksi">
+          <button type="button" class="tombol" @click="dialogKonfirmasi.close()">Nanti dulu</button>
+          <button type="button" class="tombol tombol-biru" :disabled="!!prosesId" @click="setujuiKonfirmasi">
+            <Check :size="18" :stroke-width="3" />
+            Ya, konfirmasi
+          </button>
+        </div>
+      </div>
+    </dialog>
+
     <!-- Konfirmasi batal -->
     <dialog ref="dialogBatal" class="dialog" @close="batalTarget = null">
       <div class="dialog-isi">
@@ -120,9 +158,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { User, MapPin, StickyNote, Check, PackageCheck, Inbox } from 'lucide-vue-next';
+import { User, MapPin, StickyNote, Check, PackageCheck, Inbox, CircleCheck, X } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { useToastStore } from '@/stores/toast';
 import LayoutPenjual from '@/layouts/LayoutPenjual.vue';
@@ -140,6 +178,10 @@ const statusToko = ref(null);
 const toko = ref(null);
 const dialogBatal = ref(null);
 const batalTarget = ref(null);
+const dialogKonfirmasi = ref(null);
+const konfirmTarget = ref(null);
+const baruDikonfirmasi = ref(null);
+const sorotId = ref(null);
 
 const filterList = [
   { val: 'semua', label: 'Semua' },
@@ -168,6 +210,7 @@ const updateStatus = async (order, statusBaru) => {
     toast.error('Statusnya belum berubah. Periksa koneksi internet Anda, lalu coba lagi.');
   } else {
     order.status = statusBaru;
+    if (statusBaru === 'DIKONFIRMASI') baruDikonfirmasi.value = order;
     toast.success(
       { DIKONFIRMASI: 'Pesanan dikonfirmasi. Lanjut atur pengantaran lewat WA.', SELESAI: 'Pesanan selesai.', DIBATALKAN: 'Pesanan dibatalkan.' }[statusBaru],
     );
@@ -183,6 +226,20 @@ const konfirmasiBatal = async () => {
   const o = batalTarget.value;
   dialogBatal.value?.close();
   if (o) await updateStatus(o, 'DIBATALKAN');
+};
+
+const setujuiKonfirmasi = async () => {
+  const o = konfirmTarget.value;
+  dialogKonfirmasi.value?.close();
+  if (o && o.status === 'MENUNGGU') await updateStatus(o, 'DIKONFIRMASI');
+};
+
+// Pesan siap kirim setelah pesanan dikonfirmasi
+const tautanKonfirmasi = (o) => {
+  let detail = `*${o.produk?.nama_produk}*`;
+  if (o.varian_terpilih) detail += ` (varian ${o.varian_terpilih})`;
+  const pesan = `Halo ${o.nama_pemesan}, pesanan Anda ${detail} sebanyak ${o.jumlah} sudah kami konfirmasi. Terima kasih, mohon ditunggu.`;
+  return tautanWa(o.nomor_wa_pembeli, pesan);
 };
 
 const chatPembeli = (o) => {
@@ -221,6 +278,30 @@ onMounted(async () => {
   orderList.value = data ?? [];
   // Yang paling perlu dikerjakan lebih dulu: kalau ada yang menunggu, tampilkan itu dulu
   if (orderList.value.some((o) => o.status === 'MENUNGGU')) filterAktif.value = 'MENUNGGU';
+
+  // Dibuka dari notifikasi: tampilkan pesanan itu, sorot, dan (bila diminta) tanyakan konfirmasinya
+  const idTujuan = String(route.query.pesanan ?? '');
+  if (idTujuan) {
+    const o = orderList.value.find((x) => x.id === idTujuan);
+    if (o) {
+      filterAktif.value = o.status;
+      sorotId.value = o.id;
+      loading.value = false;
+      await nextTick();
+      document.getElementById(`order-${o.id}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      setTimeout(() => {
+        sorotId.value = null;
+      }, 4000);
+      if (route.query.aksi === 'konfirmasi' && o.status === 'MENUNGGU') {
+        konfirmTarget.value = o;
+        dialogKonfirmasi.value?.showModal();
+      }
+    } else {
+      toast.info('Pesanan itu tidak ditemukan. Mungkin sudah dihapus.');
+    }
+    // Hapus parameter dari alamat supaya memuat ulang halaman tidak membuka dialog lagi
+    router.replace({ query: {} });
+  }
   loading.value = false;
 });
 </script>
@@ -253,6 +334,34 @@ onMounted(async () => {
 }
 .nota {
   padding: 1rem 1.1rem 1.1rem;
+}
+.nota.sorot {
+  outline: 3px solid var(--sungai-sedang);
+  outline-offset: 3px;
+  transition: outline-color 0.4s ease;
+}
+.beri-kabar {
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.beri-kabar > span {
+  flex: 1 1 14rem;
+}
+.tutup-kabar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  cursor: pointer;
+}
+.tutup-kabar:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 .nota.baru {
   --papan-bg: var(--kuning-muda);

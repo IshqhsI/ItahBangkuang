@@ -75,10 +75,15 @@ export default async function handler(req, res) {
     .filter(Boolean)
     .join('');
 
+  // Membuka pesanan itu langsung; tombol "Konfirmasi" membuka dialog konfirmasinya.
+  // Mengubah status tetap perlu penjual yang sudah masuk, jadi tautan ini tidak bisa disalahgunakan.
+  const dasarUrl = adalahUuid(pesanan.id) ? `/toko/order?pesanan=${pesanan.id}` : '/toko/order';
+
   const muatan = JSON.stringify({
     judul: `Pesanan baru di ${toko.nama_toko}`,
     isi,
-    url: '/toko/order',
+    url: dasarUrl,
+    urlKonfirmasi: adalahUuid(pesanan.id) ? `${dasarUrl}&aksi=konfirmasi` : '',
     gambar,
     // tiap pesanan tampil sendiri (tidak saling menimpa)
     tag: `pesanan-${pesanan.id ?? Date.now()}`,

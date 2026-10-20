@@ -20,15 +20,24 @@ self.addEventListener('push', (event) => {
       timestamp: Date.now(),
       silent: false,
       requireInteraction: Boolean(data.penting),
-      actions: data.url ? [{ action: 'buka', title: 'Lihat pesanan' }] : [],
-      data: { url: data.url || '/' },
+      actions: data.urlKonfirmasi
+        ? [
+            { action: 'konfirmasi', title: 'Konfirmasi' },
+            { action: 'buka', title: 'Lihat pesanan' },
+          ]
+        : data.url
+          ? [{ action: 'buka', title: 'Lihat pesanan' }]
+          : [],
+      data: { url: data.url || '/', urlKonfirmasi: data.urlKonfirmasi || '' },
     }),
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const tujuan = new URL(event.notification.data?.url || '/', self.location.origin).href;
+  const data = event.notification.data || {};
+  const alamat = event.action === 'konfirmasi' && data.urlKonfirmasi ? data.urlKonfirmasi : data.url || '/';
+  const tujuan = new URL(alamat, self.location.origin).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((daftar) => {
